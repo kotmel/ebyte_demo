@@ -1,14 +1,14 @@
 /**
   **********************************************************************************
   * @file      main.c
-  * @brief     E15-EVB02 ÆÀ¹À°å¹Ì¼þ
-  * @details   ±¾Àý³ÌÎª: ´®¿ÚÎÞÏßÍ¸´«Ê¾Àý  ÏêÇéÇë²Î¼û https://www.ebyte.com/
+  * @brief     E15-EVB02 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¼ï¿½
+  * @details   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ï¿½Ê¾ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¼ï¿½ https://www.ebyte.com/
   * @author    JiangHeng
   * @date      2021-05-06
   * @version   1.0.0
   **********************************************************************************
   * @copyright BSD License
-  *            ³É¶¼ÒÚ°ÛÌØµç×Ó¿Æ¼¼ÓÐÏÞ¹«Ë¾
+  *            ï¿½É¶ï¿½ï¿½Ú°ï¿½ï¿½Øµï¿½ï¿½Ó¿Æ¼ï¿½ï¿½ï¿½ï¿½Þ¹ï¿½Ë¾
   *   ______   ____   __     __  _______   ______
   *  |  ____| |  _ \  \ \   / / |__   __| |  ____|
   *  | |__    | |_) |  \ \_/ /     | |    | |__
@@ -23,19 +23,24 @@
 #include "ebyte_kfifo.h"
 #include "ebyte_debug.h"
 
+#if defined(_SDCC_)
+// interrupt function prototypes must be visible to main function !
+#include "stm8l15x_it.h"
+#endif
+
 void Task_Transmit( void );
 void Task_Button( void );
 
-/* ´®¿Ú Êý¾Ý´æ´¢¶ÓÁÐ */
+/* ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ý´æ´¢ï¿½ï¿½ï¿½ï¿½ */
 Ebyte_FIFO_t hfifo;
 
-/* ´®¿Ú Ö¡½ÓÊÕÍê³É±êÊ¶ */
+/* ï¿½ï¿½ï¿½ï¿½ Ö¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É±ï¿½Ê¶ */
 uint8_t Uart_isRecvReady = 0;
 
-/* ´®¿Ú FIFO¼ì²é±êÊ¶ */
+/* ï¿½ï¿½ï¿½ï¿½ FIFOï¿½ï¿½ï¿½ï¿½Ê¶ */
 uint8_t FIFO_isTimeCheckReady = 0;
 
-/* ´®¿Ú ×Ô¶¨ÒåÊÕ/·¢»º´æ */
+/* ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 uint8_t TxBuffer[64] = {0};
 uint8_t RxBuffer[64] = {0};
 uint8_t PcEchoBuffer[20] = {0};
@@ -43,38 +48,38 @@ uint8_t PcEchoBuffer[20] = {0};
 uint8_t BufferPing[5] = {'p', 'i', 'n', 'g'};
 uint8_t BufferPong[5] = {'p', 'o', 'n', 'g'};
 
-/* ´®¿Ú FIFO¼ì²é±êÊ¶ */
+/* ï¿½ï¿½ï¿½ï¿½ FIFOï¿½ï¿½ï¿½ï¿½Ê¶ */
 uint8_t Callback_isPingCheckReady = 0;
 
-/* ×Ô¼ìÄ£Ê½ ±êÊ¶ */
+/* ï¿½Ô¼ï¿½Ä£Ê½ ï¿½ï¿½Ê¶ */
 uint8_t PC_isConnected = 0;
 
 static BSP_BTN_EVENT_t BTN_Event;
 
 /* !
- * @brief Ö÷º¯Êý
+ * @brief ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  */
 int main( void )
 {
     uint8_t result;
     uint8_t* pName;
-    /* °åÔØÓ²¼þ×ÊÔ´ ³õÊ¼»¯ */
+    /* ï¿½ï¿½ï¿½ï¿½Ó²ï¿½ï¿½ï¿½ï¿½Ô´ ï¿½ï¿½Ê¼ï¿½ï¿½ */
     Ebyte_BSP_Init();
-    /* (¿ÉÑ¡) ´®¿ÚÖÐ¶Ï½ÓÊÕFIFO ¿É¸ù¾ÝÐèÒª×ÔÐÐ´¦Àí */
+    /* (ï¿½ï¿½Ñ¡) ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶Ï½ï¿½ï¿½ï¿½FIFO ï¿½É¸ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ */
     Ebyte_FIFO_Init( &hfifo, EBYTE_FIFO_SIZE );
-    /* EBYTE ÎÞÏßÄ£¿é³õÊ¼»¯ ÇëÎñ±Ø¸ù¾Ý¾ßÌå²úÆ·ÔÚIARÖÐÑ¡Ôñ¶ÔÓ¦µÄWorkspace*/
+    /* EBYTE ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ø¸ï¿½ï¿½Ý¾ï¿½ï¿½ï¿½ï¿½Æ·ï¿½ï¿½IARï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½Workspace*/
     result = Ebyte_RF.Init();
     if( result != 0 )
     {
         DEBUG( "Wireless module initialization failed ! \r\n" );
-        while( 1 ); //³õÊ¼»¯Ê§°Ü Çë¼ì²éÓ²¼þ
+        while( 1 ); //ï¿½ï¿½Ê¼ï¿½ï¿½Ê§ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ó²ï¿½ï¿½
     }
     else
     {
         pName = Ebyte_RF.GetName();
         DEBUG( "Wireless module initialization success . Name:%s  \r\n", pName );
     }
-    /* MCU ¿ªÈ«¾ÖÖÐ¶Ï */
+    /* MCU ï¿½ï¿½È«ï¿½ï¿½ï¿½Ð¶ï¿½ */
     Ebyte_BSP_GlobalIntEnable();
     
     DEBUG( "===== This is an example of wireless transmission ==== \r\n" );
@@ -82,48 +87,48 @@ int main( void )
     DEBUG( "Waiting ........ \r\n" );
     while( 1 )
     {
-        /* °´¼üÊÂ¼þÏìÓ¦ */
+        /* ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Ó¦ */
         Task_Button();
-        /* ÈÎÎñ:¼ì²â´®¿ÚÊý¾Ý²¢ÎÞÏß·¢ËÍ ¿Í»§Çë°´Ðè×Ô¶¨Òå */
+        /* ï¿½ï¿½ï¿½ï¿½:ï¿½ï¿½â´®ï¿½ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½ï¿½ß·ï¿½ï¿½ï¿½ ï¿½Í»ï¿½ï¿½ë°´ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ */
         Task_Transmit();
-        /* ÈÎÎñ:EBYTEÇý¶¯¿â±ØÐëµÄÖÜÆÚÖ´ÐÐÈÎÎñ  ¿Í»§ÎÞÐèÐÞ¸Ä */
+        /* ï¿½ï¿½ï¿½ï¿½:EBYTEï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  ï¿½Í»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ¸ï¿½ */
         Ebyte_RF.TaskForPoll();
     }
 }
 
 /* !
- * @brief  ÂÖÑ¯ÈÎÎñ ´®¿Ú½ÓÊÕµÄÊý¾ÝÍ¨¹ýÄ£¿é·¢ËÍ
+ * @brief  ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ú½ï¿½ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Ä£ï¿½é·¢ï¿½ï¿½
  *
- * @note ½¨Òé¿Í»§½«ÐèÒª·¢ËÍµÄÊý¾Ý½øÐÐ×é°ü´¦Àí£¬·ñÔòÐèÒª¿¼ÂÇ¶îÍâµÄÎÞÏß´«Êä¿ªÏú
- *       ×¢ÒâÎÞÏßÄ£¿éµÄÄ£Ê½ÇÐ»»£¬Ò»°ãÇé¿öÏÂ¿ÉÒÔ´¦ÓÚ½ÓÊÕ/ÐÝÃß/ÖÜÆÚÐÝÃß  ´ËÊ¾Àý¹ý³ÌÎª: ½ÓÊÕÄ£Ê½->·¢ËÍÄ£Ê½->½ÓÊÕÄ£Ê½
+ * @note ï¿½ï¿½ï¿½ï¿½Í»ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½Íµï¿½ï¿½ï¿½ï¿½Ý½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½Ç¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß´ï¿½ï¿½ä¿ªï¿½ï¿½
+ *       ×¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½Ä£Ê½ï¿½Ð»ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¿ï¿½ï¿½Ô´ï¿½ï¿½Ú½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª: ï¿½ï¿½ï¿½ï¿½Ä£Ê½->ï¿½ï¿½ï¿½ï¿½Ä£Ê½->ï¿½ï¿½ï¿½ï¿½Ä£Ê½
  */
 void Task_Transmit( void )
 {
     uint16_t length = 0;
     uint8_t pcEchoLength = 0;
     uint8_t pongLength = 0;
-    /* ÊÇ·ñÓÐÊý¾ÝÐèÒªÎÞÏß´«Êä (À´×Ô´®¿Ú½ÓÊÕFIFO»º´æ) */
+    /* ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ß´ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½Ô´ï¿½ï¿½Ú½ï¿½ï¿½ï¿½FIFOï¿½ï¿½ï¿½ï¿½) */
     Ebyte_FIFO_GetDataLength( &hfifo, &length );
-    /* Éæ¼°µ½Òì²½ÖÐ¶Ï,ÕâÀï¼òµ¥Ê¾·¶ ÅÐ¶ÏÁ½ÖÖÌõ¼þ
-       1; ´®¿ÚFIFOÖÐÓÐÊý¾ÝÇÒÒÑ¾­ÓÐÍêÕû½ÓÊÕµÄÖ¡£¬´ËÊ±ÆôÓÃÎÞÏß·¢ËÍ( ²ÉÓÃÊ±¼ä¶ÏÖ¡·½Ê½,Á¬Ðø´«ÊäÊ±µÍÓÚÅÐ¶ÏÊ±¼ä»áµ¼ÖÂÊý¾ÝÕ³°ü Çë¸ù¾Ý¾ßÌåÏîÄ¿×ÔÐÐ¿¼ÂÇÖ¡ÅÐ¶Ï )
-       2: ´®¿ÚFIFOÖÐÓÐÊý¾Ýµ«´®¿ÚÒÑ¾­ÍË³öÁË½ÓÊÕ×´Ì¬£¬³¬Ê±¼ì²âÌõ¼þ³ÉÁ¢ ( »áµ¼ÖÂFIFOÊ£ÓàÎ´·¢ËÍÊý¾Ý±»´ò°üÎÞÏß·¢ËÍ Çë¸ù¾Ý¾ßÌåÏîÄ¿×ÔÐÐ¿¼ÂÇÖ¡ÅÐ¶Ï )*/
+    /* ï¿½æ¼°ï¿½ï¿½ï¿½ì²½ï¿½Ð¶ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+       1; ï¿½ï¿½ï¿½ï¿½FIFOï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õµï¿½Ö¡ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß·ï¿½ï¿½ï¿½( ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½Ê½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½Ê±ï¿½ï¿½áµ¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ý¾ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½Ð¿ï¿½ï¿½ï¿½Ö¡ï¿½Ð¶ï¿½ )
+       2: ï¿½ï¿½ï¿½ï¿½FIFOï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ýµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½Ë³ï¿½ï¿½Ë½ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ( ï¿½áµ¼ï¿½ï¿½FIFOÊ£ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ý¾ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½Ð¿ï¿½ï¿½ï¿½Ö¡ï¿½Ð¶ï¿½ )*/
     if( ( length != 0 && Uart_isRecvReady ) || ( length != 0 && FIFO_isTimeCheckReady ) )
     {
         Ebyte_BSP_LedControl( BSP_LED_1, ON );
-        /* ¶ÁÈ¡FIFO Êý¾Ý·ÅÈëTxBuffer */
+        /* ï¿½ï¿½È¡FIFO ï¿½ï¿½ï¿½Ý·ï¿½ï¿½ï¿½TxBuffer */
         Ebyte_FIFO_Read( &hfifo, TxBuffer, length );
-        /* PCÌØÊâÖ¸ÁîÏìÓ¦ */
+        /* PCï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½Ó¦ */
         if( Ebyte_DEBUG_CommandEcho( TxBuffer, length, PcEchoBuffer, &pcEchoLength ) )
         {
             Ebyte_BSP_UartTransmit( PcEchoBuffer, pcEchoLength );
         }
-        /* ·ÇÌØÊâÖ¸ÁîÔòÎÞÏßÍ¸´« */
+        /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ */
         else
         {
-            /* ÆôÓÃÎÞÏßÄ£¿é½øÐÐ·¢ËÍ  */
+            /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½Ð·ï¿½ï¿½ï¿½  */
             Ebyte_RF.GoTransmit( TxBuffer, length );
         }
-        /* Ã¿·¢ÍêÒ»Ö¡¾Í¼õÉÙÖ¡¼ÆÊý ´®¿ÚÖÐ¶Ï¿ÉÄÜÒÑ¾­Ð´ÈëÁË¶àÖ¡ */
+        /* Ã¿ï¿½ï¿½ï¿½ï¿½Ò»Ö¡ï¿½Í¼ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶Ï¿ï¿½ï¿½ï¿½ï¿½Ñ¾ï¿½Ð´ï¿½ï¿½ï¿½Ë¶ï¿½Ö¡ */
         if( Uart_isRecvReady )
         {
             Uart_isRecvReady --;
@@ -134,7 +139,7 @@ void Task_Transmit( void )
         }
         Ebyte_BSP_LedControl( BSP_LED_1, OFF );
     }
-    /* ½ÓÊÕÍê³É»Øµ÷º¯Êý¼ì²âµ½ÁË ping ÃüÁî »Ø¸´ pong */
+    /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É»Øµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½âµ½ï¿½ï¿½ ping ï¿½ï¿½ï¿½ï¿½ ï¿½Ø¸ï¿½ pong */
     if( Callback_isPingCheckReady )
     {
         if( PC_isConnected )
@@ -146,15 +151,15 @@ void Task_Transmit( void )
             DEBUG( "\r\n #SEND: pong \r\n" );
             pongLength = 4;
         }
-        /* ÆôÓÃÎÞÏßÄ£¿é½øÐÐ·¢ËÍ  */
-        Ebyte_BSP_DelayMs(10);//¼æÈÝ²¿·ÖÄ£¿éÊÕ/·¢ÇÐ»»´æÔÚÑÓ³Ù
+        /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½Ð·ï¿½ï¿½ï¿½  */
+        Ebyte_BSP_DelayMs(10);//ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½Ð»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó³ï¿½
         Ebyte_RF.GoTransmit( BufferPong, pongLength );
         Callback_isPingCheckReady = 0;
     }
 }
 
 /* !
- * @brief °´¼üÊÂ¼þÏìÓ¦
+ * @brief ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Ó¦
  */
 void Task_Button( void )
 {
@@ -164,7 +169,7 @@ void Task_Button( void )
     {
         switch( BTN_Event )
         {
-            /* °´¼ü1 ¶Ì°´ */
+            /* ï¿½ï¿½ï¿½ï¿½1 ï¿½Ì°ï¿½ */
             case BTN_1_SHORT:
                 Ebyte_BSP_LedControl( BSP_LED_1, ON );
                 if( PC_isConnected )
@@ -180,15 +185,15 @@ void Task_Button( void )
                     DEBUG( "\r\n #SEND: ping \r\n" );
                     pingLength = 4;
                 }
-                /* ·¢ËÍ ping */
+                /* ï¿½ï¿½ï¿½ï¿½ ping */
                 Ebyte_RF.GoTransmit( BufferPing, pingLength );
                 Ebyte_BSP_LedControl( BSP_LED_1, OFF );
                 break;
-            /* °´¼ü1 ³¤°´ */
+            /* ï¿½ï¿½ï¿½ï¿½1 ï¿½ï¿½ï¿½ï¿½ */
             case BTN_1_LONG:
                 Ebyte_BSP_LedControl( BSP_LED_1, TOGGLE );
                 break;
-            /* °´¼ü2 ¶Ì°´ */
+            /* ï¿½ï¿½ï¿½ï¿½2 ï¿½Ì°ï¿½ */
             case BTN_2_SHORT:
                 Ebyte_BSP_LedControl( BSP_LED_2, ON );
                 if( PC_isConnected )
@@ -204,11 +209,11 @@ void Task_Button( void )
                     DEBUG( "\r\n #SEND: ping \r\n" );
                     pingLength = 4;
                 }
-                /* ·¢ËÍ ping */
+                /* ï¿½ï¿½ï¿½ï¿½ ping */
                 Ebyte_RF.GoTransmit( BufferPing, pingLength );
                 Ebyte_BSP_LedControl( BSP_LED_2, OFF );
                 break;
-            /* °´¼ü2 ³¤°´ */
+            /* ï¿½ï¿½ï¿½ï¿½2 ï¿½ï¿½ï¿½ï¿½ */
             case BTN_2_LONG:
                 Ebyte_BSP_LedControl( BSP_LED_2, TOGGLE );
                 break;
@@ -219,26 +224,26 @@ void Task_Button( void )
 }
 
 /* !
- * @brief ÓÃ»§·¢ËÍÍê³É»Øµ÷º¯Êý
+ * @brief ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É»Øµï¿½ï¿½ï¿½ï¿½ï¿½
  *
- * @note Ìî³äµ½ebyte_callback.hÖÐ¼´¿É
+ * @note ï¿½ï¿½äµ½ebyte_callback.hï¿½Ð¼ï¿½ï¿½ï¿½
  */
 void UserTransmitDoneCallback( void )
 {
-    /* ÕâÀïÊ¾Àý ·¢ËÍÍê³ÉºóÖ±½Ó½øÈë½ÓÊÕÄ£Ê½ */
+    /* ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éºï¿½Ö±ï¿½Ó½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£Ê½ */
     Ebyte_RF.GoReceive( );
 }
 
 /* !
- * @brief ÓÃ»§½ÓÊÕÍê³É»Øµ÷º¯Êý
+ * @brief ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É»Øµï¿½ï¿½ï¿½ï¿½ï¿½
  *
- * @note Ìî³äµ½ebyte_callback.hÖÐ¼´¿É
+ * @note ï¿½ï¿½äµ½ebyte_callback.hï¿½Ð¼ï¿½ï¿½ï¿½
  */
 void UserReceiveDoneCallback( uint8_t* buffer, uint8_t length )
 {
     uint8_t  j,  pcEchoLength;
     uint8_t* p;
-    /* Í¨¹ý³¤¶ÈÅÐ¶ÏÊÇ·ñÊÇping pongÖ¸Áî  */
+    /* Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ping pongÖ¸ï¿½ï¿½  */
     if( length == 4 || length == 5 )
     {
         p = buffer;
@@ -249,13 +254,13 @@ void UserReceiveDoneCallback( uint8_t* buffer, uint8_t length )
                 break;
             }
         }
-        //±È½Ïµ½ÁËÄ©Î²±íÊ¾ÍêÈ«Æ¥Åäping
+        //ï¿½È½Ïµï¿½ï¿½ï¿½Ä©Î²ï¿½ï¿½Ê¾ï¿½ï¿½È«Æ¥ï¿½ï¿½ping
         if( j == 4 )
         {
-            Callback_isPingCheckReady = 1;//Í¨Öª»Ø¸´Pong
+            Callback_isPingCheckReady = 1;//Í¨Öªï¿½Ø¸ï¿½Pong
             if( length == 5 && PC_isConnected )
             {
-                BufferPong[4] = buffer[4];//µÚ5×Ö½ÚÎª°´¼ü±êÊ¶
+                BufferPong[4] = buffer[4];//ï¿½ï¿½5ï¿½Ö½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¶
             }
         }
         if( j != 4 && length == 5 && PC_isConnected )
@@ -268,7 +273,7 @@ void UserReceiveDoneCallback( uint8_t* buffer, uint8_t length )
                     break;
                 }
             }
-            if( j == 4 )//ÍêÈ«Æ¥Åäpong
+            if( j == 4 )//ï¿½ï¿½È«Æ¥ï¿½ï¿½pong
             {
                 if( 0x01 == buffer[4] )
                 {
@@ -289,7 +294,7 @@ void UserReceiveDoneCallback( uint8_t* buffer, uint8_t length )
         Ebyte_BSP_UartTransmit( buffer, length );
     }
     Ebyte_BSP_LedControl( BSP_LED_1, OFF );
-    /* ¼ÌÐø½ÓÊÕ
-       ×¢Òâ£ºÄ£¿éµ÷ÓÃ´Ë»Øµ÷º¯ÊýÊ±£¬ÒÑ¾­½áÊøÁË½ÓÊÕ×´Ì¬£¬Èç¹ûÒª¼ÌÐø½ÓÊÕ£¬ÔòÐèÒªÔÙ´Î½øÈë½ÓÊÕ×´Ì¬ */
+    /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+       ×¢ï¿½â£ºÄ£ï¿½ï¿½ï¿½ï¿½Ã´Ë»Øµï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë½ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ£ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½Ù´Î½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬ */
     Ebyte_RF.GoReceive( );
 }

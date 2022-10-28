@@ -25,6 +25,7 @@ static char *sky_itoa(int value, char *str, unsigned int radix)
   char list[] = "0123456789ABCDEF";
   unsigned int tmp_value;
   int i = 0, j, k = 0;
+	char tmp;
 //  if (NULL == str) {
   if (0 == str) {
 //    return NULL;
@@ -49,7 +50,7 @@ static char *sky_itoa(int value, char *str, unsigned int radix)
   } while(tmp_value);
   str[i] = '\0';
   //将逆序字符串转换为正序
-  char tmp;
+  
   for (j = k; j < (i+k)/2; j++) {
     tmp = str[j];
     str[j] = str[i-j-1+k];
@@ -71,6 +72,9 @@ static void sky_ftoa(double value, char *str, unsigned int eps)
   double decimal;
   char list[] = "0123456789";
   int i = 0, j, k = 0;
+	char tmp;
+	double pp = 0.1;
+	int tmp_decimal;
   //将整数及小数部分提取出来
   if (value < 0) {
     decimal = (double)(((int)value) - value);
@@ -88,7 +92,7 @@ static void sky_ftoa(double value, char *str, unsigned int eps)
   } while(integer);
   str[i] = '\0';
   //将逆序字符串转换为正序
-  char tmp;
+  
   for (j = k; j < (i+k)/2; j++) {
     tmp = str[j];
     str[j] = str[i-j-1+k];
@@ -100,7 +104,7 @@ static void sky_ftoa(double value, char *str, unsigned int eps)
   }
   
   //精度问题，防止输入1.2输出1.19等情况
-  double pp = 0.1;
+  
   for (j = 0; j <= eps; j++) {
     pp *= 0.1;
   }
@@ -109,7 +113,7 @@ static void sky_ftoa(double value, char *str, unsigned int eps)
     decimal *= 10;
     eps --;
   }
-  int tmp_decimal = (int)decimal;
+  tmp_decimal = (int)decimal;
   str[i ++] = '.';
   k = i;
   //整数部分数据转换为字符串，逆序存储

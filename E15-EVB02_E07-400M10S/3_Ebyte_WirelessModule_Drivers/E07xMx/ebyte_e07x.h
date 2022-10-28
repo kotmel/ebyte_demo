@@ -4,18 +4,19 @@
 #if defined(EBYTE_E07_400M10S)
 #define E07_FREQUENCY_START     433000000  //433 MHz
 #elif defined(EBYTE_E07_900M10S)  
-#define E07_FREQUENCY_START     915000000  //915 MHz
+//#define E07_FREQUENCY_START     915000000  //915 MHz
+#define E07_FREQUENCY_START     868000000  //868 MHz
 #else
-#error Please define the type of product you use £¡ 
+#error Please define the type of product you use ï¿½ï¿½ 
 #endif
 
 #define E07_DATA_RATE           1200       //1.2 KBps
 #define E07_FREQUENCY_DEVIATION 14300      //14.3 K
 #define E07_BANDWIDTH           58000      //58 K
-#define E07_OUTPUT_POWER        10         //Ö»Ö§³Ö[10  7  5  0  -10  -15  -20 -30] ÐèÒªÆäËû¹¦ÂÊÐèÒª×ÔÐÐÊ¹ÓÃÆµÆ×ÒÇÐ£×¼
-#define E07_PREAMBLE_SIZE       4          //Ç°µ¼Âë³¤¶È 8×Ö½Ú¼´8x8=64bit   [0:2 1:3 2:4 3:6 4:8 5:12 6:16 7:24]
-#define E07_SYNC_WORD           0x2DD4     //Í¬²½×Ö 2¸ö×Ö½Ú
-#define E07_IS_CRC              1          //CRC¿ª¹Ø  [0:¹Ø±Õ  1:¿ªÆô]
+#define E07_OUTPUT_POWER        10         //Ö»Ö§ï¿½ï¿½[10  7  5  0  -10  -15  -20 -30] ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½Ð£×¼
+#define E07_PREAMBLE_SIZE       4          //Ç°ï¿½ï¿½ï¿½ë³¤ï¿½ï¿½ 8ï¿½Ö½Ú¼ï¿½8x8=64bit   [0:2 1:3 2:4 3:6 4:8 5:12 6:16 7:24]
+#define E07_SYNC_WORD           0x2DD4     //Í¬ï¿½ï¿½ï¿½ï¿½ 2ï¿½ï¿½ï¿½Ö½ï¿½
+#define E07_IS_CRC              1          //CRCï¿½ï¿½ï¿½ï¿½  [0:ï¿½Ø±ï¿½  1:ï¿½ï¿½ï¿½ï¿½]
 
 uint8e_t E07x_Init( void );
 uint8e_t E07x_TaskForPoll(void);

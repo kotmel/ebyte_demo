@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm8l15x_tim4.c
   * @author  MCD Application Team
-  * @version V1.6.0
-  * @date    28-June-2013
+  * @version V1.6.1
+  * @date    30-September-2014
   * @brief   This file provides firmware functions to manage the following 
   *          functionalities of the TIM4 peripheral:
   *            - TimeBase management
@@ -16,7 +16,7 @@
   *          ===================================================================
   *                                 How to use this driver
   *          ===================================================================
-  *          This driver provides functions to configure and initialise the TIM4 
+  *          This driver provides functions to configure and initialize the TIM4 
   *          peripheral
   *          These functions are split in 4 groups: 
   *   
@@ -50,6 +50,9 @@
   *  @endverbatim
   *    
   ******************************************************************************
+  * @attention
+  *
+  * <h2><center>&copy; COPYRIGHT 2014 STMicroelectronics</center></h2>
   *
   * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
   * You may not use this file except in compliance with the License.
@@ -63,7 +66,7 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   *
-  ****************************************************************************** 
+  ******************************************************************************
   */
 
 
@@ -196,7 +199,7 @@ void TIM4_TimeBaseInit(TIM4_Prescaler_TypeDef TIM4_Prescaler,
   * @param  TIM4_PSCReloadMode: Specifies the TIM4 Prescaler Reload mode.
   *          This parameter can be one of the following values:
   *            @arg TIM4_PSCReloadMode_Update: Prescaler value is reloaded at every update
-  *            @arg TIM4_PSCReloadMode_Immediate: Prescaler value is reloaded immediatly
+  *            @arg TIM4_PSCReloadMode_Immediate: Prescaler value is reloaded immediately
   * @retval None
   */
 void TIM4_PrescalerConfig(TIM4_Prescaler_TypeDef Prescaler,
@@ -353,7 +356,7 @@ void TIM4_ARRPreloadConfig(FunctionalState NewState)
 }
 
 /**
-  * @brief  Selects the TIM4’s One Pulse Mode.
+  * @brief  Selects the TIM4's One Pulse Mode.
   * @param  TIM4_OPMode: Specifies the OPM Mode to be used.
   *          This parameter can be one of the following values:
   *            @arg TIM4_OPMode_Single: Single one Pulse mode (OPM Active)
@@ -487,7 +490,7 @@ FlagStatus TIM4_GetFlagStatus(TIM4_FLAG_TypeDef TIM4_FLAG)
 }
 
 /**
-  * @brief  Clears the TIM’s pending flags.
+  * @brief  Clears the TIM's pending flags.
   * @param  TIM4_FLAG: Specifies the flag to clear.
   *          This parameter can be one of the following values:
   *            @arg TIM4_FLAG_Update: Update
@@ -498,7 +501,7 @@ void TIM4_ClearFlag(TIM4_FLAG_TypeDef TIM4_FLAG)
 {
   /* Check the parameters */
   assert_param(IS_TIM4_CLEAR_FLAG((uint8_t)TIM4_FLAG));
-  /* Clear the flags (rc_w0) clear this bit by writing 0. Writing ‘1’ has no effect*/
+  /* Clear the flags (rc_w0) clear this bit by writing 0. Writing '1' has no effect*/
   TIM4->SR1 = (uint8_t)(~((uint8_t)TIM4_FLAG));
 }
 
@@ -554,7 +557,7 @@ void TIM4_ClearITPendingBit(TIM4_IT_TypeDef TIM4_IT)
 }
 
 /**
-  * @brief  Enables or disables the TIMx’s DMA Requests.
+  * @brief  Enables or disables the TIMx's DMA Requests.
   * @param  TIM4_DMASources: specifies the DMA Request sources.
   *          This parameter can be one of the following values:
   *            @arg TIM4_DMASource_Update: Update

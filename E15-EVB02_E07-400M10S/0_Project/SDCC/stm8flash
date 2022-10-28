@@ -1,0 +1,2 @@
+#!/bin/bash
+/mnt/f/sw/STM/sduino/tools/STM8Tools/2019.02.05/win/stm8flash.exe $@

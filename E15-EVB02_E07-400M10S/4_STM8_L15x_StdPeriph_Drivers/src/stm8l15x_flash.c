@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm8l15x_flash.c
   * @author  MCD Application Team
-  * @version V1.6.0
-  * @date    28-June-2013
+  * @version V1.6.1
+  * @date    30-September-2014
   * @brief   This file provides all the Flash firmware functions. These functions 
   *          can be executed from Internal FLASH or Internal RAM memories.
   *            - FLASH program and Data EEPROM memories interface configuration
@@ -91,6 +91,9 @@
   *  @endverbatim
   *                      
   ******************************************************************************
+  * @attention
+  *
+  * <h2><center>&copy; COPYRIGHT 2014 STMicroelectronics</center></h2>
   *
   * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
   * You may not use this file except in compliance with the License.
@@ -104,7 +107,7 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   *
-  ****************************************************************************** 
+  ******************************************************************************
   */
 /* Includes ------------------------------------------------------------------*/
 #include "stm8l15x_flash.h"
@@ -130,10 +133,92 @@
   * @}
   */
 /* Private macro -------------------------------------------------------------*/
+
+/* SDCC patch: simplify sdcc && >64kB indicator over different SPLs */
+#if defined(_SDCC_BIGMEM_)
+  #undef  MemoryAddressCast
+  #define MemoryAddressCast uint32_t
+#else
+  #undef  MemoryAddressCast
+  #define MemoryAddressCast uint16_t
+#endif
+
 /* Private variables ---------------------------------------------------------*/
+
+/* SDCC patch: for >64kB to pass data to/from inline ASM (SDCC doesn't support far pointers yet) */
+#if defined(_SDCC_BIGMEM_)     
+  uint32_t    asm_addr;      // 16b/24b address
+  uint8_t     asm_val;       // 1B data for r/w data
+#endif // _SDCC_BIGMEM_
+
+/* Private Constants ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
+
+/* SDCC patch: r/w helper routines for >64kB addresses (SDCC doesn't support far pointers yet) */
+#if defined (_SDCC_BIGMEM_)
+  void      write_byte_address(uint32_t Address, uint8_t Data);   // write single byte to 16b/24b address
+  uint8_t   read_byte_address(uint32_t Address);                  // read single byte from 16b/24b address
+#endif // _SDCC_BIGMEM_
+
 /* Private functions ---------------------------------------------------------*/
  
+/* SDCC patch: r/w helper routines for >64kB addresses using inline ASM (SDCC doesn't support far pointers yet) */
+/** @addtogroup FLASH_Helper_functions
+  * @{
+  */
+
+#if defined (_SDCC_BIGMEM_)
+/**
+  * @brief  write single byte to address
+  * @note   is required for >64kB memory space and SDCC, which doesn't yet support far pointers
+  * @param  Address : address to write to
+  *         Data :    value to write
+  * @retval None
+  */
+void write_byte_address(uint32_t Address, uint8_t Data)
+{
+  /* store address & data globally for assember */
+  asm_addr = Address;
+  asm_val  = Data;
+
+  /* use inline assembler to write to 16b/24b address */
+__asm
+  ld	a,_asm_val
+  ldf	[_asm_addr+1].e,a
+__endasm;
+
+}
+
+
+/**
+  * @brief  Reads any byte from flash memory
+  * @note   is required for >64kB memory space and SDCC, which doesn't yet support far pointers
+  * @param  Address : address to read
+  * @retval value read
+  */
+uint8_t read_byte_address(uint32_t Address)
+{
+  /* store address globally for assember */
+  asm_addr = Address;
+
+  /* use inline assembler to read from 16b/24b address */
+__asm
+  ldf	a,[_asm_addr+1].e
+  ld	_asm_val,a
+__endasm;
+
+  /* return read byte */
+  return(asm_val);
+  
+}
+
+#endif // _SDCC_BIGMEM_
+
+/**
+  * @}
+  */
+  
+
 /** @defgroup FLASH_Private_Functions
   * @{
   */ 
@@ -172,7 +257,7 @@ void FLASH_SetProgrammingTime(FLASH_ProgramTime_TypeDef FLASH_ProgTime)
 {
   /* Check parameter */
   assert_param(IS_FLASH_PROGRAM_TIME(FLASH_ProgTime));
-
+  
   FLASH->CR1 &= (uint8_t)(~FLASH_CR1_FIX);
   FLASH->CR1 |= (uint8_t)FLASH_ProgTime;
 }
@@ -203,7 +288,7 @@ void FLASH_PowerWaitModeConfig(FLASH_Power_TypeDef FLASH_Power)
   assert_param(IS_FLASH_POWER(FLASH_Power));
 
   /* Flash program and data EEPROM in IDDQ during wait for interrupt mode*/
-  if (FLASH_Power != FLASH_Power_On)
+  if(FLASH_Power != FLASH_Power_On)
   {
     FLASH->CR1 |= (uint8_t)FLASH_CR1_WAITM;
   }
@@ -273,16 +358,16 @@ void FLASH_Unlock(FLASH_MemType_TypeDef FLASH_MemType)
 {
   /* Check parameter */
   assert_param(IS_FLASH_MEMORY_TYPE(FLASH_MemType));
-
+  
   /* Unlock program memory */
-  if (FLASH_MemType == FLASH_MemType_Program)
+  if(FLASH_MemType == FLASH_MemType_Program)
   {
     FLASH->PUKR = FLASH_RASS_KEY1;
     FLASH->PUKR = FLASH_RASS_KEY2;
   }
-
+  
   /* Unlock data memory */
-  if (FLASH_MemType == FLASH_MemType_Data)
+  if(FLASH_MemType == FLASH_MemType_Data)
   {
     FLASH->DUKR = FLASH_RASS_KEY2; /* Warning: keys are reversed on data memory !!! */
     FLASH->DUKR = FLASH_RASS_KEY1;
@@ -301,6 +386,7 @@ void FLASH_Lock(FLASH_MemType_TypeDef FLASH_MemType)
 {
   /* Check parameter */
   assert_param(IS_FLASH_MEMORY_TYPE(FLASH_MemType));
+  
   /* Lock memory */
   FLASH->IAPSR &= (uint8_t)FLASH_MemType;
 }
@@ -316,7 +402,13 @@ void FLASH_ProgramByte(uint32_t Address, uint8_t Data)
   /* Check parameters */
   assert_param(IS_FLASH_ADDRESS(Address));
 
-  *(PointerAttr uint8_t*) (MemoryAddressCast)Address = Data;
+  /* Program byte */
+  /* SDCC patch: SDCC requires helper routines for >64kB addresses due to lack of far pointers */
+  #ifndef _SDCC_BIGMEM_
+    *(PointerAttr uint8_t*) (MemoryAddressCast)Address = Data;
+  #else
+    write_byte_address((MemoryAddressCast) Address, Data);
+  #endif // _SDCC_BIGMEM_
 }
 
 /**
@@ -328,8 +420,14 @@ void FLASH_EraseByte(uint32_t Address)
 {
   /* Check parameter */
   assert_param(IS_FLASH_ADDRESS(Address));
-
-  *(PointerAttr uint8_t*) (MemoryAddressCast)Address = FLASH_CLEAR_BYTE; /* Erase byte */
+  
+  /* Erase byte */
+  /* SDCC patch: SDCC requires helper routines for >64kB addresses due to lack of far pointers */
+  #ifndef _SDCC_BIGMEM_
+    *(PointerAttr uint8_t*) (MemoryAddressCast)Address = FLASH_CLEAR_BYTE;
+  #else
+    write_byte_address((MemoryAddressCast) Address, FLASH_CLEAR_BYTE);
+  #endif // _SDCC_BIGMEM_
 }
 
 /**
@@ -344,15 +442,23 @@ void FLASH_ProgramWord(uint32_t Address, uint32_t Data)
   assert_param(IS_FLASH_ADDRESS(Address));
   /* Enable Word Write Once */
   FLASH->CR2 |= FLASH_CR2_WPRG;
-
-  /* Write one byte - from lowest address*/
-  *((PointerAttr uint8_t*)(MemoryAddressCast)Address)       = *((uint8_t*)(&Data));   
-  /* Write one byte*/
-  *(((PointerAttr uint8_t*)(MemoryAddressCast)Address) + 1) = *((uint8_t*)(&Data) + 1);
-  /* Write one byte*/
-  *(((PointerAttr uint8_t*)(MemoryAddressCast)Address) + 2) = *((uint8_t*)(&Data) + 2); 
-  /* Write one byte - from higher address*/
-  *(((PointerAttr uint8_t*)(MemoryAddressCast)Address) + 3) = *((uint8_t*)(&Data) + 3); 
+  
+  /* SDCC patch: SDCC requires helper routines for >64kB addresses due to lack of far pointers */
+  #ifndef _SDCC_BIGMEM_
+    /* Write one byte - from lowest address*/
+    *((PointerAttr uint8_t*)(MemoryAddressCast)Address)       = *((uint8_t*)(&Data));
+    /* Write one byte*/
+    *(((PointerAttr uint8_t*)(MemoryAddressCast)Address) + 1) = *((uint8_t*)(&Data)+1); 
+    /* Write one byte*/    
+    *(((PointerAttr uint8_t*)(MemoryAddressCast)Address) + 2) = *((uint8_t*)(&Data)+2); 
+    /* Write one byte - from higher address*/
+    *(((PointerAttr uint8_t*)(MemoryAddressCast)Address) + 3) = *((uint8_t*)(&Data)+3); 
+  #else
+    write_byte_address((MemoryAddressCast) (Address    ), *((uint8_t*)(&Data)));
+    write_byte_address((MemoryAddressCast) (Address + 1), *((uint8_t*)(&Data)+1));
+    write_byte_address((MemoryAddressCast) (Address + 2), *((uint8_t*)(&Data)+2));
+    write_byte_address((MemoryAddressCast) (Address + 3), *((uint8_t*)(&Data)+3));
+  #endif // _SDCC_BIGMEM_
 }
 
 /**
@@ -362,8 +468,17 @@ void FLASH_ProgramWord(uint32_t Address, uint32_t Data)
   */
 uint8_t FLASH_ReadByte(uint32_t Address)
 {
+  /* Check parameter */
+  //assert_param(IS_FLASH_ADDRESS_OK(Address));
+  assert_param(IS_FLASH_ADDRESS(Address));        /* SDCC patch: fix macro name to match stm8l15x.h */
+  
   /* Read byte */
-  return(*(PointerAttr uint8_t *) (MemoryAddressCast)Address);
+  /* SDCC patch: SDCC requires helper routines for >64kB addresses due to lack of far pointers */
+  #ifndef _SDCC_BIGMEM_
+    return(*(PointerAttr uint8_t *) (MemoryAddressCast)Address); 
+  #else
+    return(read_byte_address((MemoryAddressCast) Address));
+  #endif // _SDCC_BIGMEM_
 }
 /**
   * @}
@@ -458,8 +573,8 @@ void FLASH_EraseOptionByte(uint16_t Address)
 FunctionalState FLASH_GetReadOutProtectionStatus(void)
 {
   FunctionalState state = DISABLE;
-
-  if (OPT->ROP == FLASH_READOUTPROTECTION_KEY)
+  
+  if(OPT->ROP == FLASH_READOUTPROTECTION_KEY)
   {
     /* The status of the Flash read out protection is enabled*/
     state =  ENABLE;
@@ -469,7 +584,7 @@ FunctionalState FLASH_GetReadOutProtectionStatus(void)
     /* The status of the Flash read out protection is disabled*/
     state =  DISABLE;
   }
-
+  
   return state;
 }
 
@@ -481,19 +596,18 @@ FunctionalState FLASH_GetReadOutProtectionStatus(void)
 uint16_t FLASH_GetBootSize(void)
 {
   uint16_t temp = 0;
-
+  
   /* Calculates the number of bytes */
   temp = (uint16_t)((uint16_t)OPT->UBC * (uint16_t)128);
-
+  
   /* Correction because size upper 8kb doesn't exist */
-  if (OPT->UBC > 0x7F)
+  if(OPT->UBC > 0x7F)
   {
     temp = 8192;
   }
-
+  
   /* Return value */
   return(temp);
-
 }
 
 /**
@@ -505,16 +619,16 @@ uint16_t FLASH_GetBootSize(void)
 uint16_t FLASH_GetCodeSize(void)
 {
   uint16_t temp = 0;
-
+  
   /* Calculates the number of bytes */
   temp = (uint16_t)((uint16_t)OPT->PCODESIZE * (uint16_t)128);
-
+  
   /* Correction because size upper of 8kb doesn't exist */
-  if (OPT->PCODESIZE > 0x7F)
+  if(OPT->PCODESIZE > 0x7F)
   {
     temp = 8192;
   }
-
+  
   /* Return value */
   return(temp);
 }
@@ -543,11 +657,10 @@ uint16_t FLASH_GetCodeSize(void)
   */
 void FLASH_ITConfig(FunctionalState NewState)
 {
-
   /* Check parameter */
   assert_param(IS_FUNCTIONAL_STATE(NewState));
-
-  if (NewState != DISABLE)
+  
+  if(NewState != DISABLE)
   {
     /* Enables the interrupt sources */
     FLASH->CR1 |= FLASH_CR1_IE;
@@ -575,9 +688,9 @@ FlagStatus FLASH_GetFlagStatus(FLASH_FLAG_TypeDef FLASH_FLAG)
 {
   FlagStatus status = RESET;
   assert_param(IS_FLASH_FLAGS(FLASH_FLAG));
-
+  
   /* Check the status of the specified flash flag*/
-  if ((FLASH->IAPSR  & (uint8_t)FLASH_FLAG) != (uint8_t)RESET)
+  if((FLASH->IAPSR  & (uint8_t)FLASH_FLAG) != (uint8_t)RESET)
   {
     status = SET; /* Flash_FLAG is set*/
   }
@@ -585,7 +698,7 @@ FlagStatus FLASH_GetFlagStatus(FLASH_FLAG_TypeDef FLASH_FLAG)
   {
     status = RESET; /* Flash_FLAG is reset*/
   }
-
+  
   /* Return the Flash_FLAG status*/
   return status;
 }
@@ -634,29 +747,29 @@ FlagStatus FLASH_GetFlagStatus(FLASH_FLAG_TypeDef FLASH_FLAG)
    erased or corrupted, so it may be desirable to perform the copy again. 
    Depending on the application memory model, the memcpy() or fmemcpy() functions
    should be used to perform the copy.
-      • In case your project uses the SMALL memory model (code smaller than 64K),
+      In case your project uses the SMALL memory model (code smaller than 64K),
        memcpy()function is recommended to perform the copy
-      • In case your project uses the LARGE memory model, functions can be 
+      In case your project uses the LARGE memory model, functions can be 
       everywhere in the 24-bits address space (not limited to the first 64KB of
       code), In this case, the use of memcpy() function will not be appropriate,
       you need to use the specific fmemcpy() function (which copies objects with
       24-bit addresses).
       - The linker automatically defines 2 symbols for each inram function:
-           • __address__functionname is a symbol that holds the Flash address 
+           __address__functionname is a symbol that holds the Flash address 
            where the given function code is stored.
-           • __size__functionname is a symbol that holds the function size in bytes.
+           __size__functionname is a symbol that holds the function size in bytes.
      And we already have the function address (which is itself a pointer)
   4- In main.c file these two steps should be performed for each inram function:
-     • Import the "__address__functionname" and "__size__functionname" symbols
+     Import the "__address__functionname" and "__size__functionname" symbols
        as global variables:
          extern int __address__functionname; // Symbol holding the flash address
          extern int __size__functionname;    // Symbol holding the function size
-     • In case of SMALL memory model use, Call the memcpy() function to copy the
+     In case of SMALL memory model use, Call the memcpy() function to copy the
       inram function to the RAM destination address:
                 memcpy(functionname, // RAM destination address
                       (void*)&__address__functionname, // Flash source address
                       (int)&__size__functionname); // Code size of the function
-     • In case of LARGE memory model use, call the fmemcpy() function to copy 
+     In case of LARGE memory model use, call the fmemcpy() function to copy 
      the inram function to the RAM destination address:
                  memcpy(functionname, // RAM destination address
                       (void @far*)&__address__functionname, // Flash source address
@@ -671,6 +784,17 @@ FlagStatus FLASH_GetFlagStatus(FLASH_FLAG_TypeDef FLASH_FLAG)
    define it in IAR compiler preprocessor to enable the access for the 
    __ramfunc functions.
  
+ - Note: 
+    1- Ignore the IAR compiler warnings, these warnings don't impact the FLASH Program/Erase
+    operations.
+    The code performing the Flash Program/erase must be executed from RAM; the variables
+    initializations don't necessary require the execution from RAM, only CR2 registers 
+    configuration and data programing must be executed from RAM.
+    2- These warnings depends on IAR compiler: as the code generation is made using many
+    runtime library functions to keep code size to a minimum.
+    3- It is recommended to use High Speed Optimization with IAR (-Ohs), in order 
+    to reduce the runtime library calls in the generated code.
+
  The Flash_DataProgram example provided within the STM8L15x_StdPeriph_Lib package
  details all the steps described above.
 
@@ -688,6 +812,11 @@ FlagStatus FLASH_GetFlagStatus(FLASH_FLAG_TypeDef FLASH_FLAG)
   * in the stm8l15x.h file or define it in your toolchain compiler preprocessor
   * - #define RAM_EXECUTION  (1) 
   */
+
+/* SDCC patch: code in RAM not yet patched */
+#if defined (_SDCC_) && defined (RAM_EXECUTION)
+ #error RAM execution not yet implemented in patch, comment RAM_EXECUTION in stm8s.h
+#endif
 
 #if defined (_COSMIC_) && defined (RAM_EXECUTION)
  #pragma section (FLASH_CODE)
@@ -707,10 +836,10 @@ IN_RAM(void FLASH_PowerRunModeConfig(FLASH_Power_TypeDef FLASH_Power))
 {
   /* Check parameter */
   assert_param(IS_FLASH_POWER(FLASH_Power));
-
-  if (FLASH_Power != FLASH_Power_On)
+  
+  if(FLASH_Power != FLASH_Power_On)
   {
-  FLASH->CR1 |= (uint8_t)FLASH_CR1_EEPM;
+    FLASH->CR1 |= (uint8_t)FLASH_CR1_EEPM;
   }
   else
   {
@@ -754,13 +883,13 @@ IN_RAM(void FLASH_ProgramBlock(uint16_t BlockNum, FLASH_MemType_TypeDef FLASH_Me
 {
   uint16_t Count = 0;
   uint32_t startaddress = 0;
-
+  
   /* Check parameters */
   assert_param(IS_FLASH_MEMORY_TYPE(FLASH_MemType));
   assert_param(IS_FLASH_PROGRAM_MODE(FLASH_ProgMode));
-  if (FLASH_MemType == FLASH_MemType_Program)
+  if(FLASH_MemType == FLASH_MemType_Program)
   {
-  assert_param(IS_FLASH_PROGRAM_BLOCK_NUMBER(BlockNum));
+    assert_param(IS_FLASH_PROGRAM_BLOCK_NUMBER(BlockNum));
     startaddress = FLASH_PROGRAM_START_PHYSICAL_ADDRESS;
   }
   else
@@ -768,24 +897,24 @@ IN_RAM(void FLASH_ProgramBlock(uint16_t BlockNum, FLASH_MemType_TypeDef FLASH_Me
     assert_param(IS_FLASH_DATA_EEPROM_BLOCK_NUMBER(BlockNum));
     startaddress = FLASH_DATA_EEPROM_START_PHYSICAL_ADDRESS;
   }
-
+  
   /* Point to the first block address */
   startaddress = startaddress + ((uint32_t)BlockNum * FLASH_BLOCK_SIZE);
-
+  
   /* Selection of Standard or Fast programming mode */
-  if (FLASH_ProgMode == FLASH_ProgramMode_Standard)
+  if(FLASH_ProgMode == FLASH_ProgramMode_Standard)
   {
-  /* Standard programming mode */
-  FLASH->CR2 |= FLASH_CR2_PRG;
+    /* Standard programming mode */
+    FLASH->CR2 |= FLASH_CR2_PRG;
   }
   else
   {
-  /* Fast programming mode */
-  FLASH->CR2 |= FLASH_CR2_FPRG;
+    /* Fast programming mode */
+    FLASH->CR2 |= FLASH_CR2_FPRG;
   }
-
+  
   /* Copy data bytes from RAM to FLASH memory */
-  for (Count = 0; Count < FLASH_BLOCK_SIZE; Count++)
+  for(Count = 0; Count < FLASH_BLOCK_SIZE; Count++)
   {
     *((PointerAttr uint8_t*) (MemoryAddressCast)startaddress + Count) = ((uint8_t)(Buffer[Count]));
   }
@@ -805,18 +934,18 @@ IN_RAM(void FLASH_EraseBlock(uint16_t BlockNum, FLASH_MemType_TypeDef FLASH_MemT
 {
   uint32_t startaddress = 0;
 #if defined (STM8L15X_MD) || defined (STM8L15X_MDP) || defined (STM8L15X_LD) || \
-defined (STM8L05X_LD_VL) || defined (STM8L05X_MD_VL) || defined (STM8AL31_L_MD)
-  uint32_t PointerAttr  *pwFlash;
+  defined (STM8L05X_LD_VL) || defined (STM8L05X_MD_VL) || defined (STM8AL31_L_MD)
+    uint32_t PointerAttr  *pwFlash;
   
 #elif defined (STM8L15X_HD) || defined (STM8L05X_HD_VL)
   uint8_t PointerAttr  *pwFlash;
 #endif
-
+  
   /* Check parameters */
   assert_param(IS_FLASH_MEMORY_TYPE(FLASH_MemType));
-  if (FLASH_MemType == FLASH_MemType_Program)
+  if(FLASH_MemType == FLASH_MemType_Program)
   {
-  assert_param(IS_FLASH_PROGRAM_BLOCK_NUMBER(BlockNum));
+    assert_param(IS_FLASH_PROGRAM_BLOCK_NUMBER(BlockNum));
     startaddress = FLASH_PROGRAM_START_PHYSICAL_ADDRESS;
   }
   else
@@ -824,23 +953,23 @@ defined (STM8L05X_LD_VL) || defined (STM8L05X_MD_VL) || defined (STM8AL31_L_MD)
     assert_param(IS_FLASH_DATA_EEPROM_BLOCK_NUMBER(BlockNum));
     startaddress = FLASH_DATA_EEPROM_START_PHYSICAL_ADDRESS;
   }
-
+  
   /* Point to the first block address */
 #if defined (STM8L15X_MD) || defined (STM8L15X_MDP)|| defined (STM8L15X_LD) || \
-defined (STM8L05X_LD_VL) || defined (STM8L05X_MD_VL) || defined (STM8AL31_L_MD)
-  pwFlash = (PointerAttr uint32_t *)(uint16_t)(startaddress + ((uint32_t)BlockNum * FLASH_BLOCK_SIZE));
+  defined (STM8L05X_LD_VL) || defined (STM8L05X_MD_VL) || defined (STM8AL31_L_MD)
+    pwFlash = (PointerAttr uint32_t *)(uint16_t)(startaddress + ((uint32_t)BlockNum * FLASH_BLOCK_SIZE));
   
 #elif defined (STM8L15X_HD) || defined (STM8L05X_HD_VL)
   pwFlash = (PointerAttr uint8_t *)(uint32_t)(startaddress + ((uint32_t)BlockNum * FLASH_BLOCK_SIZE));
 #endif
-
+  
   /* Enable erase block mode */
   FLASH->CR2 |= FLASH_CR2_ERASE;
-
+  
 #if defined (STM8L15X_MD) || defined (STM8L15X_MDP) || defined (STM8L15X_LD) || \
-defined (STM8L05X_LD_VL) || defined (STM8L05X_MD_VL) || defined (STM8AL31_L_MD)
-  *pwFlash = (uint32_t)0;  
-
+  defined (STM8L05X_LD_VL) || defined (STM8L05X_MD_VL) || defined (STM8AL31_L_MD)
+    *pwFlash = (uint32_t)0;  
+  
 #elif defined (STM8L15X_HD) || defined (STM8L05X_HD_VL)
   *pwFlash = (uint8_t)0;
   *(pwFlash + 1) = (uint8_t)0;
@@ -861,32 +990,34 @@ defined (STM8L05X_LD_VL) || defined (STM8L05X_MD_VL) || defined (STM8AL31_L_MD)
   */
 IN_RAM(FLASH_Status_TypeDef FLASH_WaitForLastOperation(FLASH_MemType_TypeDef FLASH_MemType))
 {
-  uint32_t timeout = OPERATION_TIMEOUT;
+  uint16_t timeout = OPERATION_TIMEOUT;
   uint8_t flagstatus = 0x00;
+  
   /* Wait until operation completion or write protected page occurred */
-  if (FLASH_MemType == FLASH_MemType_Program)
+  if(FLASH_MemType == FLASH_MemType_Program)
   {
-  while ((flagstatus == 0x00) && (timeout != 0x00))
+    while((flagstatus == 0x00) && (timeout != 0x00))
     {
       flagstatus = (uint8_t)(FLASH->IAPSR & (uint8_t)(FLASH_IAPSR_EOP |
-                             FLASH_IAPSR_WR_PG_DIS));
+                                                      FLASH_IAPSR_WR_PG_DIS));
       timeout--;
     }
   }
   else
   {
-    while ((flagstatus == 0x00) && (timeout != 0x00))
+    while((flagstatus == 0x00) && (timeout != 0x00))
     {
       flagstatus = (uint8_t)(FLASH->IAPSR & (uint8_t)(FLASH_IAPSR_HVOFF |
-                             FLASH_IAPSR_WR_PG_DIS));
+                                                      FLASH_IAPSR_WR_PG_DIS));
       timeout--;
     }
   }
-  if (timeout == 0x00 )
+  
+  if(timeout == 0x00)
   {
-  flagstatus = FLASH_Status_TimeOut;
+    flagstatus = FLASH_Status_TimeOut;
   }
-
+  
   return((FLASH_Status_TypeDef)flagstatus);
 }
 

@@ -334,7 +334,11 @@ INTERRUPT_HANDLER(TIM2_CC_USART2_RX_IRQHandler, 20)
   * @param  None
   * @retval None
   */
+#if defined(__CSMC__)	
+INTERRUPT_HANDLER(@svlreg TIM3_UPD_OVF_TRG_BRK_USART3_TX_IRQHandler, 21)
+#else
 INTERRUPT_HANDLER(TIM3_UPD_OVF_TRG_BRK_USART3_TX_IRQHandler, 21)
+#endif
 {
   /* 按键检测 */
   IT_Timer_ButtonCheck();
@@ -423,9 +427,13 @@ INTERRUPT_HANDLER(USART1_TX_TIM5_UPD_OVF_TRG_BRK_IRQHandler, 27)
   * @param  None
   * @retval None
   */
+#if defined(__CSMC__)	
+INTERRUPT_HANDLER(  @svlreg USART1_RX_TIM5_CC_IRQHandler, 28)
+#else
 INTERRUPT_HANDLER(USART1_RX_TIM5_CC_IRQHandler, 28)
+#endif
 {
-  
+  uint8_t temp;
   /* 首帧判断 状态机 触发定时器计时 10ms后未收到下一字节则断帧  */
   if( !Uart_isInRecvState )
   {
@@ -434,7 +442,7 @@ INTERRUPT_HANDLER(USART1_RX_TIM5_CC_IRQHandler, 28)
   Uart_isContinuousRecv = 1;  
 
   /* 接收串口数据 1 Byte */
-  uint8_t temp = USART_ReceiveData8(USART1) ;
+  temp = USART_ReceiveData8(USART1) ;
   
   /* 写入缓存队列 1 Byte */
   Ebyte_FIFO_Write( &hfifo, &temp, 1 );

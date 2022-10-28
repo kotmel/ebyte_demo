@@ -2,11 +2,14 @@
   ******************************************************************************
   * @file    stm8l15x.h
   * @author  MCD Application Team
-  * @version V1.6.0
-  * @date    28-June-2013
+  * @version V1.6.1
+  * @date    30-September-2014
   * @brief   This file contains all the peripheral register's definitions, bits
   *          definitions and memory mapping for STM8L15x devices.
   ******************************************************************************
+  * @attention
+  *
+  * <h2><center>&copy; COPYRIGHT 2014 STMicroelectronics</center></h2>
   *
   * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
   * You may not use this file except in compliance with the License.
@@ -20,7 +23,7 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   *
-  ****************************************************************************** 
+  ******************************************************************************  
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
@@ -29,15 +32,15 @@
 
 /** @addtogroup STM8L15x_StdPeriph_Driver
   * @{
-  */ 
+  */
 /* Uncomment the line below according to the target STM8L15x device used in your
    application
   */
 /* #define STM8L15X_LD */     /*!< STM8L15X_LD: STM8L15x Low density devices */
-#define STM8L15X_MD     /*!< STM8L15X_MD: STM8L15x Medium density devices */
+/* #define STM8L15X_MD */     /*!< STM8L15X_MD: STM8L15x Medium density devices */
 /* #define STM8L15X_MDP */    /*!< STM8L15X_MDP: STM8L15x Medium density plus devices */
 /* #define STM8L15X_HD */     /*!< STM8L15X_HD: STM8L15x/16x High density devices */
-/* #define STM8L05X_LD_VL  */  /*!< STM8L05X_LD_VL: STM8L051xx3 Low density value line devices */
+/* #define STM8L05X_LD_VL */  /*!< STM8L05X_LD_VL: STM8L051xx3 Low density value line devices */
 /* #define STM8L05X_MD_VL */  /*!< STM8L05X_MD_VL: STM8L052xx6 Medium density value line devices */
 /* #define STM8L05X_HD_VL */  /*!< STM8L05X_HD_VL: STM8L052xx8 High density value line devices */
 /* #define STM8AL31_L_MD */   /*!< STM8AL31_L_MD: STM8AL3x Medium density devices */
@@ -85,6 +88,11 @@
  #define _RAISONANCE_
 #elif defined(__ICCSTM8__)
  #define _IAR_
+#elif defined(__SDCC)                    /* SDCC patch: add compiler and version */
+ #define _SDCC_
+ #define SDCC_VERSION (__SDCC_VERSION_MAJOR * 10000 \
+                     + __SDCC_VERSION_MINOR * 100 \
+                     + __SDCC_VERSION_PATCH)
 #else
  #error "Unsupported Compiler!"          /* Compiler defines not found */
 #endif
@@ -144,6 +152,12 @@
    /*!< Used with memory Models for code higher than 64K */
   #define MEMCPY fmemcpy
  #endif /* STM8L15X_MD or STM8L15X_MDP or STM8L05X_MD_VL or STM8AL31_L_MD*/ 
+#elif defined (_SDCC_)                    /* SDCC patch: mostly not required / not supported */
+ #define FAR
+ #define NEAR
+ #define TINY
+ #define EEPROM
+ #define CONST  const
 #else /*_IAR_*/
  #define FAR  __far
  #define NEAR __near
@@ -162,10 +176,12 @@ defined (STM8L05X_LD_VL) || defined (STM8L05X_MD_VL) || defined (STM8AL31_L_MD)
 /*!< Used with memory Models for code smaller than 64K */
  #define PointerAttr NEAR
  #define MemoryAddressCast uint16_t
+ #undef _SDCC_BIGMEM_                    /* SDCC patch: simplify sdcc && >64kB indicator over different SPLs */
 #elif defined (STM8L15X_HD) || defined (STM8L05X_HD_VL)
 /*!< Used with memory Models for code higher than 64K */
  #define PointerAttr FAR
  #define MemoryAddressCast uint32_t
+ #define _SDCC_BIGMEM_                   /* SDCC patch: simplify sdcc && >64kB indicator over different SPLs */
 #endif /* STM8L15X_MD or STM8L15X_MDP or STM8L15X_LD or STM8L05X_LD_VL or STM8L05X_MD_VL
           or STM8AL31_L_MD */
 
@@ -179,6 +195,8 @@ defined (STM8L05X_LD_VL) || defined (STM8L05X_MD_VL) || defined (STM8AL31_L_MD)
    #define IN_RAM(a) a
  #elif defined (_RAISONANCE_) /* __RCSTM8__ */
    #define IN_RAM(a) a inram
+ #elif defined (_SDCC_)                    /* SDCC patch: code in RAM not yet patched */
+  #error RAM execution not yet implemented in patch, comment RAM_EXECUTION in stm8s.h
  #else /*_IAR_*/
   #define IN_RAM(a) __ramfunc a
  #endif /* _COSMIC_ */
@@ -189,7 +207,7 @@ defined (STM8L05X_LD_VL) || defined (STM8L05X_MD_VL) || defined (STM8AL31_L_MD)
 /*!< [31:16] STM8L15X Standard Peripheral Library main version */
 #define __STM8L15X_STDPERIPH_VERSION_MAIN   ((uint8_t)0x01) /*!< [31:24] main version */                                  
 #define __STM8L15X_STDPERIPH_VERSION_SUB1   ((uint8_t)0x06) /*!< [23:16] sub1 version */
-#define __STM8L15X_STDPERIPH_VERSION_SUB2   ((uint8_t)0x00) /*!< [15:8]  sub2 version */
+#define __STM8L15X_STDPERIPH_VERSION_SUB2   ((uint8_t)0x01) /*!< [15:8]  sub2 version */
 #define __STM8L15X_STDPERIPH_VERSION_RC     ((uint8_t)0x00) /*!< [7:0]  release candidate */ 
 #define __STM8L15X_STDPERIPH_VERSION       ( (__STM8L15X_STDPERIPH_VERSION_MAIN << 24)\
                                           |(__STM8L15X_STDPERIPH_VERSION_SUB1 << 16)\
@@ -215,28 +233,50 @@ defined (STM8L05X_LD_VL) || defined (STM8L05X_MD_VL) || defined (STM8AL31_L_MD)
 #define     __O     volatile         /*!< defines 'write only' permissions    */
 #define     __IO    volatile         /*!< defines 'read / write' permissions  */
 
-/*!< Signed integer types  */
-typedef   signed char     int8_t;
-typedef   signed short    int16_t;
-typedef   signed long     int32_t;
+/* SDCC patch: define standard data types */
+#if defined(_COSMIC_) || defined(_RAISONANCE_) || defined(_IAR_)
 
-/*!< Unsigned integer types  */
-typedef unsigned char     uint8_t;
-typedef unsigned short    uint16_t;
-typedef unsigned long     uint32_t;
+  // skip if already defined
+  #ifndef INT8_MAX
 
-/*!< STM8Lx Standard Peripheral Library old types (maintained for legacy purpose) */
+    /*!< Signed integer types  */
+    typedef   signed char     int8_t;
+    typedef   signed short    int16_t;
+    typedef   signed long     int32_t;
 
-typedef int32_t  s32;
-typedef int16_t s16;
-typedef int8_t  s8;
+    /*!< Unsigned integer types  */
+    typedef unsigned char     uint8_t;
+    typedef unsigned short    uint16_t;
+    typedef unsigned long     uint32_t;
 
-typedef uint32_t  u32;
-typedef uint16_t u16;
-typedef uint8_t  u8;
+    /*!< STM8 Standard Peripheral Library old types (maintained for legacy purpose) */
+    typedef int32_t  s32;
+    typedef int16_t s16;
+    typedef int8_t  s8;
+
+    typedef uint32_t  u32;
+    typedef uint16_t u16;
+    typedef uint8_t  u8;
+
+  #endif // INT8_MAX
+
+#elif defined(_SDCC_)
+
+  // use compiler standard header
+  #include <stdint.h>
+
+#else
+ #error "Unsupported Compiler!"          /* Compiler defines not found */
+#endif
 
 
-typedef enum {FALSE = 0, TRUE = !FALSE} bool;
+/* SDCC patch: SDCC defines a special Bool type, use that if available */
+#ifdef __bool_true_false_are_defined
+ #define TRUE true
+ #define FALSE false
+#else
+ typedef enum {FALSE = 0, TRUE = !FALSE} bool;
+#endif
 
 typedef enum {RESET = 0, SET = !RESET} FlagStatus, ITStatus, BitStatus, BitAction;
 
@@ -2917,6 +2957,16 @@ AES_TypeDef;
  #define wfi() {_asm("wfi\n");} /*!<Wait For Interrupt */
  #define wfe() {_asm("wfe\n");} /*!<Wait for event */
  #define halt() {_asm("halt\n");} /*!<Halt */
+#elif defined(_SDCC_)                    /* SDCC patch: standard inline asm macros */
+ #define enableInterrupts()    __asm__("rim")    /* enable interrupts */
+ #define disableInterrupts()   __asm__("sim")    /* disable interrupts */
+ #define rim()                 __asm__("rim")    /* enable interrupts */
+ #define sim()                 __asm__("sim")    /* disable interrupts */
+ #define nop()                 __asm__("nop")    /* no operation */
+ #define trap()                __asm__("trap")   /* trap (soft IT) */
+ #define wfi()                 __asm__("wfi")    /* wait for interrupt */
+ #define wfe()                 __asm__("wfe")    /* wait for event */
+ #define halt()                __asm__("halt")   /* halt CPU */
 #else /*_IAR*/
  #include <intrinsics.h>
  #define enableInterrupts()    __enable_interrupt()   /* enable interrupts */
@@ -2952,12 +3002,29 @@ AES_TypeDef;
  _Pragma( VECTOR_ID( 1 ) ) \
  __interrupt void (a) (void)  
 #endif /* _IAR_ */
+ 
+/* SDCC patch: declare ISR handlers */
+#ifdef _SDCC_
+ #define INTERRUPT_HANDLER(a,b) void a() __interrupt(b)
+
+ /* traps require >=v3.4.3 -> else warn and skip */
+ #if SDCC_VERSION >= 30403
+   #define INTERRUPT_HANDLER_TRAP(a) void a() __trap 
+ #else
+   #warning traps require SDCC>=v3.4.3. Update if required
+   #define INTERRUPT_HANDLER_TRAP(a) void a()
+ #endif 
+
+#endif /* _SDCC_ */
 
 /*============================== Interrupt Handler declaration ========================*/
 #ifdef _COSMIC_
  #define INTERRUPT @far @interrupt
 #elif defined(_IAR_)
  #define INTERRUPT __interrupt
+#elif defined(_SDCC_)                    /* SDCC patch: doesn't work like that in SDCC -> skip */
+  #define INTERRUPT __interrupt
+  //#include "stm8s_it.h"                  /* must be included in main.c! */
 #endif /* _COSMIC_ */
  
 /*============================== Handling bits ====================================*/
@@ -2971,7 +3038,7 @@ Comments :    The different parameters of commands are
               The "MskBit" command allows to select some bits in a source
               variables and copy it in a destination var (return the value).
               The "ValBit" command returns the value of a bit in a char
-              variable: the bit is reseted if it returns 0 else the bit is set.
+              variable: the bit is reset if it returns 0 else the bit is set.
               This method generates not an optimised code yet.
 -----------------------------------------------------------------------------*/
 #define SetBit(VAR,Place)         ( (VAR) |= (uint8_t)((uint8_t)1<<(uint8_t)(Place)) )

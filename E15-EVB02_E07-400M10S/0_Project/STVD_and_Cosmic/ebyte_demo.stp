@@ -1,0 +1,862 @@
+;	STMicroelectronics Project file
+
+[Version]
+Keyword=ST7Project
+Number=1.3
+
+[Project]
+Name=ebyte_demo
+Toolset=STM8 Cosmic
+
+[Config]
+0=Config.0
+1=Config.1
+
+[Config.0]
+ConfigName=Debug
+Target=ebyte_demo.elf
+OutputFolder=Debug
+Debug=$(TargetFName)
+
+[Config.1]
+ConfigName=Release
+Target=ebyte_demo.elf
+OutputFolder=Release
+Debug=$(TargetFName)
+
+[Root]
+ElemType=Project
+PathName=ebyte_demo
+Child=Root.Source Files
+Config.0=Root.Config.0
+Config.1=Root.Config.1
+
+[Root.Config.0]
+Settings.0.0=Root.Config.0.Settings.0
+Settings.0.1=Root.Config.0.Settings.1
+Settings.0.2=Root.Config.0.Settings.2
+Settings.0.3=Root.Config.0.Settings.3
+Settings.0.4=Root.Config.0.Settings.4
+Settings.0.5=Root.Config.0.Settings.5
+Settings.0.6=Root.Config.0.Settings.6
+Settings.0.7=Root.Config.0.Settings.7
+Settings.0.8=Root.Config.0.Settings.8
+
+[Root.Config.1]
+Settings.1.0=Root.Config.1.Settings.0
+Settings.1.1=Root.Config.1.Settings.1
+Settings.1.2=Root.Config.1.Settings.2
+Settings.1.3=Root.Config.1.Settings.3
+Settings.1.4=Root.Config.1.Settings.4
+Settings.1.5=Root.Config.1.Settings.5
+Settings.1.6=Root.Config.1.Settings.6
+Settings.1.7=Root.Config.1.Settings.7
+Settings.1.8=Root.Config.1.Settings.8
+
+[Root.Config.0.Settings.0]
+String.6.0=2022,10,28,9,58,49
+String.100.0=ST Assembler Linker
+String.100.1=ST7 Cosmic
+String.100.2=STM8 Cosmic
+String.100.3=ST7 Metrowerks V1.1
+String.100.4=Raisonance
+String.101.0=STM8 Cosmic
+String.102.0=F:\sw\COSMIC\FSE_Compilers\CXSTM8
+String.103.0=
+String.104.0=Hstm8
+String.105.0=Lib
+String.106.0=Debug
+String.107.0=ebyte_demo.elf
+Int.108=1
+
+[Root.Config.0.Settings.1]
+String.6.0=2022,10,28,9,52,48
+String.100.0=$(TargetFName)
+String.101.0=
+String.102.0=
+String.103.0=.\;..\iar_for_stm8\exmx_demo;..\..\1_middleware\kfifo;..\..\1_middleware\produce;..\..\2_ebyte_board_support\e15-evb02;..\..\3_ebyte_wirelessmodule_drivers\e07xmx;..\..\4_stm8_l15x_stdperiph_drivers;..\..\4_stm8_l15x_stdperiph_drivers\src;..\..\4_stm8_l15x_stdperiph_drivers\inc;..\..\3_ebyte_wirelessmodule_drivers;
+
+[Root.Config.0.Settings.2]
+String.2.0=
+String.6.0=2022,10,28,9,52,48
+String.100.0=STM8L151G4
+
+[Root.Config.0.Settings.3]
+String.2.0=Compiling $(InputFile)...
+String.3.0=cxstm8 +modsl0 -customDebCompat -customOpt-no -customC-pp -customLst -l -dEBYTE_E07_900M10S -dSTM8L15X_LD -i..\..\3_ebyte_wirelessmodule_drivers -i..\..\4_stm8_l15x_stdperiph_drivers\inc -i..\..\4_stm8_l15x_stdperiph_drivers -i..\..\3_ebyte_wirelessmodule_drivers\e07xmx -i..\..\2_ebyte_board_support\e15-evb02 -i..\..\1_middleware\produce -i..\..\1_middleware\kfifo -i..\iar_for_stm8\exmx_demo $(ToolsetIncOpts) -cl$(IntermPath) -co$(IntermPath) $(InputFile)
+String.4.0=$(IntermPath)$(InputName).$(ObjectExt)
+String.5.0=$(IntermPath)$(InputName).ls
+String.6.0=2022,10,28,12,24,16
+
+[Root.Config.0.Settings.4]
+String.2.0=Assembling $(InputFile)...
+String.3.0=castm8 -xx -l $(ToolsetIncOpts) -o$(IntermPath)$(InputName).$(ObjectExt) $(InputFile)
+String.4.0=$(IntermPath)$(InputName).$(ObjectExt)
+String.5.0=$(IntermPath)$(InputName).ls
+String.6.0=2022,10,28,9,52,48
+
+[Root.Config.0.Settings.5]
+String.2.0=Running Pre-Link step
+String.6.0=2022,10,28,9,52,48
+String.8.0=
+
+[Root.Config.0.Settings.6]
+String.2.0=Running Linker
+String.3.0=clnk -customMapFile -customMapFile-m $(OutputPath)$(TargetSName).map -fakeRunConv -fakeInteger -fakeSemiAutoGen $(ToolsetLibOpts) -o $(OutputPath)$(TargetSName).sm8 -fakeOutFile$(ProjectSFile).elf -customCfgFile $(OutputPath)$(TargetSName).lkf -fakeVectFilestm8_interrupt_vector.c -fakeStartupcrtsi0.sm8 
+String.3.1=cvdwarf $(OutputPath)$(TargetSName).sm8 -fakeVectAddr0x8000
+String.4.0=$(OutputPath)$(TargetFName)
+String.5.0=
+String.6.0=2022,10,28,9,58,21
+String.100.0=
+String.101.0=crtsi.st7
+String.102.0=+seg .const -b 0x8080 -m 0x3f80  -n .const -it 
+String.102.1=+seg .text -a .const  -n .text 
+String.102.2=+seg .eeprom -b 0x1000 -m 0x400  -n .eeprom 
+String.102.3=+seg .bsct -b 0x0 -m 0x100  -n .bsct 
+String.102.4=+seg .ubsct -a .bsct  -n .ubsct 
+String.102.5=+seg .bit -a .ubsct  -n .bit -id 
+String.102.6=+seg .share -a .bit  -n .share -is 
+String.102.7=+seg .data -b 0x100 -m 0x4ff  -n .data 
+String.102.8=+seg .bss -a .data  -n .bss 
+String.103.0=Code,Constants[0x8080-0xbfff]=.const,.text
+String.103.1=Eeprom[0x1000-0x13ff]=.eeprom
+String.103.2=Zero Page[0x0-0xff]=.bsct,.ubsct,.bit,.share
+String.103.3=Ram[0x100-0x5fe]=.data,.bss
+String.104.0=0x7ff
+Int.0=0
+Int.1=0
+
+[Root.Config.0.Settings.7]
+String.2.0=Running Post-Build step
+String.3.0=chex -o $(OutputPath)$(TargetSName).s19 $(OutputPath)$(TargetSName).sm8
+String.6.0=2022,10,28,9,52,48
+
+[Root.Config.0.Settings.8]
+String.2.0=Performing Custom Build on $(InputFile)
+String.6.0=2022,10,28,9,52,48
+
+[Root.Config.1.Settings.0]
+String.6.0=2022,10,28,10,39,15
+String.100.0=ST Assembler Linker
+String.100.1=ST7 Cosmic
+String.100.2=STM8 Cosmic
+String.100.3=ST7 Metrowerks V1.1
+String.100.4=Raisonance
+String.101.0=STM8 Cosmic
+String.102.0=F:\sw\COSMIC\FSE_Compilers\CXSTM8
+String.103.0=
+String.104.0=Hstm8
+String.105.0=Lib
+String.106.0=Release
+String.107.0=ebyte_demo.elf
+Int.108=1
+
+[Root.Config.1.Settings.1]
+String.6.0=2022,10,28,9,52,48
+String.100.0=$(TargetFName)
+String.101.0=
+String.103.0=.\;..\iar_for_stm8\exmx_demo;..\..\1_middleware\kfifo;..\..\1_middleware\produce;..\..\2_ebyte_board_support\e15-evb02;..\..\3_ebyte_wirelessmodule_drivers\e07xmx;..\..\4_stm8_l15x_stdperiph_drivers;..\..\4_stm8_l15x_stdperiph_drivers\src;..\..\4_stm8_l15x_stdperiph_drivers\inc;..\..\3_ebyte_wirelessmodule_drivers;
+
+[Root.Config.1.Settings.2]
+String.2.0=
+String.6.0=2022,10,28,9,52,48
+String.100.0=STM8L151G4
+
+[Root.Config.1.Settings.3]
+String.2.0=Compiling $(InputFile)...
+String.3.0=cxstm8 -i..\..\3_ebyte_wirelessmodule_drivers  +modsl0 -customC-pp -dEBYTE_E07_900M10S -i..\..\4_stm8_l15x_stdperiph_drivers\inc -i..\..\4_stm8_l15x_stdperiph_drivers -i..\..\3_ebyte_wirelessmodule_drivers\e07xmx -i..\..\2_ebyte_board_support\e15-evb02 -i..\..\1_middleware\produce -i..\..\1_middleware\kfifo -i..\iar_for_stm8\exmx_demo $(ToolsetIncOpts) -cl$(IntermPath) -co$(IntermPath) $(InputFile)
+String.4.0=$(IntermPath)$(InputName).$(ObjectExt)
+String.5.0=$(IntermPath)$(InputName).ls
+String.6.0=2022,10,28,10,13,6
+
+[Root.Config.1.Settings.4]
+String.2.0=Assembling $(InputFile)...
+String.3.0=castm8 $(ToolsetIncOpts) -o$(IntermPath)$(InputName).$(ObjectExt) $(InputFile)
+String.4.0=$(IntermPath)$(InputName).$(ObjectExt)
+String.5.0=$(IntermPath)$(InputName).ls
+String.6.0=2022,10,28,9,52,48
+
+[Root.Config.1.Settings.5]
+String.2.0=Running Pre-Link step
+String.6.0=2022,10,28,9,52,48
+String.8.0=
+
+[Root.Config.1.Settings.6]
+String.2.0=Running Linker
+String.3.0=clnk -fakeRunConv -fakeInteger -fakeSemiAutoGen $(ToolsetLibOpts) -o $(OutputPath)$(TargetSName).sm8 -fakeOutFile$(ProjectSFile).elf -customCfgFile $(OutputPath)$(TargetSName).lkf -fakeVectFilestm8_interrupt_vector.c -fakeStartupcrtsi0.sm8 
+String.3.1=cvdwarf $(OutputPath)$(TargetSName).sm8 -fakeVectAddr0x8000
+String.4.0=$(OutputPath)$(TargetFName)
+String.5.0=$(OutputPath)$(TargetSName).map $(OutputPath)$(TargetSName).st7 $(OutputPath)$(TargetSName).s19
+String.6.0=2022,10,28,9,52,48
+String.100.0=
+String.101.0=crtsi.st7
+String.102.0=+seg .const -b 0x8080 -m 0x3f80  -n .const -it 
+String.102.1=+seg .text -a .const  -n .text 
+String.102.2=+seg .eeprom -b 0x1000 -m 0x400  -n .eeprom 
+String.102.3=+seg .bsct -b 0x0 -m 0x100  -n .bsct 
+String.102.4=+seg .ubsct -a .bsct  -n .ubsct 
+String.102.5=+seg .bit -a .ubsct  -n .bit -id 
+String.102.6=+seg .share -a .bit  -n .share -is 
+String.102.7=+seg .data -b 0x100 -m 0x4ff  -n .data 
+String.102.8=+seg .bss -a .data  -n .bss 
+String.103.0=Code,Constants[0x8080-0xbfff]=.const,.text
+String.103.1=Eeprom[0x1000-0x13ff]=.eeprom
+String.103.2=Zero Page[0x0-0xff]=.bsct,.ubsct,.bit,.share
+String.103.3=Ram[0x100-0x5fe]=.data,.bss
+String.104.0=0x7ff
+Int.0=0
+Int.1=0
+
+[Root.Config.1.Settings.7]
+String.2.0=Running Post-Build step
+String.3.0=chex -o $(OutputPath)$(TargetSName).s19 $(OutputPath)$(TargetSName).sm8
+String.6.0=2022,10,28,9,52,48
+
+[Root.Config.1.Settings.8]
+String.2.0=Performing Custom Build on $(InputFile)
+String.6.0=2022,10,28,9,52,48
+
+[Root.Source Files]
+ElemType=Folder
+PathName=Source Files
+Child=Root.Source Files.Source Files\0_Project
+Next=Root.Include Files
+Config.0=Root.Source Files.Config.0
+Config.1=Root.Source Files.Config.1
+
+[Root.Source Files.Config.0]
+Settings.0.0=Root.Source Files.Config.0.Settings.0
+Settings.0.1=Root.Source Files.Config.0.Settings.1
+Settings.0.2=Root.Source Files.Config.0.Settings.2
+Settings.0.3=Root.Source Files.Config.0.Settings.3
+
+[Root.Source Files.Config.1]
+Settings.1.0=Root.Source Files.Config.1.Settings.0
+Settings.1.1=Root.Source Files.Config.1.Settings.1
+Settings.1.2=Root.Source Files.Config.1.Settings.2
+Settings.1.3=Root.Source Files.Config.1.Settings.3
+
+[Root.Source Files.Config.0.Settings.0]
+String.6.0=2022,10,28,9,52,48
+String.8.0=Debug
+Int.0=0
+Int.1=0
+
+[Root.Source Files.Config.0.Settings.1]
+String.2.0=Compiling $(InputFile)...
+String.3.0=cxstm8 +modsl0 -customDebCompat -customOpt-no -customC-pp -customLst -l -dEBYTE_E07_900M10S -dSTM8L15X_LD -i..\..\3_ebyte_wirelessmodule_drivers -i..\..\4_stm8_l15x_stdperiph_drivers\inc -i..\..\4_stm8_l15x_stdperiph_drivers -i..\..\3_ebyte_wirelessmodule_drivers\e07xmx -i..\..\2_ebyte_board_support\e15-evb02 -i..\..\1_middleware\produce -i..\..\1_middleware\kfifo -i..\iar_for_stm8\exmx_demo $(ToolsetIncOpts) -cl$(IntermPath) -co$(IntermPath) $(InputFile)
+String.4.0=$(IntermPath)$(InputName).$(ObjectExt)
+String.5.0=$(IntermPath)$(InputName).ls
+String.6.0=2022,10,28,12,24,16
+
+[Root.Source Files.Config.0.Settings.2]
+String.2.0=Assembling $(InputFile)...
+String.3.0=castm8 -xx -l $(ToolsetIncOpts) -o$(IntermPath)$(InputName).$(ObjectExt) $(InputFile)
+String.4.0=$(IntermPath)$(InputName).$(ObjectExt)
+String.5.0=$(IntermPath)$(InputName).ls
+String.6.0=2022,10,28,9,52,48
+
+[Root.Source Files.Config.0.Settings.3]
+String.2.0=Performing Custom Build on $(InputFile)
+String.3.0=
+String.4.0=
+String.5.0=
+String.6.0=2022,10,28,9,52,48
+
+[Root.Source Files.Config.1.Settings.0]
+String.6.0=2022,10,28,9,52,48
+String.8.0=Release
+Int.0=0
+Int.1=0
+
+[Root.Source Files.Config.1.Settings.1]
+String.2.0=Compiling $(InputFile)...
+String.3.0=cxstm8 -i..\..\3_ebyte_wirelessmodule_drivers  +modsl0 -customC-pp -dEBYTE_E07_900M10S -i..\..\4_stm8_l15x_stdperiph_drivers\inc -i..\..\4_stm8_l15x_stdperiph_drivers -i..\..\3_ebyte_wirelessmodule_drivers\e07xmx -i..\..\2_ebyte_board_support\e15-evb02 -i..\..\1_middleware\produce -i..\..\1_middleware\kfifo -i..\iar_for_stm8\exmx_demo $(ToolsetIncOpts) -cl$(IntermPath) -co$(IntermPath) $(InputFile)
+String.4.0=$(IntermPath)$(InputName).$(ObjectExt)
+String.5.0=$(IntermPath)$(InputName).ls
+String.6.0=2022,10,28,10,13,6
+
+[Root.Source Files.Config.1.Settings.2]
+String.2.0=Assembling $(InputFile)...
+String.3.0=castm8 $(ToolsetIncOpts) -o$(IntermPath)$(InputName).$(ObjectExt) $(InputFile)
+String.4.0=$(IntermPath)$(InputName).$(ObjectExt)
+String.5.0=$(IntermPath)$(InputName).ls
+String.6.0=2022,10,28,9,52,48
+
+[Root.Source Files.Config.1.Settings.3]
+String.2.0=Performing Custom Build on $(InputFile)
+String.3.0=
+String.4.0=
+String.5.0=
+String.6.0=2022,10,28,9,52,48
+
+[Root.Source Files.Source Files\0_Project]
+ElemType=Folder
+PathName=Source Files\0_Project
+Child=Root.Source Files.Source Files\0_Project...\iar_for_stm8\exmx_demo\main.c
+Next=Root.Source Files.Source Files\1_Middleware
+
+[Root.Source Files.Source Files\0_Project...\iar_for_stm8\exmx_demo\main.c]
+ElemType=File
+PathName=..\iar_for_stm8\exmx_demo\main.c
+Next=Root.Source Files.Source Files\0_Project...\iar_for_stm8\exmx_demo\stm8l15x_it.c
+
+[Root.Source Files.Source Files\0_Project...\iar_for_stm8\exmx_demo\stm8l15x_it.c]
+ElemType=File
+PathName=..\iar_for_stm8\exmx_demo\stm8l15x_it.c
+
+[Root.Source Files.Source Files\1_Middleware]
+ElemType=Folder
+PathName=Source Files\1_Middleware
+Child=Root.Source Files.Source Files\1_Middleware.Source Files\1_Middleware\Kfifo
+Next=Root.Source Files.Source Files\2_Ebyte_Board_Support
+
+[Root.Source Files.Source Files\1_Middleware.Source Files\1_Middleware\Kfifo]
+ElemType=Folder
+PathName=Source Files\1_Middleware\Kfifo
+Child=Root.Source Files.Source Files\1_Middleware.Source Files\1_Middleware\Kfifo...\..\1_middleware\kfifo\ebyte_kfifo.c
+Next=Root.Source Files.Source Files\1_Middleware.Source Files\1_Middleware\Produce
+
+[Root.Source Files.Source Files\1_Middleware.Source Files\1_Middleware\Kfifo...\..\1_middleware\kfifo\ebyte_kfifo.c]
+ElemType=File
+PathName=..\..\1_middleware\kfifo\ebyte_kfifo.c
+
+[Root.Source Files.Source Files\1_Middleware.Source Files\1_Middleware\Produce]
+ElemType=Folder
+PathName=Source Files\1_Middleware\Produce
+Child=Root.Source Files.Source Files\1_Middleware.Source Files\1_Middleware\Produce...\..\1_middleware\produce\ebyte_debug.c
+
+[Root.Source Files.Source Files\1_Middleware.Source Files\1_Middleware\Produce...\..\1_middleware\produce\ebyte_debug.c]
+ElemType=File
+PathName=..\..\1_middleware\produce\ebyte_debug.c
+
+[Root.Source Files.Source Files\2_Ebyte_Board_Support]
+ElemType=Folder
+PathName=Source Files\2_Ebyte_Board_Support
+Child=Root.Source Files.Source Files\2_Ebyte_Board_Support.Source Files\2_Ebyte_Board_Support\E15-EVB02
+Next=Root.Source Files.Source Files\3_Ebyte_WirelessModule_Drivers
+
+[Root.Source Files.Source Files\2_Ebyte_Board_Support.Source Files\2_Ebyte_Board_Support\E15-EVB02]
+ElemType=Folder
+PathName=Source Files\2_Ebyte_Board_Support\E15-EVB02
+Child=Root.Source Files.Source Files\2_Ebyte_Board_Support.Source Files\2_Ebyte_Board_Support\E15-EVB02...\..\2_ebyte_board_support\e15-evb02\board.c
+
+[Root.Source Files.Source Files\2_Ebyte_Board_Support.Source Files\2_Ebyte_Board_Support\E15-EVB02...\..\2_ebyte_board_support\e15-evb02\board.c]
+ElemType=File
+PathName=..\..\2_ebyte_board_support\e15-evb02\board.c
+Next=Root.Source Files.Source Files\2_Ebyte_Board_Support.Source Files\2_Ebyte_Board_Support\E15-EVB02...\..\2_ebyte_board_support\e15-evb02\board_button.c
+
+[Root.Source Files.Source Files\2_Ebyte_Board_Support.Source Files\2_Ebyte_Board_Support\E15-EVB02...\..\2_ebyte_board_support\e15-evb02\board_button.c]
+ElemType=File
+PathName=..\..\2_ebyte_board_support\e15-evb02\board_button.c
+Next=Root.Source Files.Source Files\2_Ebyte_Board_Support.Source Files\2_Ebyte_Board_Support\E15-EVB02...\..\2_ebyte_board_support\e15-evb02\board_mini_printf.c
+
+[Root.Source Files.Source Files\2_Ebyte_Board_Support.Source Files\2_Ebyte_Board_Support\E15-EVB02...\..\2_ebyte_board_support\e15-evb02\board_mini_printf.c]
+ElemType=File
+PathName=..\..\2_ebyte_board_support\e15-evb02\board_mini_printf.c
+
+[Root.Source Files.Source Files\3_Ebyte_WirelessModule_Drivers]
+ElemType=Folder
+PathName=Source Files\3_Ebyte_WirelessModule_Drivers
+Child=Root.Source Files.Source Files\3_Ebyte_WirelessModule_Drivers...\..\3_ebyte_wirelessmodule_drivers\ebyte_core.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers
+
+[Root.Source Files.Source Files\3_Ebyte_WirelessModule_Drivers...\..\3_ebyte_wirelessmodule_drivers\ebyte_core.c]
+ElemType=File
+PathName=..\..\3_ebyte_wirelessmodule_drivers\ebyte_core.c
+Next=Root.Source Files.Source Files\3_Ebyte_WirelessModule_Drivers.Source Files\3_Ebyte_WirelessModule_Drivers\E07xMx
+
+[Root.Source Files.Source Files\3_Ebyte_WirelessModule_Drivers.Source Files\3_Ebyte_WirelessModule_Drivers\E07xMx]
+ElemType=Folder
+PathName=Source Files\3_Ebyte_WirelessModule_Drivers\E07xMx
+Child=Root.Source Files.Source Files\3_Ebyte_WirelessModule_Drivers.Source Files\3_Ebyte_WirelessModule_Drivers\E07xMx...\..\3_ebyte_wirelessmodule_drivers\e07xmx\ebyte_callback.c
+
+[Root.Source Files.Source Files\3_Ebyte_WirelessModule_Drivers.Source Files\3_Ebyte_WirelessModule_Drivers\E07xMx...\..\3_ebyte_wirelessmodule_drivers\e07xmx\ebyte_callback.c]
+ElemType=File
+PathName=..\..\3_ebyte_wirelessmodule_drivers\e07xmx\ebyte_callback.c
+Next=Root.Source Files.Source Files\3_Ebyte_WirelessModule_Drivers.Source Files\3_Ebyte_WirelessModule_Drivers\E07xMx...\..\3_ebyte_wirelessmodule_drivers\e07xmx\ebyte_e07x.c
+
+[Root.Source Files.Source Files\3_Ebyte_WirelessModule_Drivers.Source Files\3_Ebyte_WirelessModule_Drivers\E07xMx...\..\3_ebyte_wirelessmodule_drivers\e07xmx\ebyte_e07x.c]
+ElemType=File
+PathName=..\..\3_ebyte_wirelessmodule_drivers\e07xmx\ebyte_e07x.c
+Next=Root.Source Files.Source Files\3_Ebyte_WirelessModule_Drivers.Source Files\3_Ebyte_WirelessModule_Drivers\E07xMx...\..\3_ebyte_wirelessmodule_drivers\e07xmx\ebyte_port.c
+
+[Root.Source Files.Source Files\3_Ebyte_WirelessModule_Drivers.Source Files\3_Ebyte_WirelessModule_Drivers\E07xMx...\..\3_ebyte_wirelessmodule_drivers\e07xmx\ebyte_port.c]
+ElemType=File
+PathName=..\..\3_ebyte_wirelessmodule_drivers\e07xmx\ebyte_port.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers]
+ElemType=Folder
+PathName=Source Files\4_STM8_L15x_StdPeriph_Drivers
+Child=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src
+Next=Root.Source Files.stm8_interrupt_vector.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src]
+ElemType=Folder
+PathName=Source Files\4_STM8_L15x_StdPeriph_Drivers\src
+Child=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_adc.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_adc.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_adc.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_aes.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_aes.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_aes.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_beep.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_beep.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_beep.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_clk.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_clk.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_clk.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_comp.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_comp.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_comp.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_dac.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_dac.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_dac.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_dma.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_dma.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_dma.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_exti.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_exti.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_exti.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_flash.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_flash.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_flash.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_gpio.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_gpio.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_gpio.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_i2c.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_i2c.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_i2c.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_irtim.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_irtim.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_irtim.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_itc.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_itc.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_itc.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_iwdg.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_iwdg.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_iwdg.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_lcd.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_lcd.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_lcd.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_pwr.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_pwr.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_pwr.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_rst.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_rst.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_rst.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_rtc.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_rtc.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_rtc.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_spi.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_spi.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_spi.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_syscfg.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_syscfg.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_syscfg.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_tim1.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_tim1.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_tim1.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_tim2.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_tim2.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_tim2.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_tim3.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_tim3.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_tim3.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_tim4.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_tim4.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_tim4.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_tim5.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_tim5.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_tim5.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_usart.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_usart.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_usart.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_wfe.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_wfe.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_wfe.c
+Next=Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_wwdg.c
+
+[Root.Source Files.Source Files\4_STM8_L15x_StdPeriph_Drivers.Source Files\4_STM8_L15x_StdPeriph_Drivers\src...\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_wwdg.c]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\src\stm8l15x_wwdg.c
+
+[Root.Source Files.stm8_interrupt_vector.c]
+ElemType=File
+PathName=stm8_interrupt_vector.c
+
+[Root.Include Files]
+ElemType=Folder
+PathName=Include Files
+Child=Root.Include Files.Include Files\0_Project
+Config.0=Root.Include Files.Config.0
+Config.1=Root.Include Files.Config.1
+
+[Root.Include Files.Config.0]
+Settings.0.0=Root.Include Files.Config.0.Settings.0
+Settings.0.1=Root.Include Files.Config.0.Settings.1
+Settings.0.2=Root.Include Files.Config.0.Settings.2
+Settings.0.3=Root.Include Files.Config.0.Settings.3
+
+[Root.Include Files.Config.1]
+Settings.1.0=Root.Include Files.Config.1.Settings.0
+Settings.1.1=Root.Include Files.Config.1.Settings.1
+Settings.1.2=Root.Include Files.Config.1.Settings.2
+Settings.1.3=Root.Include Files.Config.1.Settings.3
+
+[Root.Include Files.Config.0.Settings.0]
+String.6.0=2022,10,28,9,52,48
+String.8.0=Debug
+Int.0=0
+Int.1=0
+
+[Root.Include Files.Config.0.Settings.1]
+String.2.0=Compiling $(InputFile)...
+String.3.0=cxstm8 +modsl0 -customDebCompat -customOpt-no -customC-pp -customLst -l -dEBYTE_E07_900M10S -dSTM8L15X_LD -i..\..\3_ebyte_wirelessmodule_drivers -i..\..\4_stm8_l15x_stdperiph_drivers\inc -i..\..\4_stm8_l15x_stdperiph_drivers -i..\..\3_ebyte_wirelessmodule_drivers\e07xmx -i..\..\2_ebyte_board_support\e15-evb02 -i..\..\1_middleware\produce -i..\..\1_middleware\kfifo -i..\iar_for_stm8\exmx_demo $(ToolsetIncOpts) -cl$(IntermPath) -co$(IntermPath) $(InputFile)
+String.4.0=$(IntermPath)$(InputName).$(ObjectExt)
+String.5.0=$(IntermPath)$(InputName).ls
+String.6.0=2022,10,28,12,24,16
+
+[Root.Include Files.Config.0.Settings.2]
+String.2.0=Assembling $(InputFile)...
+String.3.0=castm8 -xx -l $(ToolsetIncOpts) -o$(IntermPath)$(InputName).$(ObjectExt) $(InputFile)
+String.4.0=$(IntermPath)$(InputName).$(ObjectExt)
+String.5.0=$(IntermPath)$(InputName).ls
+String.6.0=2022,10,28,9,52,48
+
+[Root.Include Files.Config.0.Settings.3]
+String.2.0=Performing Custom Build on $(InputFile)
+String.3.0=
+String.4.0=
+String.5.0=
+String.6.0=2022,10,28,9,52,48
+
+[Root.Include Files.Config.1.Settings.0]
+String.6.0=2022,10,28,9,52,48
+String.8.0=Release
+Int.0=0
+Int.1=0
+
+[Root.Include Files.Config.1.Settings.1]
+String.2.0=Compiling $(InputFile)...
+String.3.0=cxstm8 -i..\..\3_ebyte_wirelessmodule_drivers  +modsl0 -customC-pp -dEBYTE_E07_900M10S -i..\..\4_stm8_l15x_stdperiph_drivers\inc -i..\..\4_stm8_l15x_stdperiph_drivers -i..\..\3_ebyte_wirelessmodule_drivers\e07xmx -i..\..\2_ebyte_board_support\e15-evb02 -i..\..\1_middleware\produce -i..\..\1_middleware\kfifo -i..\iar_for_stm8\exmx_demo $(ToolsetIncOpts) -cl$(IntermPath) -co$(IntermPath) $(InputFile)
+String.4.0=$(IntermPath)$(InputName).$(ObjectExt)
+String.5.0=$(IntermPath)$(InputName).ls
+String.6.0=2022,10,28,10,13,6
+
+[Root.Include Files.Config.1.Settings.2]
+String.2.0=Assembling $(InputFile)...
+String.3.0=castm8 $(ToolsetIncOpts) -o$(IntermPath)$(InputName).$(ObjectExt) $(InputFile)
+String.4.0=$(IntermPath)$(InputName).$(ObjectExt)
+String.5.0=$(IntermPath)$(InputName).ls
+String.6.0=2022,10,28,9,52,48
+
+[Root.Include Files.Config.1.Settings.3]
+String.2.0=Performing Custom Build on $(InputFile)
+String.3.0=
+String.4.0=
+String.5.0=
+String.6.0=2022,10,28,9,52,48
+
+[Root.Include Files.Include Files\0_Project]
+ElemType=Folder
+PathName=Include Files\0_Project
+Child=Root.Include Files.Include Files\0_Project...\iar_for_stm8\exmx_demo\stm8l15x_it.h
+Next=Root.Include Files.Include Files\1_Middleware
+
+[Root.Include Files.Include Files\0_Project...\iar_for_stm8\exmx_demo\stm8l15x_it.h]
+ElemType=File
+PathName=..\iar_for_stm8\exmx_demo\stm8l15x_it.h
+
+[Root.Include Files.Include Files\1_Middleware]
+ElemType=Folder
+PathName=Include Files\1_Middleware
+Child=Root.Include Files.Include Files\1_Middleware.Include Files\1_Middleware\Kfifo
+Next=Root.Include Files.Include Files\2_Ebyte_Board_Support
+
+[Root.Include Files.Include Files\1_Middleware.Include Files\1_Middleware\Kfifo]
+ElemType=Folder
+PathName=Include Files\1_Middleware\Kfifo
+Child=Root.Include Files.Include Files\1_Middleware.Include Files\1_Middleware\Kfifo...\..\1_middleware\kfifo\ebyte_kfifo.h
+Next=Root.Include Files.Include Files\1_Middleware.Include Files\1_Middleware\Produce
+
+[Root.Include Files.Include Files\1_Middleware.Include Files\1_Middleware\Kfifo...\..\1_middleware\kfifo\ebyte_kfifo.h]
+ElemType=File
+PathName=..\..\1_middleware\kfifo\ebyte_kfifo.h
+
+[Root.Include Files.Include Files\1_Middleware.Include Files\1_Middleware\Produce]
+ElemType=Folder
+PathName=Include Files\1_Middleware\Produce
+Child=Root.Include Files.Include Files\1_Middleware.Include Files\1_Middleware\Produce...\..\1_middleware\produce\ebyte_debug.h
+
+[Root.Include Files.Include Files\1_Middleware.Include Files\1_Middleware\Produce...\..\1_middleware\produce\ebyte_debug.h]
+ElemType=File
+PathName=..\..\1_middleware\produce\ebyte_debug.h
+
+[Root.Include Files.Include Files\2_Ebyte_Board_Support]
+ElemType=Folder
+PathName=Include Files\2_Ebyte_Board_Support
+Child=Root.Include Files.Include Files\2_Ebyte_Board_Support.Include Files\2_Ebyte_Board_Support\E15-EVB02
+Next=Root.Include Files.Include Files\3_Ebyte_WirelessModule_Drivers
+
+[Root.Include Files.Include Files\2_Ebyte_Board_Support.Include Files\2_Ebyte_Board_Support\E15-EVB02]
+ElemType=Folder
+PathName=Include Files\2_Ebyte_Board_Support\E15-EVB02
+Child=Root.Include Files.Include Files\2_Ebyte_Board_Support.Include Files\2_Ebyte_Board_Support\E15-EVB02...\..\2_ebyte_board_support\e15-evb02\board.h
+
+[Root.Include Files.Include Files\2_Ebyte_Board_Support.Include Files\2_Ebyte_Board_Support\E15-EVB02...\..\2_ebyte_board_support\e15-evb02\board.h]
+ElemType=File
+PathName=..\..\2_ebyte_board_support\e15-evb02\board.h
+Next=Root.Include Files.Include Files\2_Ebyte_Board_Support.Include Files\2_Ebyte_Board_Support\E15-EVB02...\..\2_ebyte_board_support\e15-evb02\board_button.h
+
+[Root.Include Files.Include Files\2_Ebyte_Board_Support.Include Files\2_Ebyte_Board_Support\E15-EVB02...\..\2_ebyte_board_support\e15-evb02\board_button.h]
+ElemType=File
+PathName=..\..\2_ebyte_board_support\e15-evb02\board_button.h
+Next=Root.Include Files.Include Files\2_Ebyte_Board_Support.Include Files\2_Ebyte_Board_Support\E15-EVB02...\..\2_ebyte_board_support\e15-evb02\board_mini_printf.h
+
+[Root.Include Files.Include Files\2_Ebyte_Board_Support.Include Files\2_Ebyte_Board_Support\E15-EVB02...\..\2_ebyte_board_support\e15-evb02\board_mini_printf.h]
+ElemType=File
+PathName=..\..\2_ebyte_board_support\e15-evb02\board_mini_printf.h
+
+[Root.Include Files.Include Files\3_Ebyte_WirelessModule_Drivers]
+ElemType=Folder
+PathName=Include Files\3_Ebyte_WirelessModule_Drivers
+Child=Root.Include Files.Include Files\3_Ebyte_WirelessModule_Drivers...\..\3_ebyte_wirelessmodule_drivers\ebyte_core.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers
+
+[Root.Include Files.Include Files\3_Ebyte_WirelessModule_Drivers...\..\3_ebyte_wirelessmodule_drivers\ebyte_core.h]
+ElemType=File
+PathName=..\..\3_ebyte_wirelessmodule_drivers\ebyte_core.h
+Next=Root.Include Files.Include Files\3_Ebyte_WirelessModule_Drivers.Include Files\3_Ebyte_WirelessModule_Drivers\E07xMx
+
+[Root.Include Files.Include Files\3_Ebyte_WirelessModule_Drivers.Include Files\3_Ebyte_WirelessModule_Drivers\E07xMx]
+ElemType=Folder
+PathName=Include Files\3_Ebyte_WirelessModule_Drivers\E07xMx
+Child=Root.Include Files.Include Files\3_Ebyte_WirelessModule_Drivers.Include Files\3_Ebyte_WirelessModule_Drivers\E07xMx...\..\3_ebyte_wirelessmodule_drivers\e07xmx\ebyte_callback.h
+
+[Root.Include Files.Include Files\3_Ebyte_WirelessModule_Drivers.Include Files\3_Ebyte_WirelessModule_Drivers\E07xMx...\..\3_ebyte_wirelessmodule_drivers\e07xmx\ebyte_callback.h]
+ElemType=File
+PathName=..\..\3_ebyte_wirelessmodule_drivers\e07xmx\ebyte_callback.h
+Next=Root.Include Files.Include Files\3_Ebyte_WirelessModule_Drivers.Include Files\3_Ebyte_WirelessModule_Drivers\E07xMx...\..\3_ebyte_wirelessmodule_drivers\e07xmx\ebyte_e07x.h
+
+[Root.Include Files.Include Files\3_Ebyte_WirelessModule_Drivers.Include Files\3_Ebyte_WirelessModule_Drivers\E07xMx...\..\3_ebyte_wirelessmodule_drivers\e07xmx\ebyte_e07x.h]
+ElemType=File
+PathName=..\..\3_ebyte_wirelessmodule_drivers\e07xmx\ebyte_e07x.h
+Next=Root.Include Files.Include Files\3_Ebyte_WirelessModule_Drivers.Include Files\3_Ebyte_WirelessModule_Drivers\E07xMx...\..\3_ebyte_wirelessmodule_drivers\e07xmx\ebyte_port.h
+
+[Root.Include Files.Include Files\3_Ebyte_WirelessModule_Drivers.Include Files\3_Ebyte_WirelessModule_Drivers\E07xMx...\..\3_ebyte_wirelessmodule_drivers\e07xmx\ebyte_port.h]
+ElemType=File
+PathName=..\..\3_ebyte_wirelessmodule_drivers\e07xmx\ebyte_port.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers]
+ElemType=Folder
+PathName=Include Files\4_STM8_L15x_StdPeriph_Drivers
+Child=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers...\..\4_stm8_l15x_stdperiph_drivers\stm8l15x_conf.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers...\..\4_stm8_l15x_stdperiph_drivers\stm8l15x_conf.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\stm8l15x_conf.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc]
+ElemType=Folder
+PathName=Include Files\4_STM8_L15x_StdPeriph_Drivers\inc
+Child=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_adc.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_adc.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_adc.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_aes.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_aes.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_aes.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_beep.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_beep.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_beep.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_clk.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_clk.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_clk.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_comp.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_comp.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_comp.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_dac.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_dac.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_dac.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_dma.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_dma.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_dma.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_exti.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_exti.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_exti.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_flash.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_flash.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_flash.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_gpio.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_gpio.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_gpio.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_i2c.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_i2c.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_i2c.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_irtim.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_irtim.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_irtim.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_itc.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_itc.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_itc.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_iwdg.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_iwdg.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_iwdg.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_lcd.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_lcd.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_lcd.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_pwr.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_pwr.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_pwr.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_rst.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_rst.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_rst.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_rtc.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_rtc.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_rtc.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_spi.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_spi.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_spi.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_syscfg.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_syscfg.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_syscfg.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_tim1.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_tim1.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_tim1.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_tim2.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_tim2.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_tim2.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_tim3.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_tim3.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_tim3.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_tim4.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_tim4.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_tim4.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_tim5.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_tim5.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_tim5.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_usart.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_usart.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_usart.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_wfe.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_wfe.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_wfe.h
+Next=Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_wwdg.h
+
+[Root.Include Files.Include Files\4_STM8_L15x_StdPeriph_Drivers.Include Files\4_STM8_L15x_StdPeriph_Drivers\inc...\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_wwdg.h]
+ElemType=File
+PathName=..\..\4_stm8_l15x_stdperiph_drivers\inc\stm8l15x_wwdg.h

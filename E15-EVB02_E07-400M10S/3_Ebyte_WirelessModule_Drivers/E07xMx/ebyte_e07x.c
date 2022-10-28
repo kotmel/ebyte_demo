@@ -953,13 +953,13 @@ uint8e_t E07x_GetStatus(void)
  */
 uint8e_t E07x_TaskForPoll(void)
 {
-    
+    uint8e_t recvSize;
     if (0 == Ebyte_Port_Gdo0IoRead())             // 检测无线模块是否产生接收中断 
     {
         while (Ebyte_Port_Gdo0IoRead() == 0);
 
         // 读取接收到的数据长度 
-        uint8e_t recvSize = 0;
+        recvSize = 0;
         E07x_GetFIFO(&recvSize , 1);
 
         // 如果接收长度不为0

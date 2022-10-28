@@ -1,14 +1,14 @@
 /**
   **********************************************************************************
   * @file      board.h
-  * @brief     E15-EVB02 °å¼¶Èí¼þÇý¶¯²ã     
-  * @details   ÏêÇéÇë²Î¼û https://www.ebyte.com/       
+  * @brief     E15-EVB02 ï¿½å¼¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½     
+  * @details   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¼ï¿½ https://www.ebyte.com/       
   * @author    JiangHeng     
   * @date      2021-05-06     
   * @version   1.0.0     
   **********************************************************************************
   * @copyright BSD License 
-  *            ³É¶¼ÒÚ°ÛÌØµç×Ó¿Æ¼¼ÓÐÏÞ¹«Ë¾  
+  *            ï¿½É¶ï¿½ï¿½Ú°ï¿½ï¿½Øµï¿½ï¿½Ó¿Æ¼ï¿½ï¿½ï¿½ï¿½Þ¹ï¿½Ë¾  
   *   ______   ____   __     __  _______   ______ 
   *  |  ____| |  _ \  \ \   / / |__   __| |  ____|
   *  | |__    | |_) |  \ \_/ /     | |    | |__   
@@ -22,21 +22,21 @@
 #include "stm8l15x_conf.h"
 #include "board_mini_printf.h"
 
-/* Òý½ÅÅäÖÃ LED   */
+/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ LED   */
 #define BSP_GPIO_PORT_LED_1       GPIOC
 #define BSP_GPIO_PIN_LED_1        GPIO_Pin_6
 
 #define BSP_GPIO_PORT_LED_2       GPIOC
 #define BSP_GPIO_PIN_LED_2        GPIO_Pin_5
 
-/* Òý½ÅÅäÖÃ °´¼ü */
+/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ */
 #define BSP_GPIO_PORT_BUTTON_1    GPIOA
 #define BSP_GPIO_PIN_BUTTON_1     GPIO_Pin_4
 
 #define BSP_GPIO_PORT_BUTTON_2    GPIOA
 #define BSP_GPIO_PIN_BUTTON_2     GPIO_Pin_5
 
-/* Òý½ÅÅäÖÃ SPIÍ¨ÐÅ½Ó¿Ú */
+/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ SPIÍ¨ï¿½Å½Ó¿ï¿½ */
 #define BSP_GPIO_PORT_SPI_NSS     GPIOB
 #define BSP_GPIO_PIN_SPI_NSS      GPIO_Pin_4
 
@@ -49,15 +49,15 @@
 #define BSP_GPIO_PORT_SPI_SCK     GPIOB
 #define BSP_GPIO_PIN_SPI_SCK      GPIO_Pin_5
 
-/* Òý½ÅÅäÖÃ Í¨ÐÅ´®¿Ú */
+/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Í¨ï¿½Å´ï¿½ï¿½ï¿½ */
 #define BSP_GPIO_PORT_UART_TX     GPIOA
 #define BSP_GPIO_PIN_UART_TX      GPIO_Pin_2
 
 #define BSP_GPIO_PORT_UART_RX     GPIOA
 #define BSP_GPIO_PIN_UART_RX      GPIO_Pin_3
 
-/* Òý½ÅÅäÖÃ EBYTEÎÞÏßÄ£¿é¿ØÖÆ */
-/* E22 E220Òý½Å¼æÈÝ */
+/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ EBYTEï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ */
+/* E22 E220ï¿½ï¿½ï¿½Å¼ï¿½ï¿½ï¿½ */
 #define BSP_GPIO_PORT_NRST        GPIOC
 #define BSP_GPIO_PIN_NRST         GPIO_Pin_2
 #define BSP_GPIO_PORT_BUSY        GPIOC
@@ -114,14 +114,14 @@
 #define BSP_GPIO_PIN_E49_SLCK     GPIO_Pin_5
 
 
-/* ²ÎÊýÅäÖÃ SPI */
+/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ SPI */
 #define BSP_RF_SPI                  SPI1
 #define BSP_RF_SPI_CLOCK            CLK_Peripheral_SPI1
 #define Ebyte_BSP_RfSpiSelected()   GPIO_WriteBit( BSP_GPIO_PORT_SPI_NSS , BSP_GPIO_PIN_SPI_NSS, RESET )
 #define Ebyte_BSP_RfSpiUnselected() GPIO_WriteBit( BSP_GPIO_PORT_SPI_NSS , BSP_GPIO_PIN_SPI_NSS, SET )
 
-/* ²ÎÊýÅäÖÃ ÎÞÏßÄ£¿é¿ØÖÆIO */
-/* E22/E220¼æÈÝ */
+/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½IO */
+/* E22/E220ï¿½ï¿½ï¿½ï¿½ */
 #define Ebyte_BSP_RfResetIoLow()  GPIO_WriteBit( BSP_GPIO_PORT_NRST , BSP_GPIO_PIN_NRST, RESET )
 #define Ebyte_BSP_RfResetIoHigh() GPIO_WriteBit( BSP_GPIO_PORT_NRST , BSP_GPIO_PIN_NRST, SET )
 #define Ebyte_BSP_RfTxIoDisable() GPIO_WriteBit( BSP_GPIO_PORT_TXEN , BSP_GPIO_PIN_TXEN, RESET )
@@ -163,28 +163,37 @@
 #define Ebyte_BSP_E49SdioIoOutput()  GPIO_Init( BSP_GPIO_PORT_E49_SDIO, BSP_GPIO_PIN_E49_SDIO, GPIO_Mode_Out_PP_High_Fast )
 #define Ebyte_BSP_E49SdioIoInput()   GPIO_Init( BSP_GPIO_PORT_E49_SDIO, BSP_GPIO_PIN_E49_SDIO, GPIO_Mode_In_FL_No_IT )
 #define Ebyte_BSP_E49SdioIoRead()    GPIO_ReadInputDataBit( BSP_GPIO_PORT_E49_SDIO , BSP_GPIO_PIN_E49_SDIO) 
-/* È«¾ÖÖÐ¶Ï */
+/* È«ï¿½ï¿½ï¿½Ð¶ï¿½ */
+#if defined(__CSMC__) || defined(_SDCC_)
+#define Ebyte_BSP_GlobalIntEnable()               enableInterrupts()
+#define Ebyte_BSP_GlobalIntDisable()              disableInterrupts()
+#else
 #define Ebyte_BSP_GlobalIntEnable()                __enable_interrupt()
 #define Ebyte_BSP_GlobalIntDisable()               __disable_interrupt()
-
-/* ²ÎÊýÅäÖÃ UART */
+#endif
+/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ UART */
 #define BSP_USER_UART             USART1
 #define BSP_USER_UART_CLOCK       CLK_Peripheral_USART1
-#define BSP_USER_UART_BAUDRATE    9600                  //²¨ÌØÂÊ
-#define BSP_USER_UART_PARITY      USART_Parity_No       //USART_Parity_No:ÎÞÐ£Ñé  USART_Parity_Even:ÆæÐ£Ñé  USART_Parity_Odd:Å¼Ð£Ñé     
-#define BSP_USER_UART_IRQ         USART1_RX_IRQn        //ÖÐ¶ÏÀàÐÍ
-#define BSP_USER_UART_IRQ_LEVEL   ITC_PriorityLevel_2   //ÓÅÏÈ¼¶
+#define BSP_USER_UART_BAUDRATE    9600                  //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+#define BSP_USER_UART_PARITY      USART_Parity_No       //USART_Parity_No:ï¿½ï¿½Ð£ï¿½ï¿½  USART_Parity_Even:ï¿½ï¿½Ð£ï¿½ï¿½  USART_Parity_Odd:Å¼Ð£ï¿½ï¿½     
+#define BSP_USER_UART_IRQ         USART1_RX_IRQn        //ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½
+#define BSP_USER_UART_IRQ_LEVEL   ITC_PriorityLevel_2   //ï¿½ï¿½ï¿½È¼ï¿½
 
 
-/* ²ÎÊýÅäÖÃ °´¼üÊÂ¼þ¶ÓÁÐ */
+/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ */
 #define BSP_BTN_FIFO_LENGTH       16
 
-/* ²ÎÊýÅäÖÃ µ÷ÊÔ´òÓ¡ÐÅÏ¢ ¹Ø±Õ´òÓ¡ÐèÒª×¢ÊÍµôºê¶¨Òå EBYTE_DEBUG */
-#define EBYTE_DEBUG   
+/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ô´ï¿½Ó¡ï¿½ï¿½Ï¢ ï¿½Ø±Õ´ï¿½Ó¡ï¿½ï¿½Òª×¢ï¿½Íµï¿½ï¿½ê¶¨ï¿½ï¿½ EBYTE_DEBUG */
+#define EBYTE_DEBUG 
+#ifdef __CSMC__
+//kkk cosmic compiler doesn't support macros vith variable number of  parameters 
+#define DEBUG mprintf
+#else
 #ifdef EBYTE_DEBUG
 #define DEBUG(format, ...)  mprintf(format, ##__VA_ARGS__)  
 #else
 #define DEBUG(...)     
+#endif
 #endif
 typedef enum { BSP_LED_1 = 0, BSP_LED_2 } BSP_LED_t;
 typedef enum { OFF = 0, ON , TOGGLE} BSP_LED_Ctl_t;
@@ -193,10 +202,10 @@ typedef enum { UART_8N1 = 0, UART_8O1, UART_8E1 } BSP_UART_Parity_t;
 typedef enum { BSP_BUTTON_1 = 0, BSP_BUTTON_2 } BSP_BUTTON_t;
 typedef enum
 {
-    BTN_1_SHORT, //°´¼ü1 ¶Ì°´ 
-    BTN_1_LONG,	 //°´¼ü1 ³¤°´ 
-    BTN_2_SHORT, //°´¼ü2 ¶Ì°´ 
-    BTN_2_LONG,	 //°´¼ü2 ³¤°´ 
+    BTN_1_SHORT, //ï¿½ï¿½ï¿½ï¿½1 ï¿½Ì°ï¿½ 
+    BTN_1_LONG,	 //ï¿½ï¿½ï¿½ï¿½1 ï¿½ï¿½ï¿½ï¿½ 
+    BTN_2_SHORT, //ï¿½ï¿½ï¿½ï¿½2 ï¿½Ì°ï¿½ 
+    BTN_2_LONG	 //ï¿½ï¿½ï¿½ï¿½2 ï¿½ï¿½ï¿½ï¿½ 
 }BSP_BTN_EVENT_t;
 
 typedef struct

@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm8l15x_tim5.c
   * @author  MCD Application Team
-  * @version V1.6.0
-  * @date    28-June-2013
+  * @version V1.6.1
+  * @date    30-September-2014
   * @brief   This file provides firmware functions to manage the following 
   *          functionalities of the TIM5 peripheral:
   *            - TimeBase management
@@ -19,7 +19,7 @@
   *          ===================================================================
   *                                 How to use this driver
   *          ===================================================================
-  *          This driver provides functions to configure and initialise the TIM5
+  *          This driver provides functions to configure and initialize the TIM5
   *          peripheral
   *          These functions are split in 7 groups: 
   *   
@@ -81,6 +81,9 @@
   *  @endverbatim
   *    
   ******************************************************************************
+  * @attention
+  *
+  * <h2><center>&copy; COPYRIGHT 2014 STMicroelectronics</center></h2>
   *
   * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
   * You may not use this file except in compliance with the License.
@@ -94,11 +97,11 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   *
-  ****************************************************************************** 
+  ******************************************************************************
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm8l15x_TIM5.h"
+#include "stm8l15x_tim5.h"    /* SDCC patch: fix case of filename for POSIX OSes */
 
 /** @addtogroup STM8L15x_StdPeriph_Driver
   * @{
@@ -453,7 +456,7 @@ void TIM5_ARRPreloadConfig(FunctionalState NewState)
 }
 
 /**
-  * @brief  Selects the TIM’s One Pulse Mode.
+  * @brief  Selects the TIM's One Pulse Mode.
   * @param  TIM5_OPMode: Specifies the OPM Mode to be used.
   *          This parameter can be one of the following values:
   *            @arg TIM5_OPMode_Single: Single one Pulse mode (OPM Active)
@@ -764,7 +767,7 @@ void TIM5_BKRConfig(TIM5_OSSIState_TypeDef TIM5_OSSIState,
 
 
 
-  /* Set the Lock level, the Break enable Bit and the Ploarity, the OSSI State,
+  /* Set the Lock level, the Break enable Bit and the Polarity, the OSSI State,
   the dead time value and the Automatic Output Enable Bit */
   TIM5->BKR = (uint8_t)((uint8_t)((uint8_t)((uint8_t)((uint8_t)TIM5_OSSIState | (uint8_t)TIM5_LockLevel) | \
                                   (uint8_t)((uint8_t)TIM5_BreakState | (uint8_t)TIM5_BreakPolarity)) | \
@@ -1490,7 +1493,7 @@ FlagStatus TIM5_GetFlagStatus(TIM5_FLAG_TypeDef TIM5_FLAG)
 }
 
 /**
-  * @brief  Clears the TIM’s pending flags.
+  * @brief  Clears the TIM's pending flags.
   * @param  TIM5_FLAG: Specifies the flag to clear.
   *          This parameter can be any combination of the following values:
   *            @arg TIM5_FLAG_Update: Update
@@ -1504,7 +1507,7 @@ void TIM5_ClearFlag(TIM5_FLAG_TypeDef TIM5_FLAG)
 {
   /* Check the parameters */
   assert_param(IS_TIM5_CLEAR_FLAG((uint16_t)TIM5_FLAG));
-  /* Clear the flags (rc_w0) clear this bit by writing 0. Writing ‘1’ has no effect*/
+  /* Clear the flags (rc_w0) clear this bit by writing 0. Writing '1' has no effect*/
   TIM5->SR1 = (uint8_t)(~(uint8_t)(TIM5_FLAG));
   TIM5->SR2 = (uint8_t)(~(uint8_t)((uint16_t)TIM5_FLAG >> 8));
 }
@@ -1788,8 +1791,8 @@ void TIM5_ETRClockMode2Config(TIM5_ExtTRGPSC_TypeDef TIM5_ExtTRGPrescaler,
   *            @arg TIM5_TRGSelection_TIM3: TRIG Input source =  TIM TRIG Output
   *            @arg TIM5_TRGSelection_TIM2: TRIG Input source =  TIM TRIG Output
   *            @arg TIM5_TRGSelection_TI1F_ED: TRIG Input source = TI1F_ED (TI1 Edge Detector)
-  *            @arg TIM5_TRGSelection_TI1FP1: TRIG Input source = TI1FP1 (Filtred Timer Input 1)
-  *            @arg TIM5_TRGSelection_TI2FP2: TRIG Input source = TI2FP2 (Filtred Timer Input 2)
+  *            @arg TIM5_TRGSelection_TI1FP1: TRIG Input source = TI1FP1 (Filtered Timer Input 1)
+  *            @arg TIM5_TRGSelection_TI2FP2: TRIG Input source = TI2FP2 (Filtered Timer Input 2)
   *            @arg TIM5_TRGSelection_ETRF: TRIG Input source =  ETRF (External Trigger Input )      
   * @retval None
   */
@@ -2004,7 +2007,7 @@ void TIM5_EncoderInterfaceConfig(TIM5_EncoderMode_TypeDef TIM5_EncoderMode,
 }
 
 /**
-  * @brief  Enables or Disables the TIM’s Hall sensor interface.
+  * @brief  Enables or Disables the TIM's Hall sensor interface.
   * @param  NewState: The new state of the TIM5 Hall sensor interface.
   *          This parameter can be ENABLE or DISABLE
   * @retval None

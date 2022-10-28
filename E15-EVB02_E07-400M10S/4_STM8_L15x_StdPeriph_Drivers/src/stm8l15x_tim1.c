@@ -2,8 +2,8 @@
   ******************************************************************************
   * @file    stm8l15x_tim1.c
   * @author  MCD Application Team
-  * @version V1.6.0
-  * @date    28-June-2013
+  * @version V1.6.1
+  * @date    30-September-2014
   * @brief   This file provides firmware functions to manage the following 
   *          functionalities of the TIM1 peripheral:
   *            - TimeBase management
@@ -19,7 +19,7 @@
   *          ===================================================================
   *                                 How to use this driver
   *          ===================================================================
-  *          This driver provides functions to configure and initialise the TIM1 
+  *          This driver provides functions to configure and initialize the TIM1 
   *          peripheral
   *          These functions are split in 7 groups: 
   *   
@@ -84,6 +84,9 @@
   *  @endverbatim
   *    
   ******************************************************************************
+  * @attention
+  *
+  * <h2><center>&copy; COPYRIGHT 2014 STMicroelectronics</center></h2>
   *
   * Licensed under MCD-ST Liberty SW License Agreement V2, (the "License");
   * You may not use this file except in compliance with the License.
@@ -97,7 +100,7 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   *
-  ****************************************************************************** 
+  ******************************************************************************
   */
 
 /* Includes ------------------------------------------------------------------*/
@@ -437,7 +440,7 @@ void TIM1_ARRPreloadConfig(FunctionalState NewState)
 }
 
 /**
-  * @brief  Selects the TIM1’s One Pulse Mode.
+  * @brief  Selects the TIM1's One Pulse Mode.
   * @param  TIM1_OPMode specifies the OPM Mode to be used.
   *          This parameter can be one of the following values
   *            @arg TIM1_OPMode_Single
@@ -2066,7 +2069,7 @@ FlagStatus TIM1_GetFlagStatus(TIM1_FLAG_TypeDef TIM1_FLAG)
 }
 
 /**
-  * @brief  Clears the TIM1’s pending flags.
+  * @brief  Clears the TIM1's pending flags.
   * @param  TIM1_FLAG specifies the flag to clear.
   *          This parameter can be one of the following values:
   *            @arg TIM1_FLAG_Update: TIM1 update Flag
@@ -2088,7 +2091,7 @@ void TIM1_ClearFlag(TIM1_FLAG_TypeDef TIM1_FLAG)
   /* Check the parameters */
   assert_param(IS_TIM1_CLEAR_FLAG(TIM1_FLAG));
 
-  /* Clear the flags (rc_w0) clear this bit by writing 0. Writing ‘1’ has no effect*/
+  /* Clear the flags (rc_w0) clear this bit by writing 0. Writing '1' has no effect*/
   TIM1->SR1 = (uint8_t)(~(uint8_t)(TIM1_FLAG));
   TIM1->SR2 = (uint8_t)((uint8_t)(~((uint8_t)((uint16_t)TIM1_FLAG >> 8))) & (uint8_t)0x1E);
 }
@@ -2156,7 +2159,7 @@ void TIM1_ClearITPendingBit(TIM1_IT_TypeDef TIM1_IT)
 }
 
 /**
-  * @brief  Configures the TIM1’s DMA interface.
+  * @brief  Configures the TIM1's DMA interface.
   * @param  TIM1_DMABase: DMA Base address.
   * @param  TIM1_DMABurstLength: DMA Burst length.
   * @retval None.
@@ -2174,7 +2177,7 @@ void TIM1_DMAConfig(TIM1_DMABase_TypeDef TIM1_DMABase,
 }
 
 /**
-  * @brief  Enables or disables the TIM’s DMA Requests.
+  * @brief  Enables or disables the TIM's DMA Requests.
   * @param  TIM1_DMASources: specifies the DMA Request sources.
   *          This parameter can be any combination of the following values:
   *            @arg TIM1_DMA_Update: TIM1 update Interrupt source
@@ -2578,7 +2581,7 @@ void TIM1_EncoderInterfaceConfig(TIM1_EncoderMode_TypeDef TIM1_EncoderMode,
 }
 
 /**
-  * @brief  Enables or Disables the TIM’s Hall sensor interface.
+  * @brief  Enables or Disables the TIM's Hall sensor interface.
   * @param  NewState : The new state of the TIM1 Hall sensor interface.
   *          This parameter can be ENABLE or DISABLE
   * @retval None

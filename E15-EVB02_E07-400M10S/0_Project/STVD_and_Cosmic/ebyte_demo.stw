@@ -1,0 +1,12 @@
+;	STMicroelectronics Workspace file
+
+[Version]
+Keyword=ST7Workspace-V0.7
+
+[Project0]
+Filename=ebyte_demo.stp
+Dependencies=
+[Options]
+ActiveProject=ebyte_demo
+ActiveConfig=Debug
+AddSortedElements=1
