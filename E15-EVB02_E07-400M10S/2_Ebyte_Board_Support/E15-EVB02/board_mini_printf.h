@@ -1,0 +1,2 @@
+
+void mprintf(char * Data, ...);
