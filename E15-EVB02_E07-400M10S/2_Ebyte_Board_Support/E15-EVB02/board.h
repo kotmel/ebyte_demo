@@ -57,61 +57,11 @@
 #define BSP_GPIO_PIN_UART_RX      GPIO_Pin_3
 
 /* �������� EBYTE����ģ����� */
-/* E22 E220���ż��� */
-#define BSP_GPIO_PORT_NRST        GPIOC
-#define BSP_GPIO_PIN_NRST         GPIO_Pin_2
-#define BSP_GPIO_PORT_BUSY        GPIOC
-#define BSP_GPIO_PIN_BUSY         GPIO_Pin_1
-#define BSP_GPIO_PORT_RXEN        GPIOD
-#define BSP_GPIO_PIN_RXEN         GPIO_Pin_4
-#define BSP_GPIO_PORT_TXEN        GPIOD
-#define BSP_GPIO_PIN_TXEN         GPIO_Pin_4
 /* E07 */
 #define BSP_GPIO_PORT_E07_GDO0    GPIOC
 #define BSP_GPIO_PIN_E07_GDO0     GPIO_Pin_0    
 #define BSP_GPIO_PORT_E07_GDO1    GPIOD
 #define BSP_GPIO_PIN_E07_GDO1     GPIO_Pin_4 
-/* E10 */
-#define BSP_GPIO_PORT_E10_DIO2    GPIOC
-#define BSP_GPIO_PIN_E10_DIO2     GPIO_Pin_1    
-#define BSP_GPIO_PORT_E10_DIO3    GPIOC
-#define BSP_GPIO_PIN_E10_DIO3     GPIO_Pin_0
-#define BSP_GPIO_PORT_E10_IRQ     GPIOD
-#define BSP_GPIO_PIN_E10_IRQ      GPIO_Pin_4
-#define BSP_GPIO_PORT_E10_SDN     GPIOC
-#define BSP_GPIO_PIN_E10_SDN      GPIO_Pin_2
-/* E19  */
-#define BSP_GPIO_PORT_E19_NRST        GPIOC
-#define BSP_GPIO_PIN_E19_NRST         GPIO_Pin_0
-#define BSP_GPIO_PORT_E19_DIO0        GPIOC
-#define BSP_GPIO_PIN_E19_DIO0         GPIO_Pin_1
-#define BSP_GPIO_PORT_E19_RXEN        GPIOD
-#define BSP_GPIO_PIN_E19_RXEN         GPIO_Pin_4
-#define BSP_GPIO_PORT_E19_TXEN        GPIOC
-#define BSP_GPIO_PIN_E19_TXEN         GPIO_Pin_2
-/* E30 */
-#define BSP_GPIO_PORT_E30_IRQ     GPIOD
-#define BSP_GPIO_PIN_E30_IRQ      GPIO_Pin_4
-#define BSP_GPIO_PORT_E30_SDN     GPIOC
-#define BSP_GPIO_PIN_E30_SDN      GPIO_Pin_2
-/* E31 */
-#define BSP_GPIO_PORT_E31_IRQ     GPIOC
-#define BSP_GPIO_PIN_E31_IRQ      GPIO_Pin_2
-/* E49 */
-#define BSP_GPIO_PORT_E49_DIO1    GPIOC
-#define BSP_GPIO_PIN_E49_DIO1     GPIO_Pin_1
-#define BSP_GPIO_PORT_E49_DIO2    GPIOC
-#define BSP_GPIO_PIN_E49_DIO2     GPIO_Pin_2
-#define BSP_GPIO_PORT_E49_DIO3    
-#define BSP_GPIO_PIN_E49_DIO3      
-#define BSP_GPIO_PORT_E49_CSB     GPIOB
-#define BSP_GPIO_PIN_E49_CSB      GPIO_Pin_4
-#define BSP_GPIO_PORT_E49_FCSB    GPIOB
-#define BSP_GPIO_PIN_E49_FCSB     GPIO_Pin_7
-#define BSP_GPIO_PORT_E49_SDIO    GPIOB
-#define BSP_GPIO_PIN_E49_SDIO     GPIO_Pin_6
-#define BSP_GPIO_PORT_E49_SLCK    GPIOB
-#define BSP_GPIO_PIN_E49_SLCK     GPIO_Pin_5
 
 
 /* �������� SPI */
@@ -120,49 +70,11 @@
 #define Ebyte_BSP_RfSpiSelected()   GPIO_WriteBit( BSP_GPIO_PORT_SPI_NSS , BSP_GPIO_PIN_SPI_NSS, RESET )
 #define Ebyte_BSP_RfSpiUnselected() GPIO_WriteBit( BSP_GPIO_PORT_SPI_NSS , BSP_GPIO_PIN_SPI_NSS, SET )
 
-/* �������� ����ģ�����IO */
-/* E22/E220���� */
-#define Ebyte_BSP_RfResetIoLow()  GPIO_WriteBit( BSP_GPIO_PORT_NRST , BSP_GPIO_PIN_NRST, RESET )
-#define Ebyte_BSP_RfResetIoHigh() GPIO_WriteBit( BSP_GPIO_PORT_NRST , BSP_GPIO_PIN_NRST, SET )
-#define Ebyte_BSP_RfTxIoDisable() GPIO_WriteBit( BSP_GPIO_PORT_TXEN , BSP_GPIO_PIN_TXEN, RESET )
-#define Ebyte_BSP_RfTxIoEnable()  GPIO_WriteBit( BSP_GPIO_PORT_TXEN , BSP_GPIO_PIN_TXEN, SET )
-#define Ebyte_BSP_RfRxIoDisable() GPIO_WriteBit( BSP_GPIO_PORT_RXEN , BSP_GPIO_PIN_RXEN, RESET )
-#define Ebyte_BSP_RfRxIoEnable()  GPIO_WriteBit( BSP_GPIO_PORT_RXEN , BSP_GPIO_PIN_RXEN, SET ) 
-#define Ebyte_BSP_RfBusyIoRead()  GPIO_ReadInputDataBit( BSP_GPIO_PORT_BUSY , BSP_GPIO_PIN_BUSY)
 
 /* E07 */
 #define Ebyte_BSP_RfGdo0IoRead()  GPIO_ReadInputDataBit( BSP_GPIO_PORT_E07_GDO0 , BSP_GPIO_PIN_E07_GDO0)
 #define Ebyte_BSP_RfGdo1IoRead()  GPIO_ReadInputDataBit( BSP_GPIO_PORT_E07_GDO1 , BSP_GPIO_PIN_E07_GDO1)
-/* E10 */
-#define Ebyte_BSP_E10IrqIoRead()  GPIO_ReadInputDataBit( BSP_GPIO_PORT_E10_IRQ , BSP_GPIO_PIN_E10_IRQ)
-#define Ebyte_BSP_E10Dio2Read()   GPIO_ReadInputDataBit( BSP_GPIO_PORT_E10_DIO2 , BSP_GPIO_PIN_E10_DIO2)
-#define Ebyte_BSP_E10Dio3Read()   GPIO_ReadInputDataBit( BSP_GPIO_PORT_E10_DIO3 , BSP_GPIO_PIN_E10_DIO3)
-#define Ebyte_BSP_E10SdnIoLow()   GPIO_WriteBit( BSP_GPIO_PORT_E10_SDN , BSP_GPIO_PIN_E10_SDN, RESET )
-#define Ebyte_BSP_E10SdnIoHigh()  GPIO_WriteBit( BSP_GPIO_PORT_E10_SDN , BSP_GPIO_PIN_E10_SDN, SET )
-/* E19 */
-#define Ebyte_BSP_E19ResetIoLow()  GPIO_WriteBit( BSP_GPIO_PORT_E19_NRST , BSP_GPIO_PIN_E19_NRST, RESET )
-#define Ebyte_BSP_E19ResetIoHigh() GPIO_WriteBit( BSP_GPIO_PORT_E19_NRST , BSP_GPIO_PIN_E19_NRST, SET )
-#define Ebyte_BSP_E19TxIoDisable() GPIO_WriteBit( BSP_GPIO_PORT_E19_TXEN , BSP_GPIO_PIN_E19_TXEN, RESET )
-#define Ebyte_BSP_E19TxIoEnable()  GPIO_WriteBit( BSP_GPIO_PORT_E19_TXEN , BSP_GPIO_PIN_E19_TXEN, SET )
-#define Ebyte_BSP_E19RxIoDisable() GPIO_WriteBit( BSP_GPIO_PORT_E19_RXEN , BSP_GPIO_PIN_E19_RXEN, RESET )
-#define Ebyte_BSP_E19RxIoEnable()  GPIO_WriteBit( BSP_GPIO_PORT_E19_RXEN , BSP_GPIO_PIN_E19_RXEN, SET ) 
-#define Ebyte_BSP_E19Dio0Read()   GPIO_ReadInputDataBit( BSP_GPIO_PORT_E19_DIO0 , BSP_GPIO_PIN_E19_DIO0)
-/* E31 */
-#define Ebyte_BSP_E31IrqIoRead()  GPIO_ReadInputDataBit( BSP_GPIO_PORT_E31_IRQ , BSP_GPIO_PIN_E31_IRQ)
-/* E49 */
-#define Ebyte_BSP_E49Dio1IoRead() GPIO_ReadInputDataBit( BSP_GPIO_PORT_E49_DIO1 , BSP_GPIO_PIN_E49_DIO1) 
-#define Ebyte_BSP_E49Dio2IoRead() GPIO_ReadInputDataBit( BSP_GPIO_PORT_E49_DIO2 , BSP_GPIO_PIN_E49_DIO2) 
-#define Ebyte_BSP_E49FcsbIoLow()  GPIO_WriteBit( BSP_GPIO_PORT_E49_FCSB , BSP_GPIO_PIN_E49_FCSB, RESET ) 
-#define Ebyte_BSP_E49FcsbIoHigh() GPIO_WriteBit( BSP_GPIO_PORT_E49_FCSB , BSP_GPIO_PIN_E49_FCSB, SET ) 
-#define Ebyte_BSP_E49CsbIoLow()   GPIO_WriteBit( BSP_GPIO_PORT_E49_CSB , BSP_GPIO_PIN_E49_CSB, RESET )
-#define Ebyte_BSP_E49CsbIoHigh()  GPIO_WriteBit( BSP_GPIO_PORT_E49_CSB , BSP_GPIO_PIN_E49_CSB, SET ) 
-#define Ebyte_BSP_E49SlckIoLow()  GPIO_WriteBit( BSP_GPIO_PORT_E49_SLCK , BSP_GPIO_PIN_E49_SLCK, RESET ) 
-#define Ebyte_BSP_E49SlckIoHigh() GPIO_WriteBit( BSP_GPIO_PORT_E49_SLCK , BSP_GPIO_PIN_E49_SLCK, SET ) 
-#define Ebyte_BSP_E49SdioIoLow()  GPIO_WriteBit( BSP_GPIO_PORT_E49_SDIO , BSP_GPIO_PIN_E49_SDIO, RESET ) 
-#define Ebyte_BSP_E49SdioIoHigh() GPIO_WriteBit( BSP_GPIO_PORT_E49_SDIO , BSP_GPIO_PIN_E49_SDIO, SET ) 
-#define Ebyte_BSP_E49SdioIoOutput()  GPIO_Init( BSP_GPIO_PORT_E49_SDIO, BSP_GPIO_PIN_E49_SDIO, GPIO_Mode_Out_PP_High_Fast )
-#define Ebyte_BSP_E49SdioIoInput()   GPIO_Init( BSP_GPIO_PORT_E49_SDIO, BSP_GPIO_PIN_E49_SDIO, GPIO_Mode_In_FL_No_IT )
-#define Ebyte_BSP_E49SdioIoRead()    GPIO_ReadInputDataBit( BSP_GPIO_PORT_E49_SDIO , BSP_GPIO_PIN_E49_SDIO) 
+
 /* ȫ���ж� */
 #if defined(__CSMC__) || defined(_SDCC_)
 #define Ebyte_BSP_GlobalIntEnable()               enableInterrupts()

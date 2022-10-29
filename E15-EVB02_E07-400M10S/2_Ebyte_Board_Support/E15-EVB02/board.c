@@ -1,14 +1,14 @@
 /**
   **********************************************************************************
   * @file      board.c
-  * @brief     E15-EVB02 °å¼¶Èí¼þÇý¶¯²ã
-  * @details   ÏêÇéÇë²Î¼û https://www.ebyte.com/
+  * @brief     E15-EVB02 ï¿½å¼¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+  * @details   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¼ï¿½ https://www.ebyte.com/
   * @author    JiangHeng
   * @date      2021-05-06
   * @version   1.0.0
   **********************************************************************************
   * @copyright BSD License
-  *            ³É¶¼ÒÚ°ÛÌØµç×Ó¿Æ¼¼ÓÐÏÞ¹«Ë¾
+  *            ï¿½É¶ï¿½ï¿½Ú°ï¿½ï¿½Øµï¿½ï¿½Ó¿Æ¼ï¿½ï¿½ï¿½ï¿½Þ¹ï¿½Ë¾
   *   ______   ____   __     __  _______   ______
   *  |  ____| |  _ \  \ \   / / |__   __| |  ____|
   *  | |__    | |_) |  \ \_/ /     | |    | |__
@@ -21,80 +21,29 @@
 
 #include "board.h"
 
-/// °´¼üÊÂ¼þ¶ÓÁÐ
+/// ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½
 BSP_BTN_FIFO_t BSP_BTN_FIFO;
 
 
-/// ¸¨ÖúÑÓÊ±¼ÆËã ÓÃÓÚ¶¨Ê±Æ÷ÖÐ¶Ï µÝ¼õ 
+/// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ú¶ï¿½Ê±ï¿½ï¿½ï¿½Ð¶ï¿½ ï¿½Ý¼ï¿½ 
 volatile uint32_t Ebyte_TimerDelayCounter = 0;
 
+
 /*!
- * @brief ÄÚ²¿Ê±ÖÓ³õÊ¼»¯
+ * @brief ï¿½Ú²ï¿½Ê±ï¿½Ó³ï¿½Ê¼ï¿½ï¿½
  */
 void Ebyte_BSP_HSI_Init( void )
 {
-    /* ÄÚ²¿ 16M HSI Ê±ÖÓ */
-    CLK_SYSCLKSourceConfig( CLK_SYSCLKSource_HSI );
-    /* 1·ÖÆµ  16M/1 */
-    CLK_SYSCLKDivConfig( CLK_SYSCLKDiv_1 );
+    /* ï¿½Ú²ï¿½ 16M HSI Ê±ï¿½ï¿½ */
+    //CLK_SYSCLKSourceConfig( CLK_SYSCLKSource_HSI );
+     CLK->SWR = (uint8_t)CLK_SYSCLKSource_HSI;
+    /* 1ï¿½ï¿½Æµ  16M/1 */
+    //CLK_SYSCLKDivConfig( CLK_SYSCLKDiv_1 );
+    CLK->CKDIVR = (uint8_t)(CLK_SYSCLKDiv_1);
 }
 
 /*!
- * @brief Õë¶ÔE22 E220 ÆÕÍ¨Òý½Å×ö³õÊ¼»¯
- */
-void Ebyte_BSP_E22xE220xGPIO_Init( void )
-{
-    GPIO_Init( BSP_GPIO_PORT_NRST, BSP_GPIO_PIN_NRST, GPIO_Mode_Out_PP_High_Slow );  
-    GPIO_Init( BSP_GPIO_PORT_BUSY, BSP_GPIO_PIN_BUSY, GPIO_Mode_In_FL_No_IT );
-    GPIO_Init( BSP_GPIO_PORT_RXEN, BSP_GPIO_PIN_RXEN, GPIO_Mode_Out_PP_Low_Slow );   
-    GPIO_Init( BSP_GPIO_PORT_TXEN, BSP_GPIO_PIN_TXEN, GPIO_Mode_Out_PP_Low_Slow );   
-    GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_NRST, BSP_GPIO_PIN_NRST, ENABLE );
-    GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_RXEN, BSP_GPIO_PIN_RXEN, ENABLE );
-    GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_TXEN, BSP_GPIO_PIN_TXEN, ENABLE );
-}
-
-/*!
- * @brief Õë¶ÔE19 ÆÕÍ¨Òý½Å×ö³õÊ¼»¯
- */
-void Ebyte_BSP_E19xGPIO_Init( void )
-{
-    GPIO_Init( BSP_GPIO_PORT_E19_NRST, BSP_GPIO_PIN_E19_NRST, GPIO_Mode_Out_PP_High_Slow );  
-    GPIO_Init( BSP_GPIO_PORT_E19_DIO0, BSP_GPIO_PIN_E19_DIO0, GPIO_Mode_In_PU_No_IT );
-    GPIO_Init( BSP_GPIO_PORT_E19_RXEN, BSP_GPIO_PIN_E19_RXEN, GPIO_Mode_Out_PP_Low_Slow );   
-    GPIO_Init( BSP_GPIO_PORT_E19_TXEN, BSP_GPIO_PIN_E19_TXEN, GPIO_Mode_Out_PP_Low_Slow );   
-    GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_E19_NRST, BSP_GPIO_PIN_E19_NRST, ENABLE );
-    GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_E19_RXEN, BSP_GPIO_PIN_E19_RXEN, ENABLE );
-    GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_E19_TXEN, BSP_GPIO_PIN_E19_TXEN, ENABLE );
-}
-
-/*!
- * @brief Õë¶ÔE10 ÆÕÍ¨Òý½Å×ö³õÊ¼»¯
- */
-void Ebyte_BSP_E10xGPIO_Init( void )
-{
-    GPIO_Init( BSP_GPIO_PORT_E10_SDN, BSP_GPIO_PIN_E10_SDN, GPIO_Mode_Out_PP_High_Slow ); //E10 ¸ßµçÆ½¸´Î»
-    GPIO_Init( BSP_GPIO_PORT_E10_IRQ, BSP_GPIO_PIN_E10_IRQ, GPIO_Mode_In_PU_No_IT );
-}
-
-/*!
- * @brief Õë¶ÔE30 ÆÕÍ¨Òý½Å×ö³õÊ¼»¯
- */
-void Ebyte_BSP_E30xGPIO_Init( void )
-{
-    GPIO_Init( BSP_GPIO_PORT_E30_SDN, BSP_GPIO_PIN_E30_SDN, GPIO_Mode_Out_PP_High_Slow ); //E30 ¸ßµçÆ½¸´Î»
-    GPIO_Init( BSP_GPIO_PORT_E30_IRQ, BSP_GPIO_PIN_E30_IRQ, GPIO_Mode_In_PU_No_IT );
-}
-
-/*!
- * @brief Õë¶ÔE31 ÆÕÍ¨Òý½Å×ö³õÊ¼»¯
- */
-void Ebyte_BSP_E31xGPIO_Init( void )
-{
-    GPIO_Init( BSP_GPIO_PORT_E31_IRQ, BSP_GPIO_PIN_E31_IRQ, GPIO_Mode_In_PU_No_IT );
-}
-
-/*!
- * @brief Õë¶ÔE07 ÆÕÍ¨Òý½Å×ö³õÊ¼»¯
+ * @brief ï¿½ï¿½ï¿½E07 ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
  */
 void Ebyte_BSP_E07xGPIO_Init( void )
 {
@@ -103,113 +52,74 @@ void Ebyte_BSP_E07xGPIO_Init( void )
 }
 
 /*!
- * @brief Õë¶ÔE49 ÆÕÍ¨Òý½Å×ö³õÊ¼»¯
- */
-void Ebyte_BSP_E49xGPIO_Init( void )
-{
-    GPIO_Init( BSP_GPIO_PORT_E49_DIO1, BSP_GPIO_PIN_E49_DIO1,  GPIO_Mode_In_PU_No_IT );
-    GPIO_Init( BSP_GPIO_PORT_E49_DIO2, BSP_GPIO_PIN_E49_DIO2,  GPIO_Mode_In_PU_IT );
-    EXTI_SetPinSensitivity( EXTI_Pin_2, EXTI_Trigger_Rising );
-    GPIO_Init( BSP_GPIO_PORT_E49_CSB,  BSP_GPIO_PIN_E49_CSB,  GPIO_Mode_Out_PP_High_Fast );
-    GPIO_Init( BSP_GPIO_PORT_E49_FCSB, BSP_GPIO_PIN_E49_FCSB, GPIO_Mode_Out_PP_High_Fast );
-    GPIO_Init( BSP_GPIO_PORT_E49_SDIO, BSP_GPIO_PIN_E49_SDIO, GPIO_Mode_Out_PP_High_Fast );
-    GPIO_Init( BSP_GPIO_PORT_E49_SLCK, BSP_GPIO_PIN_E49_SLCK, GPIO_Mode_Out_PP_Low_Fast );
-    GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_E49_CSB, BSP_GPIO_PIN_E49_CSB, ENABLE );
-    GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_E49_FCSB, BSP_GPIO_PIN_E49_FCSB, ENABLE );
-    GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_E49_SLCK, BSP_GPIO_PIN_E49_SLCK, ENABLE );
-}
-
-/*!
- * @brief ³õÊ¼»¯ËùÓÐIO
+ * @brief ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½IO
  *
- * @note  Ä¿±êÓ²¼þ: EBYTE E15-EVB02
+ * @note  Ä¿ï¿½ï¿½Ó²ï¿½ï¿½: EBYTE E15-EVB02
  */
 void Ebyte_BSP_GPIO_Init( void )
 {
-    /* ¸ù¾ÝÄ£¿éÀà±ð½øÐÐÒý½Å³õÊ¼»¯ */
-#if defined(EBYTE_E22_400M22S)||defined(EBYTE_E22_900M22S)||defined(EBYTE_E220_400M22S)||defined(EBYTE_E220_900M22S)
-    Ebyte_BSP_E22xE220xGPIO_Init();
-#elif defined(EBYTE_E10_400M20S)
-    Ebyte_BSP_E10xGPIO_Init();
-#elif defined(EBYTE_E30_900M20S)
-    Ebyte_BSP_E30xGPIO_Init();    
-#elif defined(EBYTE_E31_400M17S)||defined(EBYTE_E31_900M17S)
-    Ebyte_BSP_E31xGPIO_Init();      
-#elif defined(EBYTE_E07_400M10S)||defined(EBYTE_E07_900M10S)
+    /* ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å³ï¿½Ê¼ï¿½ï¿½ */
     Ebyte_BSP_E07xGPIO_Init();
-#elif defined(EBYTE_E49_400M20S)||defined(EBYTE_E49_900M20S)
-    Ebyte_BSP_E49xGPIO_Init();
-#elif defined(EBYTE_E19_433M20SC)
-    Ebyte_BSP_E19xGPIO_Init();
-#endif
-    /* LED  Òý½Å */
+    /* LED  ï¿½ï¿½ï¿½ï¿½ */
     GPIO_Init( BSP_GPIO_PORT_LED_1, BSP_GPIO_PIN_LED_1, GPIO_Mode_Out_PP_Low_Slow );
     GPIO_Init( BSP_GPIO_PORT_LED_2, BSP_GPIO_PIN_LED_2, GPIO_Mode_Out_PP_Low_Slow );
-    /* °´¼ü Òý½Å */
+    /* ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ */
     GPIO_Init( BSP_GPIO_PORT_BUTTON_1, BSP_GPIO_PIN_BUTTON_1, GPIO_Mode_In_PU_No_IT );
     GPIO_Init( BSP_GPIO_PORT_BUTTON_2, BSP_GPIO_PIN_BUTTON_2, GPIO_Mode_In_PU_No_IT );
 }
 
 /*!
- * @brief Í¨ÐÅ´®¿Ú³õÊ¼»¯
+ * @brief Í¨ï¿½Å´ï¿½ï¿½Ú³ï¿½Ê¼ï¿½ï¿½
  *
- * @note  Çë×¢Òâ£¬²»Í¬µÄMCU¿ÉÄÜÎÞÐè¶Ë¿ÚÓ³Éä
+ * @note  ï¿½ï¿½×¢ï¿½â£¬ï¿½ï¿½Í¬ï¿½ï¿½MCUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¿ï¿½Ó³ï¿½ï¿½
  */
 void Ebyte_BSP_UART_Init( void )
 {
-    /* Ê±ÖÓ */
+    /* Ê±ï¿½ï¿½ */
     CLK_PeripheralClockConfig( BSP_USER_UART_CLOCK, ENABLE );
     /* GPIO */
     GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_UART_TX, BSP_GPIO_PIN_UART_TX, ENABLE );
     GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_UART_RX, BSP_GPIO_PIN_UART_RX, ENABLE );
-    /* ¶Ë¿ÚÖØÓ³Éä  */
+    /* ï¿½Ë¿ï¿½ï¿½ï¿½Ó³ï¿½ï¿½  */
     SYSCFG_REMAPPinConfig( REMAP_Pin_USART1TxRxPortA, ENABLE );
-    /* »ù´¡²ÎÊýÅäÖÃ E15-EVB02Ä¬ÈÏ²¨ÌØÂÊ9600 8N1 */
-    USART_Init( BSP_USER_UART, BSP_USER_UART_BAUDRATE, USART_WordLength_8b, USART_StopBits_1, BSP_USER_UART_PARITY, ( USART_Mode_TypeDef )( USART_Mode_Rx | USART_Mode_Tx ) );  //ÔÊÐí½ÓÊÕºÍ·¢ËÍ
-    /* ´ò¿ª½ÓÊÕÖÐ¶Ï */;
+    /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ E15-EVB02Ä¬ï¿½Ï²ï¿½ï¿½ï¿½ï¿½ï¿½9600 8N1 */
+    USART_Init( BSP_USER_UART, BSP_USER_UART_BAUDRATE, USART_WordLength_8b, USART_StopBits_1, BSP_USER_UART_PARITY, ( USART_Mode_TypeDef )( USART_Mode_Rx | USART_Mode_Tx ) );  //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÕºÍ·ï¿½ï¿½ï¿½
+    /* ï¿½ò¿ª½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ */;
     USART_ITConfig( BSP_USER_UART, USART_IT_RXNE, ENABLE );
-    /* ´®¿Ú Ê¹ÄÜ */
+    /* ï¿½ï¿½ï¿½ï¿½ Ê¹ï¿½ï¿½ */
     USART_Cmd( BSP_USER_UART, ENABLE );
 }
 
 /*!
- * @brief E49Ê¹ÓÃµÄ°ëË«¹¤SPI
- */
-void Ebyte_BSP_HalfSPI_Init()
-{
-    /* ºÏ²¢µ½ÁËE49 GPIO³õÊ¼»¯ÖÐ */
-}
-
-/*!
- * @brief ÎÞÏßÄ£¿éÍ¨ÐÅSPI½Ó¿Ú³õÊ¼»¯º¯Êý
+ * @brief ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½Í¨ï¿½ï¿½SPIï¿½Ó¿Ú³ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  */
 void Ebyte_BSP_SPI_Init( void )
 {
-    /* Ê±ÖÓ */
+    /* Ê±ï¿½ï¿½ */
     CLK_PeripheralClockConfig( CLK_Peripheral_SPI1, ENABLE );
     /* GPIO */
     GPIO_Init( BSP_GPIO_PORT_SPI_NSS,  BSP_GPIO_PIN_SPI_NSS,  GPIO_Mode_Out_PP_High_Fast ); //Æ¬Ñ¡ CS
     GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_SPI_SCK, BSP_GPIO_PIN_SPI_MOSI | BSP_GPIO_PIN_SPI_MISO | BSP_GPIO_PIN_SPI_SCK, ENABLE ); // MOSI MISO SCK
-    /* ²ÎÊýÅäÖÃ */
+    /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
     SPI_Init( BSP_RF_SPI,
-              SPI_FirstBit_MSB,                 //´Ó¸ßÎ»¿ªÊ¼´«Êä
-              SPI_BaudRatePrescaler_2,          //16M/2 SCKËÙÂÊ
-              SPI_Mode_Master,                  //Ö÷»úÄ£Ê½
-              SPI_CPOL_Low,                     //¸ù¾Ý CPOL=0
-              SPI_CPHA_1Edge,                   //¸ù¾Ý CPHA=0  µÚÒ»¸öÊ±ÖÓ±ßÑØ²ÉÑùÊý¾Ý
-              SPI_Direction_2Lines_FullDuplex,  //È«Ë«¹¤
-              SPI_NSS_Soft,                     //Èí¼þ¿ØÖÆ´Ó»úCSÆ¬Ñ¡
-              0x07 );                           //CRC²ÎÊý
-    /* Ê¹ÄÜ */
+              SPI_FirstBit_MSB,                 //ï¿½Ó¸ï¿½Î»ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½
+              SPI_BaudRatePrescaler_2,          //16M/2 SCKï¿½ï¿½ï¿½ï¿½
+              SPI_Mode_Master,                  //ï¿½ï¿½ï¿½ï¿½Ä£Ê½
+              SPI_CPOL_Low,                     //ï¿½ï¿½ï¿½ï¿½ CPOL=0
+              SPI_CPHA_1Edge,                   //ï¿½ï¿½ï¿½ï¿½ CPHA=0  ï¿½ï¿½Ò»ï¿½ï¿½Ê±ï¿½Ó±ï¿½ï¿½Ø²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+              SPI_Direction_2Lines_FullDuplex,  //È«Ë«ï¿½ï¿½
+              SPI_NSS_Soft,                     //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ´Ó»ï¿½CSÆ¬Ñ¡
+              0x07 );                           //CRCï¿½ï¿½ï¿½ï¿½
+    /* Ê¹ï¿½ï¿½ */
     SPI_Cmd( BSP_RF_SPI, ENABLE );
 }
 
 /*!
- * @brief RFÄ£¿éSPIÍ¨ÐÅÊÕ/·¢º¯Êý
+ * @brief RFÄ£ï¿½ï¿½SPIÍ¨ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  *
- * @param data ·¢ËÍÊý¾Ý
- * @return ½ÓÊÕÊý¾Ý
- * @note stm8l SPI¿âº¯ÊýÖÐµÄSPI_SendData()/SPI_ReceiveData() ²»ÄÜÖ±½ÓÊ¹ÓÃ
+ * @param data ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * @return ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * @note stm8l SPIï¿½âº¯ï¿½ï¿½ï¿½Ðµï¿½SPI_SendData()/SPI_ReceiveData() ï¿½ï¿½ï¿½ï¿½Ö±ï¿½ï¿½Ê¹ï¿½ï¿½
  */
 uint8_t Ebyte_BSP_SpiTransAndRecv( uint8_t data )
 {
@@ -218,68 +128,117 @@ uint8_t Ebyte_BSP_SpiTransAndRecv( uint8_t data )
     while( ( BSP_RF_SPI->SR & SPI_FLAG_RXNE ) == RESET );
     return BSP_RF_SPI->DR;
 }
-
 /*!
- * @brief ¶¨Ê±Æ÷³õÊ¼»¯
+ * @brief ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
  *
- * @note  Ê¹ÓÃÁËTIM3²úÉú1msÖÜÆÚÐÔÖÐ¶Ï
- *        TIM3µÄÖ÷Ê±ÖÓÎªHSI 16MHz, 128·ÖÆµ¼´Îª 16 MHz / 128 = 125 000 Hz
- *        Ä¿±ê¶¨Ê±1ms ¼ÆÊýÖÜÆÚ¼´Îª ( 0.001 x 125000 - 1) = 124
+ * @note  Ê¹ï¿½ï¿½ï¿½ï¿½TIM3ï¿½ï¿½ï¿½ï¿½1msï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½
+ *        TIM3ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ÎªHSI 16MHz, 128ï¿½ï¿½Æµï¿½ï¿½Îª 16 MHz / 128 = 125 000 Hz
+ *        Ä¿ï¿½ê¶¨Ê±1ms ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú¼ï¿½Îª ( 0.001 x 125000 - 1) = 124
  */
 void Ebyte_BSP_TIMER_Init( void )
 {
-    /* Ê±ÖÓ */
+    /* Ê±ï¿½ï¿½ */
     CLK_PeripheralClockConfig( CLK_Peripheral_TIM3, ENABLE );
-    /* ²ÎÊý */
-    TIM3_TimeBaseInit( TIM3_Prescaler_128, TIM3_CounterMode_Up, 124 );
-    /* ÔÊÐíÖÐ¶Ï */
-    TIM3_ClearFlag( TIM3_FLAG_Update );
-    TIM3_ITConfig( TIM3_IT_Update, ENABLE );
-    /* Ê¹ÄÜ */
-    TIM3_Cmd( ENABLE );
+    /* ï¿½ï¿½ï¿½ï¿½ */
+    //TIM3_TimeBaseInit( TIM3_Prescaler_128, TIM3_CounterMode_Up, 124 );
+    /* Set the Autoreload value */
+    TIM3->ARRH = (uint8_t)(124 >> 8) ;
+    TIM3->ARRL = (uint8_t)(124);
+
+    /* Set the Prescaler value */
+    TIM3->PSCR = (uint8_t)(TIM3_Prescaler_128);
+
+    /* Select the Counter Mode */
+    TIM3->CR1 &= (uint8_t)((uint8_t)(~TIM_CR1_CMS)) & ((uint8_t)(~TIM_CR1_DIR));
+    TIM3->CR1 |= (uint8_t)(TIM3_CounterMode_Up);
+
+    /* Generate an update event to reload the Prescaler value immediately */
+    TIM3->EGR = TIM3_EventSource_Update;
+    /* ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ */
+    //TIM3_ClearFlag( TIM3_FLAG_Update );
+    TIM3->SR1 = (uint8_t)(~(uint8_t)(TIM3_FLAG_Update));
+    TIM3->SR2 = (uint8_t)(~(uint8_t)((uint16_t)TIM3_FLAG_Update >> 8));
+    //TIM3_ITConfig( TIM3_IT_Update, ENABLE );
+    TIM3->IER |= (uint8_t)TIM3_IT_Update;
+    /* Ê¹ï¿½ï¿½ */
+    //TIM3_Cmd( ENABLE );
+    TIM3->CR1 |= TIM_CR1_CEN;
+}
+
+// 16 MHz / 128 = 125 000 Hz
+// 125000 / 65535 = 1.907
+void Ebyte_BSP_TIMER2_Init( void )
+{
+    /* Ê±ï¿½ï¿½ */
+    CLK_PeripheralClockConfig( CLK_Peripheral_TIM2, ENABLE );
+    /* ï¿½ï¿½ï¿½ï¿½ */
+    //TIM2_TimeBaseInit( TIM2_Prescaler_128, TIM2_CounterMode_Up, 124 );
+    
+     /* Set the Autoreload value */
+    TIM2->ARRH = (uint8_t)(255) ;
+    TIM2->ARRL = (uint8_t)(255);
+
+    /* Set the Prescaler value */
+    TIM2->PSCR = (uint8_t)(TIM2_Prescaler_128);
+
+    /* Select the Counter Mode */
+    TIM2->CR1 &= (uint8_t)((uint8_t)(~TIM_CR1_CMS)) & ((uint8_t)(~TIM_CR1_DIR));
+    TIM2->CR1 |= (uint8_t)(TIM2_CounterMode_Up);
+
+    /* Generate an update event to reload the Prescaler value immediately */
+    TIM2->EGR = TIM2_EventSource_Update;
+
+    /* ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ */
+    //TIM2_ClearFlag( TIM2_FLAG_Update );
+    TIM2->SR1 = (uint8_t)(~(uint8_t)(TIM2_FLAG_Update));
+    TIM2->SR2 = (uint8_t)(~(uint8_t)((uint16_t)TIM2_FLAG_Update >> 8));
+
+    //TIM2_ITConfig( TIM2_IT_Update, ENABLE );
+    TIM2->IER |= (uint8_t)TIM2_IT_Update;
+    
+     /* Ê¹ï¿½ï¿½ */
+    //TIM2_Cmd( ENABLE );
+    TIM2->CR1 |= TIM_CR1_CEN;
 }
 
 /*!
- * @brief E15-EVB02 °åÔØ×ÊÔ´³õÊ¼»¯
+ * @brief E15-EVB02 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´ï¿½ï¿½Ê¼ï¿½ï¿½
  *
- * @note  ÄÚ²¿Ê±ÖÓHSI  x 16MHz
- *        ÓÃ»§Í¨ÐÅ´®¿Ú x USART1
- *        ÎÞÏßÄ£¿éÍ¨ÐÅ½Ó¿Ú x SPI1
- *        ¶¨Ê±Æ÷  x TIM3
- *        °´¼ü    x 2
- *        Ö¸Ê¾µÆ  x 2
+ * @note  ï¿½Ú²ï¿½Ê±ï¿½ï¿½HSI  x 16MHz
+ *        ï¿½Ã»ï¿½Í¨ï¿½Å´ï¿½ï¿½ï¿½ x USART1
+ *        ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½Í¨ï¿½Å½Ó¿ï¿½ x SPI1
+ *        ï¿½ï¿½Ê±ï¿½ï¿½  x TIM3
+ *        ï¿½ï¿½ï¿½ï¿½    x 2
+ *        Ö¸Ê¾ï¿½ï¿½  x 2
  */
 void Ebyte_BSP_Init( void )
 {
-    /* Ê±ÖÓ     ³õÊ¼»¯ */
+    /* Ê±ï¿½ï¿½     ï¿½ï¿½Ê¼ï¿½ï¿½ */
     Ebyte_BSP_HSI_Init();
-    /* IO       ³õÊ¼»¯ */
+    /* IO       ï¿½ï¿½Ê¼ï¿½ï¿½ */
     Ebyte_BSP_GPIO_Init();
-    /* ´®¿Ú     ³õÊ¼»¯ */
+    /* ï¿½ï¿½ï¿½ï¿½     ï¿½ï¿½Ê¼ï¿½ï¿½ */
     Ebyte_BSP_UART_Init();
-    /* SPI½Ó¿Ú  ³õÊ¼»¯  (E49±È½ÏÌØÊâ) */
-#if defined(EBYTE_E49_400M20S)||defined(EBYTE_E49_900M20S)
-    Ebyte_BSP_HalfSPI_Init();
-#else
+    /* SPIï¿½Ó¿ï¿½  ï¿½ï¿½Ê¼ï¿½ï¿½  (E49ï¿½È½ï¿½ï¿½ï¿½ï¿½ï¿½) */
     Ebyte_BSP_SPI_Init();
-#endif
-    /* ¶¨Ê±Æ÷   ³õÊ¼»¯ */
+    /* ï¿½ï¿½Ê±ï¿½ï¿½   ï¿½ï¿½Ê¼ï¿½ï¿½ */
     Ebyte_BSP_TIMER_Init();
-    /* °´¼üÊÂ¼þ¶ÓÁÐ ³õÊ¼»¯ */
+    //Ebyte_BSP_TIMER2_Init(); // kk 2Hz blink LED 1 just for test
+    /* ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ê¼ï¿½ï¿½ */
     Ebyte_BTN_FIFO_Init( &BSP_BTN_FIFO );
 }
 
 /*!
- * @brief ¿ØÖÆLED ¿ª/¹Ø/·­×ª
+ * @brief ï¿½ï¿½ï¿½ï¿½LED ï¿½ï¿½/ï¿½ï¿½/ï¿½ï¿½×ª
  *
- * @param LEDx  °åÔØÁ½¿Å·¢¹â¶þ¼«¹Ü
+ * @param LEDx  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  *              @arg BSP_LED_1 : LED1
  *              @arg BSP_LED_2 : LED2
  *
- * @param ctl   ¿ª / ¹Ø
- *              @arg OFF     : ¹Ø
- *              @arg ON      : ¿ª
- *              @arg TOGGLE  : ·­×ª
+ * @param ctl   ï¿½ï¿½ / ï¿½ï¿½
+ *              @arg OFF     : ï¿½ï¿½
+ *              @arg ON      : ï¿½ï¿½
+ *              @arg TOGGLE  : ï¿½ï¿½×ª
  */
 void Ebyte_BSP_LedControl( BSP_LED_t LEDx, BSP_LED_Ctl_t ctl )
 {
@@ -315,9 +274,9 @@ void Ebyte_BSP_LedControl( BSP_LED_t LEDx, BSP_LED_Ctl_t ctl )
 
 
 /*!
- * @brief »ùÓÚ¶¨Ê±Æ÷µÄºÁÃëÑÓÊ±º¯Êý
+ * @brief ï¿½ï¿½ï¿½Ú¶ï¿½Ê±ï¿½ï¿½ï¿½Äºï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½
  *
- * @param nTime µ¥Î»:ºÁÃë
+ * @param nTime ï¿½ï¿½Î»:ï¿½ï¿½ï¿½ï¿½
  */
 void Ebyte_BSP_DelayMs( volatile uint32_t nTime )
 {
@@ -326,7 +285,7 @@ void Ebyte_BSP_DelayMs( volatile uint32_t nTime )
 }
 
 /*!
- * @brief ¸¨ÖúºÁÃëÑÓÊ±¼ÆËã ¶¨Ê±Æ÷ÖÐ¶Ïµ÷ÓÃ
+ * @brief ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ð¶Ïµï¿½ï¿½ï¿½
  */
 void Ebyte_BSP_TimerDecrement( void )
 {
@@ -337,13 +296,13 @@ void Ebyte_BSP_TimerDecrement( void )
 }
 
 /*!
- * @brief ¶ÁÈ¡°´¼ü×´Ì¬
+ * @brief ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½×´Ì¬
  *
- * @param btn ¶ÔÓ¦µÄ°´¼ü±àºÅ
- *            @arg BSP_BUTTON_1 :°´¼ü1
- *            @arg BSP_BUTTON_2 :°´¼ü2
- * @return 0:°´¼ü±»°´ÏÂ  ·Ç0:°´¼üÎ´°´ÏÂ
- * @note  °åÔØ°´¼üÎ´°´ÏÂÊ± IO´¦ÓÚÉÏÀ­×´Ì¬ ¼´Îª1£»°´ÏÂºóIO½ÓµØ ¼´Îª0
+ * @param btn ï¿½ï¿½Ó¦ï¿½Ä°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ *            @arg BSP_BUTTON_1 :ï¿½ï¿½ï¿½ï¿½1
+ *            @arg BSP_BUTTON_2 :ï¿½ï¿½ï¿½ï¿½2
+ * @return 0:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  ï¿½ï¿½0:ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½
+ * @note  ï¿½ï¿½ï¿½Ø°ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½Ê± IOï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬ ï¿½ï¿½Îª1ï¿½ï¿½ï¿½ï¿½ï¿½Âºï¿½IOï¿½Óµï¿½ ï¿½ï¿½Îª0
  */
 uint8_t Ebyte_BSP_ReadButton( BSP_BUTTON_t btn )
 {
@@ -363,7 +322,7 @@ uint8_t Ebyte_BSP_ReadButton( BSP_BUTTON_t btn )
 }
 
 /*!
- * @brief ´®¿Ú·¢ËÍº¯Êý
+ * @brief ï¿½ï¿½ï¿½Ú·ï¿½ï¿½Íºï¿½ï¿½ï¿½
  */
 void Ebyte_BSP_UartTransmit( uint8_t* buffer, uint16_t length )
 {

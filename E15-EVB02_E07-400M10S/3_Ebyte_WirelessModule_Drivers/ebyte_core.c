@@ -1,14 +1,14 @@
 /**
   **********************************************************************************
   * @file      ebyte_core.c
-  * @brief     EBYTEÇý¶¯¿âµÄÉÏ²ãAPI·â×°²ã ³éÏóµ×²ãÂß¼­    
-  * @details   ÏêÇéÇë²Î¼û https://www.ebyte.com/       
+  * @brief     EBYTEï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï²ï¿½APIï¿½ï¿½×°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½×²ï¿½ï¿½ß¼ï¿½    
+  * @details   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¼ï¿½ https://www.ebyte.com/       
   * @author    JiangHeng     
   * @date      2021-05-13     
   * @version   1.0.0     
   **********************************************************************************
   * @copyright BSD License 
-  *            ³É¶¼ÒÚ°ÛÌØµç×Ó¿Æ¼¼ÓÐÏÞ¹«Ë¾  
+  *            ï¿½É¶ï¿½ï¿½Ú°ï¿½ï¿½Øµï¿½ï¿½Ó¿Æ¼ï¿½ï¿½ï¿½ï¿½Þ¹ï¿½Ë¾  
   *   ______   ____   __     __  _______   ______ 
   *  |  ____| |  _ \  \ \   / / |__   __| |  ____|
   *  | |__    | |_) |  \ \_/ /     | |    | |__   
@@ -21,38 +21,8 @@
 
 #include "ebyte_core.h"
 
-/* Ö¸Ïò E22x µ×²ãÇý¶¯º¯Êý */
-#if defined(EBYTE_E22_400M22S)||defined(EBYTE_E22_900M22S)
-const Ebyte_RF_t Ebyte_RF =
-{
-  E22x_Init,
-  E22x_GoTransmit,
-  E22x_GoSleep,
-  E22x_GoReceive,  
-  E22x_TaskForPoll,
-  E22x_TaskForIRQ,
-  0,
-  E22x_GetName,
-  E22x_GetDriverVersion
-};
 
-/* Ö¸Ïò E220x µ×²ãÇý¶¯º¯Êý */
-#elif defined(EBYTE_E220_400M22S)||defined(EBYTE_E220_900M22S)
-const Ebyte_RF_t Ebyte_RF =
-{
-  E220x_Init,
-  E220x_GoTransmit,
-  E220x_GoSleep,
-  E220x_GoReceive,  
-  E220x_TaskForPoll,
-  E220x_TaskForIRQ,
-  0,
-  E220x_GetName,
-  E220x_GetDriverVersion
-};
-
-/* Ö¸Ïò E07x µ×²ãÇý¶¯º¯Êý */
-#elif defined(EBYTE_E07_400M10S)||defined(EBYTE_E07_900M10S)  
+/* Ö¸ï¿½ï¿½ E07x ï¿½×²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 const Ebyte_RF_t Ebyte_RF =
 {
   E07x_Init,
@@ -65,85 +35,6 @@ const Ebyte_RF_t Ebyte_RF =
   E07x_GetName,
   E07x_GetDriverVersion
 };
-
-/* Ö¸Ïò E10x µ×²ãÇý¶¯º¯Êý */
-#elif defined(EBYTE_E10_400M20S)
-const Ebyte_RF_t Ebyte_RF =
-{
-  E10x_Init,
-  E10x_GoTransmit,
-  E10x_GoSleep,
-  E10x_GoReceive,  
-  E10x_TaskForPoll,
-  E10x_TaskForIRQ,
-  E10x_GetStatus,
-  E10x_GetName,
-  E10x_GetDriverVersion
-};
-
-/* Ö¸Ïò E30x µ×²ãÇý¶¯º¯Êý */
-#elif defined(EBYTE_E30_900M20S)
-const Ebyte_RF_t Ebyte_RF =
-{
-  E30x_Init,
-  E30x_GoTransmit,
-  E30x_GoSleep,
-  E30x_GoReceive,  
-  E30x_TaskForPoll,
-  E30x_TaskForIRQ,
-  E30x_GetStatus,
-  E30x_GetName,
-  E30x_GetDriverVersion
-};
-
-/* Ö¸Ïò E31x µ×²ãÇý¶¯º¯Êý */
-#elif defined(EBYTE_E31_400M17S)||defined(EBYTE_E31_900M17S)
-const Ebyte_RF_t Ebyte_RF =
-{
-  E31x_Init,
-  E31x_GoTransmit,
-  E31x_GoSleep,
-  E31x_GoReceive,  
-  E31x_TaskForPoll,
-  E31x_TaskForIRQ,
-  E31x_GetStatus,
-  E31x_GetName,
-  E31x_GetDriverVersion
-};
-
-/* Ö¸Ïò E49x µ×²ãÇý¶¯º¯Êý */
-#elif defined(EBYTE_E49_400M20S)||defined(EBYTE_E49_900M20S)
-const Ebyte_RF_t Ebyte_RF =
-{
-  E49x_Init,
-  E49x_GoTransmit,
-  E49x_GoSleep,
-  E49x_GoReceive,  
-  E49x_TaskForPoll,
-  E49x_TaskForIRQ,
-  E49x_GetStatus,
-  E49x_GetName,
-  E49x_GetDriverVersion
-};
-#elif defined(EBYTE_E19_433M20SC)
-const Ebyte_RF_t Ebyte_RF =
-{
-  E19x_Init,
-  E19x_GoTransmit,
-  E19x_GoSleep,
-  E19x_GoReceive,  
-  E19x_TaskForPoll,
-  E19x_TaskForIRQ,
-  E19x_GetStatus,
-  E19x_GetName,
-  E19x_GetDriverVersion
-};
-#else
-/* ebyte_conf.h ºêÅäÖÃÑ¡ÔñµÄ²úÆ·ÐÍºÅ²»ÕýÈ· */
-#error No product selected !
-#endif
-
-
 
 
 
