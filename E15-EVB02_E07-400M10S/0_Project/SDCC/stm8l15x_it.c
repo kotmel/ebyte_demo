@@ -164,6 +164,8 @@ INTERRUPT_HANDLER(EXTID_H_IRQHandler, 7)
   */
 }
 
+volatile int received;
+
 /**
   * @brief External IT PIN0 Interrupt routine.
   * @param  None
@@ -174,6 +176,15 @@ INTERRUPT_HANDLER(EXTI0_IRQHandler, 8)
   /* In order to detect unexpected events during development,
      it is recommended to set a breakpoint on the following instruction.
   */
+  if (GPIO_ReadInputDataBit( BSP_GPIO_PORT_E07_GDO0 , BSP_GPIO_PIN_E07_GDO0)) {
+    DEBUG_Port->ODR |= DEBUG_Pin0;
+  } else {
+    DEBUG_Port->ODR &= (uint8_t)(~DEBUG_Pin0);
+  }
+  GPIO_ToggleBits(DEBUG_Port, DEBUG_Pin1);
+  Ebyte_RF.TaskForIRQ();
+  EXTI_ClearITPendingBit(EXTI_IT_Pin0);
+  //received = 1;
 
 }
 

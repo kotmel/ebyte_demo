@@ -1,33 +1,38 @@
+#include "board.h"
 #include "ebyte_e07x.h"
 
-/// ¸¨ÖúÊ¶±ðÄ£¿é
+extern volatile int received;
+
+volatile int irq_counter = 0;
+
+/// ï¿½ï¿½ï¿½ï¿½Ê¶ï¿½ï¿½Ä£ï¿½ï¿½
 #if defined(EBYTE_E07_400M10S)
 static uint8e_t E07x_NameString[] = "E07-400M10S";
 #elif defined(EBYTE_E07_900M10S)
 static uint8e_t E07x_NameString[] = "E07-900M10S";
 #endif 
 
-/// ¸¨ÖúÊ¶±ðÇý¶¯³ÌÐò°æ±¾ºÅ 
+/// ï¿½ï¿½ï¿½ï¿½Ê¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ±¾ï¿½ï¿½ 
 #define EBYTE_E07_TYPE_PROGRAM   0x10 
 
-#define EBYTE_E07X_XOSC         26000000  //26MHz¾§Õñ
-#define EBYTE_E07X_POW_2_28     268435456 //2µÄ28´Î·½
+#define EBYTE_E07X_XOSC         26000000  //26MHzï¿½ï¿½ï¿½ï¿½
+#define EBYTE_E07X_POW_2_28     268435456 //2ï¿½ï¿½28ï¿½Î·ï¿½
 #define EBYTE_E07X_POW_2_17     131072
 #define EBYTE_E07X_CAL_BASE     ((double)EBYTE_E07X_POW_2_28) / ((double)EBYTE_E07X_XOSC)
 
-///Ö¸¶¨ÄÚ²¿FIFO
+///Ö¸ï¿½ï¿½ï¿½Ú²ï¿½FIFO
 #define  FIFO_READ           0x00
 #define  FIFO_WRITE          0x01   
 
-///Ö¸¶¨ÖÐ¶ÏÀàÐÍ
+///Ö¸ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½
 #define IRQ_RX_SYNC_RECV 0x06  
 #define IRQ_TX_SYNC_SEND 0x06  
 #define IRQ_RX_CRC_OK    0x07
 
-///Êä³ö¹¦ÂÊ±í ¸¨Öú¼ÆËã
+///ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 static uint8e_t E07x_PaTabel[] = { 0xC0, 0, 0, 0, 0, 0, 0, 0};
 
-///½ÓÊÕ»º´æ
+///ï¿½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½
 static uint8e_t E07x_RxBuffer[64];
 
 typedef enum 
@@ -43,12 +48,12 @@ typedef enum
     GO_ERROR         =0x08
 }E07x_Status_t;
 
-/// ×´Ì¬±êÊ¶
+/// ×´Ì¬ï¿½ï¿½Ê¶
 static E07x_Status_t E07x_Status = GO_INIT;
 
-/* »ù´¡ÅäÖÃ²ÎÊý 
- * À´×ÔÅäÖÃÈí¼þTI SmartRF Studio 7 
- * °æ±¾ 2.21.0 */
+/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã²ï¿½ï¿½ï¿½ 
+ * ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½TI SmartRF Studio 7 
+ * ï¿½æ±¾ 2.21.0 */
 typedef struct {
     uint8e_t iocfg0;     // GDO0 Output Pin Configuration
     uint8e_t fifothr;    // RX FIFO and TX FIFO Thresholds
@@ -111,20 +116,20 @@ static RF_SETTINGS E07x_InitSetting = {
 
 
 /*!
- * @brief ÉèÖÃÄÚ²¿¼Ä´æÆ÷Öµ
+ * @brief ï¿½ï¿½ï¿½ï¿½ï¿½Ú²ï¿½ï¿½Ä´ï¿½ï¿½ï¿½Öµ
  * 
- * @param address ¼Ä´æÆ÷µØÖ·
- * @param data    Ð´ÈëÖµ
+ * @param address ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ö·
+ * @param data    Ð´ï¿½ï¿½Öµ
  */
 static void E07x_SetRegister( uint8e_t address, uint8e_t data )
 {
     /* SPI CS */
     Ebyte_Port_SpiCsIoControl(0);
     
-    /* Ð´ÈëµØÖ· */
+    /* Ð´ï¿½ï¿½ï¿½Ö· */
     Ebyte_Port_SpiTransmitAndReceivce( address );
     
-    /* Ð´ÈëÖµ */
+    /* Ð´ï¿½ï¿½Öµ */
     Ebyte_Port_SpiTransmitAndReceivce( data );
     
     /* SPI CS */
@@ -132,10 +137,10 @@ static void E07x_SetRegister( uint8e_t address, uint8e_t data )
 }
 
 /*!
- * @brief ¶ÁÈ¡ÄÚ²¿¼Ä´æÆ÷Öµ
+ * @brief ï¿½ï¿½È¡ï¿½Ú²ï¿½ï¿½Ä´ï¿½ï¿½ï¿½Öµ
  * 
- * @param address ¼Ä´æÆ÷µØÖ·
- * @return ¼Ä´æÆ÷Öµ
+ * @param address ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ö·
+ * @return ï¿½Ä´ï¿½ï¿½ï¿½Öµ
  */
 static uint8e_t E07x_GetRegister( uint8e_t address )
 {
@@ -146,19 +151,19 @@ static uint8e_t E07x_GetRegister( uint8e_t address )
     /* SPI CS */
     Ebyte_Port_SpiCsIoControl(0);
     
-    /* 0x30µØÖ·ÒÔºóµÄ¼Ä´æÆ÷ ¶ÁÈ¡Ö¸ÁîÐèÒª¸Ä±ä */
+    /* 0x30ï¿½ï¿½Ö·ï¿½Ôºï¿½Ä¼Ä´ï¿½ï¿½ï¿½ ï¿½ï¿½È¡Ö¸ï¿½ï¿½ï¿½ï¿½Òªï¿½Ä±ï¿½ */
     if( address < 0x30 )
     {
-        /* Ð´µØÖ·  bit7ÖÃ1 ±íÊ¾ºóÐøÐèÒª¶ÁÈ¡ ¼´|0x80 */
+        /* Ð´ï¿½ï¿½Ö·  bit7ï¿½ï¿½1 ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½È¡ ï¿½ï¿½|0x80 */
         Ebyte_Port_SpiTransmitAndReceivce( address | 0x80);    
     }
     else
     {
-         /* Ð´µØÖ·  */
+         /* Ð´ï¿½ï¿½Ö·  */
         Ebyte_Port_SpiTransmitAndReceivce( address | 0xC0);         
     }
 
-    /* ¶ÁÈ¡ 1Byte */
+    /* ï¿½ï¿½È¡ 1Byte */
     result = Ebyte_Port_SpiTransmitAndReceivce( 0xFF );
     
     /* SPI CS */
@@ -168,11 +173,11 @@ static uint8e_t E07x_GetRegister( uint8e_t address )
 }
 
 /*!
- * @brief ÅúÁ¿ÉèÖÃÄÚ²¿¼Ä´æÆ÷Öµ
+ * @brief ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú²ï¿½ï¿½Ä´ï¿½ï¿½ï¿½Öµ
  * 
- * @param address ¼Ä´æÆ÷µØÖ·
- * @param data    Ö¸ÏòÐ´ÈëÊý¾ÝÊ×µØÖ·
- * @param size    Ð´Èë³¤¶È
+ * @param address ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ö·
+ * @param data    Ö¸ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×µï¿½Ö·
+ * @param size    Ð´ï¿½ë³¤ï¿½ï¿½
  */
 static void E07x_SetRegisters( uint8e_t address , uint8e_t *data , uint8e_t size )
 {
@@ -181,10 +186,10 @@ static void E07x_SetRegisters( uint8e_t address , uint8e_t *data , uint8e_t size
     /* SPI CS */
     Ebyte_Port_SpiCsIoControl(0);
     
-    /* Ð´ÈëÆðÊ¼µØÖ· µØÖ·bit6ÖÃÎ»´ú±íÁ¬ÐøÐ´Ö¸Áî ¼´|0x40 */
+    /* Ð´ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½Ö· ï¿½ï¿½Ö·bit6ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð´Ö¸ï¿½ï¿½ ï¿½ï¿½|0x40 */
     Ebyte_Port_SpiTransmitAndReceivce( address | 0x40 );
     
-    /* Ð´ÈëÊý¾Ý */
+    /* Ð´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
     while( i-- )
     {
         Ebyte_Port_SpiTransmitAndReceivce( *data++ );
@@ -195,16 +200,16 @@ static void E07x_SetRegisters( uint8e_t address , uint8e_t *data , uint8e_t size
 }
 
 /*!
- * @brief Ð´ÃüÁî
+ * @brief Ð´ï¿½ï¿½ï¿½ï¿½
  * 
- * @param address ¼Ä´æÆ÷µØÖ·
+ * @param address ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ö·
  */
 static void E07x_SendCommand( uint8e_t command )
 {
     /* SPI CS */
     Ebyte_Port_SpiCsIoControl(0);
     
-    /* Ð´ÈëÃüÁî */
+    /* Ð´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
     Ebyte_Port_SpiTransmitAndReceivce( command );
     
     /* SPI CS */
@@ -212,10 +217,10 @@ static void E07x_SendCommand( uint8e_t command )
 }
 
 /*!
- * @brief ÏòFIFOÐ´Èë´ý·¢ËÍÊý¾Ý
+ * @brief ï¿½ï¿½FIFOÐ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  * 
- * @param data Ö¸Ïò·¢ËÍÊý¾Ý
- * @param size Ð´Èë³¤¶È
+ * @param data Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * @param size Ð´ï¿½ë³¤ï¿½ï¿½
  */
 static void E07x_SetFIFO( uint8e_t *data, uint8e_t size)
 {
@@ -224,10 +229,10 @@ static void E07x_SetFIFO( uint8e_t *data, uint8e_t size)
     /* SPI CS */
     Ebyte_Port_SpiCsIoControl(0);
     
-    /* FIFOµØÖ·:0x3F µØÖ·bit6ÖÃÎ»´ú±íÁ¬ÐøÐ´Ö¸Áî ¼´|0x40 */
+    /* FIFOï¿½ï¿½Ö·:0x3F ï¿½ï¿½Ö·bit6ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð´Ö¸ï¿½ï¿½ ï¿½ï¿½|0x40 */
     Ebyte_Port_SpiTransmitAndReceivce( 0x3F | 0x40 );
     
-    /* Ð´ÈëÊý¾Ý */
+    /* Ð´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
     while( i-- )
     {
         Ebyte_Port_SpiTransmitAndReceivce( *data++ );
@@ -238,10 +243,10 @@ static void E07x_SetFIFO( uint8e_t *data, uint8e_t size)
 }
 
 /*!
- * @brief ÏòFIFO¶ÁÈ¡Êý¾Ý
+ * @brief ï¿½ï¿½FIFOï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½
  * 
- * @param data Ö¸Ïò»º´æ
- * @param size ¶ÁÈ¡³¤¶È
+ * @param data Ö¸ï¿½ò»º´ï¿½
+ * @param size ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½
  */
 static void E07x_GetFIFO( uint8e_t *data, uint8e_t size)
 {
@@ -250,10 +255,10 @@ static void E07x_GetFIFO( uint8e_t *data, uint8e_t size)
     /* SPI CS */
     Ebyte_Port_SpiCsIoControl(0);
     
-    /* FIFOµØÖ·:0x3F µØÖ·bit6ÖÃÎ»´ú±íÁ¬Ðø¶ÁÖ¸Áî ¼´|0x40 */
+    /* FIFOï¿½ï¿½Ö·:0x3F ï¿½ï¿½Ö·bit6ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ ï¿½ï¿½|0x40 */
     Ebyte_Port_SpiTransmitAndReceivce( 0x3F | 0xC0 );
     
-    /* Ð´ÈëÊý¾Ý */
+    /* Ð´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
     while( i-- )
     {
         *data++ = Ebyte_Port_SpiTransmitAndReceivce( 0xFF );
@@ -264,29 +269,29 @@ static void E07x_GetFIFO( uint8e_t *data, uint8e_t size)
 }
 
 /*!
- * @brief Çå³ýFIFOÄÚÈÝ
+ * @brief ï¿½ï¿½ï¿½FIFOï¿½ï¿½ï¿½ï¿½
  * @param mode Ä£Ê½
- *           @arg FIFO_WRITE £ºÖ¸¶¨·¢ËÍFIFO
- *           @arg FIFO_READ  £ºÖ¸¶¨½ÓÊÕFIFO
+ *           @arg FIFO_WRITE ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½FIFO
+ *           @arg FIFO_READ  ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½FIFO
  */
 static void E07x_ClearFIFO( uint8e_t mode )
 {
   
     if( mode == FIFO_WRITE )
     {    
-        /* Ö¸Áî:Çå³ý·¢ËÍFIFO(0x3B) */
+        /* Ö¸ï¿½ï¿½:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½FIFO(0x3B) */
         E07x_SendCommand(0x3B);
     }
     else
     {
-        /* Ö¸Áî:Çå³ý½ÓÊÕFIFO(0x3A) */
+        /* Ö¸ï¿½ï¿½:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½FIFO(0x3A) */
         E07x_SendCommand(0x3A);
     } 
     
 }
 
 /*!
- * @brief Èí¸´Î»
+ * @brief ï¿½ï¿½Î»
  */
 void E07x_Reset(void)
 {
@@ -297,76 +302,76 @@ void E07x_Reset(void)
     Ebyte_Port_SpiCsIoControl(1);
     Ebyte_Port_DelayMs(1);
     
-    /* ÃüÁî:Ð¾Æ¬¸´Î»(0x30) */
+    /* ï¿½ï¿½ï¿½ï¿½:Ð¾Æ¬ï¿½ï¿½Î»(0x30) */
     E07x_SendCommand( 0x30 );
     
     Ebyte_Port_DelayMs(20);
 }
 
 /*!
- * @brief ÇÐ»»½øÈë´ý»úÄ£Ê½
+ * @brief ï¿½Ð»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£Ê½
  */
 static void E07x_SetStby(void)
 {
-    /* Ö¸Áî:0x36 ÍË³öTX/RX Ä£Ê½ ½øÈë¿ÕÏÐ×´Ì¬ */
+    /* Ö¸ï¿½ï¿½:0x36 ï¿½Ë³ï¿½TX/RX Ä£Ê½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬ */
     E07x_SendCommand(0x36);
     
-    /* ×´Ì¬¼ÇÂ¼ */
+    /* ×´Ì¬ï¿½ï¿½Â¼ */
     E07x_Status = GO_STBY;
 }
 
 /*!
- * @brief ÇÐ»»½øÈëÐÝÃßÄ£Ê½
+ * @brief ï¿½Ð»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£Ê½
  * 
- * @note Çë²éÔÄÊÖ²á£¬²¿·Ö¼Ä´æÆ÷µÄ²ÎÊý»á¶ªÊ§£¡
+ * @note ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö²á£¬ï¿½ï¿½ï¿½Ö¼Ä´ï¿½ï¿½ï¿½ï¿½Ä²ï¿½ï¿½ï¿½ï¿½á¶ªÊ§ï¿½ï¿½
  */
 static void E07x_SetSleep(void)
 {
-    /* Ö¸Áî:0x39 ½øÈëÐÝÃßÄ£Ê½ */
+    /* Ö¸ï¿½ï¿½:0x39 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£Ê½ */
     E07x_SendCommand(0x39);
     
-    /* ×´Ì¬¼ÇÂ¼ */
+    /* ×´Ì¬ï¿½ï¿½Â¼ */
     E07x_Status = GO_SLEEP;
 }
 
 static void E07x_SetGPIO( uint8e_t gpio , uint8e_t config )
 {
   
-  /* ÓÃÓÚÖ¸¶¨IOµÄ¼«ÐÔ ÎÞÖÐ¶ÏÊ±Îª¸ßµçÆ½ ´¥·¢ÖÐ¶ÏÊ±ÎªµÍµçÆ½ */
+  /* ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½IOï¿½Ä¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ð¶ï¿½Ê±Îªï¿½ßµï¿½Æ½ ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½Ê±Îªï¿½Íµï¿½Æ½ */
   uint8e_t mask = 0x40;
   
-  /* ºÏ²¢ÖÐ¶ÏÀàÐÍ */ 
+  /* ï¿½Ï²ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½ */ 
   mask |= (config & 0x3F);
   
   switch ( gpio )
   {
-    /* IOCFG0 ¼Ä´æÆ÷µØÖ·:0x02 */
+    /* IOCFG0 ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:0x02 */
     case 0:  E07x_SetRegister(0x02,mask) ;break;
-    /* IOCFG1 ¼Ä´æÆ÷µØÖ·:0x01 */
+    /* IOCFG1 ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:0x01 */
     case 1:  E07x_SetRegister(0x01,mask) ;break;
-    /* IOCFG2 ¼Ä´æÆ÷µØÖ·:0x00 */
+    /* IOCFG2 ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:0x00 */
     case 2:  E07x_SetRegister(0x00,mask) ;break;
     default: break;
   }
 }
 
 /*!
- * @brief ÅÐ¶ÏÄ£¿éÊÇ·ñ´æÔÚ
+ * @brief ï¿½Ð¶ï¿½Ä£ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
  *
- * @return 0:Õý³£ 1:Ä£¿éÒì³£
+ * @return 0:ï¿½ï¿½ï¿½ï¿½ 1:Ä£ï¿½ï¿½ï¿½ì³£
  */
 static uint8e_t E07x_IsExist(void)
 {
     uint8e_t result = 0;
     uint8e_t reg_value;
     
-    /* ¶ÁÎÂ¶È´«¸ÐÆ÷ÅäÖÃ²ÎÊý ¸´Î»ºóÓ¦¸ÃÎª0x7F ¼Ä´æÆ÷µØÖ·:0x2A  */
+    /* ï¿½ï¿½ï¿½Â¶È´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã²ï¿½ï¿½ï¿½ ï¿½ï¿½Î»ï¿½ï¿½Ó¦ï¿½ï¿½Îª0x7F ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:0x2A  */
     reg_value = E07x_GetRegister(0x2A);
     
-    /* Ä¬ÈÏÖµ±ØÎª0x7F */
+    /* Ä¬ï¿½ï¿½Öµï¿½ï¿½Îª0x7F */
     if( reg_value != 0x7F ) 
     {
-       /* ¶Á²»µ½ÕýÈ·Êý¾Ý Çë¼ì²éÓ²¼þ */
+       /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È·ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ó²ï¿½ï¿½ */
        result = 1;
     }
     
@@ -374,9 +379,9 @@ static uint8e_t E07x_IsExist(void)
 }
 
 /*!
- * @brief µ÷ÖÆ·½Ê½
+ * @brief ï¿½ï¿½ï¿½Æ·ï¿½Ê½
  *
- * @param mod ÆÚÍûµÄµ÷ÖÆ·½Ê½ 
+ * @param mod ï¿½ï¿½ï¿½ï¿½ï¿½Äµï¿½ï¿½Æ·ï¿½Ê½ 
  *        @arg 0:2-FSK
  *        @arg 1:GFSK
  *        @arg 3:ASK/OOK
@@ -385,47 +390,47 @@ static uint8e_t E07x_IsExist(void)
  */
 static void E07x_SetModulation(uint8e_t mod)
 {
-    /* ×ª»»Î» */
+    /* ×ªï¿½ï¿½Î» */
     uint8e_t tmp = (mod<<4) & 0x70;
   
-    /* MDMCFG2 ¼Ä´æÆ÷µØÖ· 0x12  Çå³ýbit[6:4]*/
+    /* MDMCFG2 ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ö· 0x12  ï¿½ï¿½ï¿½bit[6:4]*/
     E07x_InitSetting.mdmcfg2  &= 0x8F;
     
-    /* ÉèÖÃbit[6:4] */
+    /* ï¿½ï¿½ï¿½ï¿½bit[6:4] */
     E07x_InitSetting.mdmcfg2 |= tmp;
 }
 
 /*!
- * @brief ×ÔÓÉÔØ²¨ÆµÂÊ»ù×¼Öµ¼ÆËã
+ * @brief ï¿½ï¿½ï¿½ï¿½ï¿½Ø²ï¿½Æµï¿½Ê»ï¿½×¼Öµï¿½ï¿½ï¿½ï¿½
  *
- * @param frequency ÆÚÍûµÄÔØ²¨ÆµÂÊ Hz
- * @return 0:Õý³£ 1:²ÎÊý´íÎó
- * @note ±ØÐëÔÚÒÔÏÂÆµ¶ÎÖ®¼ä( Hz ):
+ * @param frequency ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø²ï¿½Æµï¿½ï¿½ Hz
+ * @return 0:ï¿½ï¿½ï¿½ï¿½ 1:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * @note ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½Ö®ï¿½ï¿½( Hz ):
  *        300000000 - 348000000
  *        387000000 - 464000000
  *        779000000 - 928000000
- *       £¡£¡£¡×¢Òâ:²»Í¬¼Ü¹¹´¦ÀíÆ÷¼ÆËã½á¹ûÐ¡Êý²¿·Ö¿ÉÄÜ²»Ò»ÖÂ£¬ÓÐ¿ÉÄÜ²úÉúÆ«²î
+ *       ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×¢ï¿½ï¿½:ï¿½ï¿½Í¬ï¿½Ü¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡ï¿½ï¿½ï¿½ï¿½ï¿½Ö¿ï¿½ï¿½Ü²ï¿½Ò»ï¿½Â£ï¿½ï¿½Ð¿ï¿½ï¿½Ü²ï¿½ï¿½ï¿½Æ«ï¿½ï¿½
  *
- *       ÆµÆ×ÒÇ²âÊÔÆµµãOK¡£Êµ²â¿ÉÓë¹Ù·½¼ÆËãÆ÷²ÎÊýÅäÖÃÆµÂÊµÄÄ£¿é½øÐÐÍ¨ÐÅ¡£
+ *       Æµï¿½ï¿½ï¿½Ç²ï¿½ï¿½ï¿½Æµï¿½ï¿½OKï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½ï¿½Ù·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½Êµï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½Å¡ï¿½
  */
 static uint8e_t E07x_SetFrequency( uint32e_t frequency )
 { 
    uint32e_t freq ;
    uint8e_t  freq2,freq1,freq0;
    
-   /* ²ÎÊý¼ì²é */
+   /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
    if(  frequency > 928000000 ) return 1;
    if( (frequency < 779000000) && ( frequency>464000000) )return 1;
    if( (frequency < 387000000) && ( frequency>348000000) )return 1;
    if( (frequency < 300000000)) return 1;
    
-   /* ÆµÂÊ¿ØÖÆÆ÷×Ö(FREQ)=ÔØ²¨ÆµÂÊ *£¨2^16)/ ¾§ÕñÆµÂÊ   */
+   /* Æµï¿½Ê¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(FREQ)=ï¿½Ø²ï¿½Æµï¿½ï¿½ *ï¿½ï¿½2^16)/ ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½   */
    freq = (uint32e_t)(((double)frequency * 65535 )/ ( (double)EBYTE_E07X_XOSC ));
    freq2 = ( uint8e_t )( ( freq >> 16 ) & 0xFF );
    freq1 = ( uint8e_t )( ( freq >> 8 ) & 0xFF );
    freq0 = ( uint8e_t )(  freq  & 0xFF );
    
-   /* Ìî³ä³õÊ¼»¯²ÎÊýÊý×éÖÐµÄÆµÂÊ²¿·Ö µÈ´ýºóÐøÍ³Ò»Ð´Èë  */
+   /* ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½Æµï¿½Ê²ï¿½ï¿½ï¿½ ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½Í³Ò»Ð´ï¿½ï¿½  */
    E07x_InitSetting.freq2 = freq2;
    E07x_InitSetting.freq1 = freq1;
    E07x_InitSetting.freq0 = freq0;
@@ -434,10 +439,10 @@ static uint8e_t E07x_SetFrequency( uint32e_t frequency )
 }
 
 /*!
- * @brief ×ÔÓÉÊý¾ÝËÙÂÊ»ù×¼Öµ¼ÆËã
+ * @brief ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê»ï¿½×¼Öµï¿½ï¿½ï¿½ï¿½
  *
- * @param datarate ÆÚÍûµÄÊý¾ÝËÙÂÊ
- * @note  ½¨ÒéÔÚÒÔÏÂËÙÂÊÖ®¼ä:
+ * @param datarate ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * @note  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½:
  *        300 (0.3K) - 250000000 (250K)
  */
 static void E07x_SetDataRate( uint32e_t datarate )
@@ -446,10 +451,10 @@ static void E07x_SetDataRate( uint32e_t datarate )
     uint16e_t date_e ;
     uint32e_t date_e_sum = 1,temp;
     
-    /* ÖÐ¼ä¹«Ê½»»Ëã (256+DRATE_M)*2^DRATE_E=datarate*2^28/¾§ÕñÆµÂÊ  */
+    /* ï¿½Ð¼ä¹«Ê½ï¿½ï¿½ï¿½ï¿½ (256+DRATE_M)*2^DRATE_E=datarate*2^28/ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½  */
     uint32e_t calculation = (uint32e_t)( datarate * EBYTE_E07X_CAL_BASE);
     
-    /* Öð´Î±Æ½üÆ¥Åä DRATE_E */
+    /* ï¿½ï¿½Î±Æ½ï¿½Æ¥ï¿½ï¿½ DRATE_E */
     for( date_e=0 ; date_e<=0xFF;date_e++ )
     {
        if(date_e==0)
@@ -461,15 +466,15 @@ static void E07x_SetDataRate( uint32e_t datarate )
           date_e_sum *= 2;//2^DRATE_E 
        }
        
-       temp = calculation/date_e_sum; // ½á¹û±ØÐëÔÚ [256 ,256+DRATE_M]Ö®¼ä
+       temp = calculation/date_e_sum; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ [256 ,256+DRATE_M]Ö®ï¿½ï¿½
        if(  temp>=256 && temp<=511 )
        {
-          date_m = temp - 256;//µÃµ½DRATE_M
+          date_m = temp - 256;//ï¿½Ãµï¿½DRATE_M
           break;
        }
     }
     
-    /* Ìî³ä³õÊ¼»¯²ÎÊýÊý×éÖÐµÄÊý¾ÝËÙÂÊ²¿·Ö µÈ´ýºóÐøÍ³Ò»Ð´Èë  */
+    /* ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê²ï¿½ï¿½ï¿½ ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½Í³Ò»Ð´ï¿½ï¿½  */
     if ( date_e<256 )
     {
        E07x_InitSetting.mdmcfg4 &= 0xF0;
@@ -480,11 +485,11 @@ static void E07x_SetDataRate( uint32e_t datarate )
 }
 
 /*!
- * @brief ×ÔÓÉÆµ¿í»ù×¼Öµ¼ÆËã
+ * @brief ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿½×¼Öµï¿½ï¿½ï¿½ï¿½
  *
- * @param bandwidth ÆÚÍûµÄ½ÓÊÕÆµ¿í (Hz)
- * @note Êµ²âºÍ¹Ù·½¼ÆËãÆ÷½á¹ûÒ»ÖÂ Ä¬ÈÏ×îµÍ58.035714
- *       ×¢Òâ£ºÐ¾Æ¬Êµ¼ÊÖ»ÄÜÅäÖÃÎª¹Ì¶¨¼¸¸öÆµ¿í£¬ÊäÈëµÄÊýÖµ»á±»ÏòÉÏ×ª»¯½Ó½üµ½ÈçÏÂ¹Ì¶¨Æµ¿í£º
+ * @param bandwidth ï¿½ï¿½ï¿½ï¿½ï¿½Ä½ï¿½ï¿½ï¿½Æµï¿½ï¿½ (Hz)
+ * @note Êµï¿½ï¿½Í¹Ù·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ Ä¬ï¿½ï¿½ï¿½ï¿½ï¿½58.035714
+ *       ×¢ï¿½â£ºÐ¾Æ¬Êµï¿½ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½Ì¶ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½á±»ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½Ó½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¹Ì¶ï¿½Æµï¿½ï¿½
  *        58.035714 KHz 
  *        67.708333 KHz 
  *        81.250000 KHz
@@ -508,10 +513,10 @@ static void E07x_SetChannelBandwidth( uint32e_t bandwidth )
 
     uint32e_t chanbw_e_sum = 1,temp;
     
-    /* ÖÐ¼ä¹«Ê½»»Ëã (4+CHANBW_M)*2^CHANBW_E=¾§ÕñÆµÂÊ/(8*bandwidth)  */
+    /* ï¿½Ð¼ä¹«Ê½ï¿½ï¿½ï¿½ï¿½ (4+CHANBW_M)*2^CHANBW_E=ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½/(8*bandwidth)  */
     uint32e_t calculation = (uint32e_t)( EBYTE_E07X_XOSC/(8 * bandwidth));    
     
-    /* Öð´Î±Æ½üÆ¥Åä CHANBW_E */
+    /* ï¿½ï¿½Î±Æ½ï¿½Æ¥ï¿½ï¿½ CHANBW_E */
     for( chanbw_e=0 ; chanbw_e<=3;chanbw_e++ )
     {
        if(chanbw_e==0)
@@ -526,12 +531,12 @@ static void E07x_SetChannelBandwidth( uint32e_t bandwidth )
        temp = calculation/chanbw_e_sum; 
        if(  temp>=4 && temp<=7 )
        {
-          chanbw_m = temp - 4;//µÃµ½CHANBW_M
+          chanbw_m = temp - 4;//ï¿½Ãµï¿½CHANBW_M
           break;
        }
     }    
     
-    /* Ìî³ä³õÊ¼»¯²ÎÊýÊý×éÖÐµÄÆµ¿í²¿·Ö µÈ´ýºóÐøÍ³Ò»Ð´Èë  */
+    /* ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½Æµï¿½ï¿½ï¿½ï¿½ ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½Í³Ò»Ð´ï¿½ï¿½  */
     if( chanbw_e<=3 )
     {
         mask = ((uint8e_t)((chanbw_e<<6)|(chanbw_m<<4))) & 0xF0;
@@ -542,21 +547,21 @@ static void E07x_SetChannelBandwidth( uint32e_t bandwidth )
 }
 
 /*!
- * @brief ¼ÆËãÆµÆ«»ù×¼Öµ
+ * @brief ï¿½ï¿½ï¿½ï¿½ÆµÆ«ï¿½ï¿½×¼Öµ
  * 
- * @param frequency_dev µ¥Î»:Hz 
+ * @param frequency_dev ï¿½ï¿½Î»:Hz 
  * 
- * @note Êµ²âºÍ¹Ù·½¼ÆËã½á¹ûÒ»ÖÂ
+ * @note Êµï¿½ï¿½Í¹Ù·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½
  */
 static void E07x_SetFrequencyDeviation( uint32e_t frequency_dev )
 {
     uint8e_t  deviation_m,deviation_e,mask;
     uint32e_t deviation_e_sum = 1,temp;
     
-    /* ÖÐ¼ä¹«Ê½»»Ëã (8+DEVIATION_M)*2^DEVIATION_E=frequency_dev * 2^17 / ¾§ÕñÆµÂÊ  */
+    /* ï¿½Ð¼ä¹«Ê½ï¿½ï¿½ï¿½ï¿½ (8+DEVIATION_M)*2^DEVIATION_E=frequency_dev * 2^17 / ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½  */
     uint32e_t calculation = (uint32e_t)( frequency_dev * EBYTE_E07X_POW_2_17 / EBYTE_E07X_XOSC );   
     
-    /* Öð´Î±Æ½üÆ¥Åä DEVIATION_E */
+    /* ï¿½ï¿½Î±Æ½ï¿½Æ¥ï¿½ï¿½ DEVIATION_E */
     for( deviation_e=0 ; deviation_e<=7;deviation_e++ )
     {
        if(deviation_e==0)
@@ -568,16 +573,16 @@ static void E07x_SetFrequencyDeviation( uint32e_t frequency_dev )
           deviation_e_sum *= 2;//2^DEVIATION_E
        }
         
-       temp = calculation/deviation_e_sum; //µÃµ½ 8+DEVIATION_M
+       temp = calculation/deviation_e_sum; //ï¿½Ãµï¿½ 8+DEVIATION_M
        
        if(  temp>=8 && temp<=15 )
        {
-          deviation_m = temp - 8;//µÃµ½CHANBW_M
+          deviation_m = temp - 8;//ï¿½Ãµï¿½CHANBW_M
           break;
        }
     }      
     
-    /* Ìî³ä³õÊ¼»¯²ÎÊýÊý×éÖÐµÄÆµÆ«²¿·Ö µÈ´ýºóÐøÍ³Ò»Ð´Èë  */
+    /* ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½ÆµÆ«ï¿½ï¿½ï¿½ï¿½ ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½Í³Ò»Ð´ï¿½ï¿½  */
     if( deviation_e<=7 )
     {
         mask = ((uint8e_t)((deviation_e<<4)|deviation_m)) & 0x77;
@@ -587,13 +592,13 @@ static void E07x_SetFrequencyDeviation( uint32e_t frequency_dev )
 }
 
 /*!
- * @brief ÉèÖÃÊä³ö¹¦ÂÊ
+ * @brief ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  * 
- * @param power µ¥Î» dBm ×¢Òâ:ÊäÈëÖµ´æÔÚÏÞÖÆ  
+ * @param power ï¿½ï¿½Î» dBm ×¢ï¿½ï¿½:ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  
  * 
- * @return 0£ºÕý³£ 1:²ÎÊý²»ÕýÈ·
- * @note ·ÅÆúÁËPA Ramping£¬Ò²ÐíÊ§È¥ÁËÒ»¶¨µÄÏßÐÔ¶ÈºÍÍêÕûÐÔ£¿ÔÓÉ¢ÐÅºÅÔö¼Ó£¿ 
- *       ¹¦ÂÊµÄÊä³ö²¢²»ÊÇÏßÐÔµÄ£¬º¯ÊýÖÐÉèÖÃµÄPAÖµÀ´×ÔTI SmartRF Studio£¬½öÎª²Î¿¼
+ * @return 0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 1:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È·
+ * @note ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PA Rampingï¿½ï¿½Ò²ï¿½ï¿½Ê§È¥ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¶Èºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô£ï¿½ï¿½ï¿½É¢ï¿½Åºï¿½ï¿½ï¿½ï¿½Ó£ï¿½ 
+ *       ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÔµÄ£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ãµï¿½PAÖµï¿½ï¿½ï¿½ï¿½TI SmartRF Studioï¿½ï¿½ï¿½ï¿½Îªï¿½Î¿ï¿½
  */
 static uint8e_t E07x_SetOutputPower( int8e_t power )
 {
@@ -613,11 +618,11 @@ static uint8e_t E07x_SetOutputPower( int8e_t power )
     }
 #elif defined(EBYTE_E07_900M10S)  
     
-    if( E07_FREQUENCY_START > 900000000 ) //900MHz µ½ 928MHz
+    if( E07_FREQUENCY_START > 900000000 ) //900MHz ï¿½ï¿½ 928MHz
     {
         switch ( power ) 
         {
-            case 11:  E07x_PaTabel[0] = 0xC0;break; //´ËÆµÂÊÇø¼ä ¹¦ÂÊ¿ÉÒÔÌáÉýµ½11dBm    
+            case 11:  E07x_PaTabel[0] = 0xC0;break; //ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ê¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½11dBm    
             case 10:  E07x_PaTabel[0] = 0xC3;break;
             case 7:   E07x_PaTabel[0] = 0xCC;break;
             case 5:   E07x_PaTabel[0] = 0x84;break;
@@ -629,11 +634,11 @@ static uint8e_t E07x_SetOutputPower( int8e_t power )
             default: result=1; break;
         }    
     }
-    else //779MHz µ½ 900MHz
+    else //779MHz ï¿½ï¿½ 900MHz
     {
         switch ( power ) 
         {
-            case 12:  E07x_PaTabel[0] = 0xC0;break; //´ËÆµÂÊÇø¼ä ¹¦ÂÊ¿ÉÒÔÌáÉýµ½12dBm    
+            case 12:  E07x_PaTabel[0] = 0xC0;break; //ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ê¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½12dBm    
             case 10:  E07x_PaTabel[0] = 0xC5;break;
             case 7:   E07x_PaTabel[0] = 0xCD;break;
             case 5:   E07x_PaTabel[0] = 0x86;break;
@@ -653,20 +658,20 @@ static uint8e_t E07x_SetOutputPower( int8e_t power )
 }
 
 /*!
- * @brief Ä£¿é»ù´¡²ÎÊýÅäÖÃ
+ * @brief Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  * 
- * @param frequency      ÔØ²¨ÆµÂÊ
- * @param data_rate      ·ûºÅËÙÂÊ(¿ÕÖÐËÙÂÊ)
- * @param frequency_dev  µ÷ÖÆÆµÆ«
- * @param bandwidth      ½ÓÊÕÆµ¿í
- * @param output_power   Êä³ö¹¦ÂÊ
- * @param preamble_size  ·¢ËÍÇ°µ¼Âë³¤¶È 
- * @param sync_word      Í¬²½×Ö
- * @param crc            CRC¿ª¹Ø
- * @param device_address Éè±¸µØÖ·
+ * @param frequency      ï¿½Ø²ï¿½Æµï¿½ï¿½
+ * @param data_rate      ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
+ * @param frequency_dev  ï¿½ï¿½ï¿½ï¿½ÆµÆ«
+ * @param bandwidth      ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½
+ * @param output_power   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * @param preamble_size  ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ë³¤ï¿½ï¿½ 
+ * @param sync_word      Í¬ï¿½ï¿½ï¿½ï¿½
+ * @param crc            CRCï¿½ï¿½ï¿½ï¿½
+ * @param device_address ï¿½è±¸ï¿½ï¿½Ö·
  *
- * @return 0:Õý³£ 1:²ÎÊý´íÎó
- * @note (¿ÉÑ¡)Ä¬ÈÏ¹Ø±ÕÁËµØÖ·¼ì²é
+ * @return 0:ï¿½ï¿½ï¿½ï¿½ 1:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * @note (ï¿½ï¿½Ñ¡)Ä¬ï¿½Ï¹Ø±ï¿½ï¿½Ëµï¿½Ö·ï¿½ï¿½ï¿½
  */
 static uint8e_t E07x_Config( uint32e_t frequency , uint32e_t data_rate , uint32e_t frequency_dev ,uint32e_t bandwidth, 
                               int8e_t output_power , uint16e_t preamble_size, uint16e_t sync_word , uint8e_t crc )
@@ -674,60 +679,60 @@ static uint8e_t E07x_Config( uint32e_t frequency , uint32e_t data_rate , uint32e
     uint8e_t result ;  
     uint8e_t reg_value;
     
-    /* ¼ÆËã:ÔØ²¨ÆµÂÊ 
-     * ¼Ä´æÆ÷ÆðÊ¼µØÖ· 0x0D */
+    /* ï¿½ï¿½ï¿½ï¿½:ï¿½Ø²ï¿½Æµï¿½ï¿½ 
+     * ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½Ö· 0x0D */
     result = E07x_SetFrequency( frequency );
     if( result != 0 ) return 1;
     
-    /* ¼ÆËã:¿ÕËÙ 
-     * MDMCFG4 MDMCFG3¼Ä´æÆ÷µØÖ·:0x10 0x11 */
+    /* ï¿½ï¿½ï¿½ï¿½:ï¿½ï¿½ï¿½ï¿½ 
+     * MDMCFG4 MDMCFG3ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:0x10 0x11 */
     E07x_SetDataRate( data_rate );
     
-    /* ¼ÆËã:ÆµÆ« 
-     * DEVIATN¼Ä´æÆ÷µØÖ·:0x15 */
+    /* ï¿½ï¿½ï¿½ï¿½:ÆµÆ« 
+     * DEVIATNï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:0x15 */
     E07x_SetFrequencyDeviation( frequency_dev );    
     
-    /* ¼ÆËã:½ÓÊÕÆµ¿í 
-     * MDMCFG4¼Ä´æÆ÷µØÖ·:0x10 */
+    /* ï¿½ï¿½ï¿½ï¿½:ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ 
+     * MDMCFG4ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:0x10 */
     E07x_SetChannelBandwidth( bandwidth );
     
-    /* ¼ÆËã:Êä³ö¹¦ÂÊ 
-     * ¼Ä´æÆ÷µØÖ·:0x3E */
+    /* ï¿½ï¿½ï¿½ï¿½:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 
+     * ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:0x3E */
     E07x_SetOutputPower(output_power);
     
-    /* µ÷ÖÆÄ£Ê½
-     * MDMCFG2 ¼Ä´æÆ÷µØÖ·:0x12 */
+    /* ï¿½ï¿½ï¿½ï¿½Ä£Ê½
+     * MDMCFG2 ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:0x12 */
     E07x_SetModulation(1);//GFSK
     
-    /* Ç°µ¼Âë³¤¶È 
-     * MDMCFG1 ¼Ä´æÆ÷µØÖ·:0x13 */  
-    if( preamble_size >7 ) return 1;//²ÎÊý¼ì²é
-    E07x_InitSetting.mdmcfg1 &= 0x8F;//ÇåÁã
-    E07x_InitSetting.mdmcfg1 |= (preamble_size<<4);//ÖÃÎ»
+    /* Ç°ï¿½ï¿½ï¿½ë³¤ï¿½ï¿½ 
+     * MDMCFG1 ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:0x13 */  
+    if( preamble_size >7 ) return 1;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    E07x_InitSetting.mdmcfg1 &= 0x8F;//ï¿½ï¿½ï¿½ï¿½
+    E07x_InitSetting.mdmcfg1 |= (preamble_size<<4);//ï¿½ï¿½Î»
     
-    /* Í¬²½×Ö 
-     * SYNC1 SYNC0 ¼Ä´æÆ÷µØÖ·:0x04 0x05 */
-    E07x_InitSetting.sync1 =  (uint8e_t)((sync_word>>8)&0xFF);//¸ßByte
-    E07x_InitSetting.sync0 =  (uint8e_t)(sync_word & 0xFF);   //µÍByte
+    /* Í¬ï¿½ï¿½ï¿½ï¿½ 
+     * SYNC1 SYNC0 ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:0x04 0x05 */
+    E07x_InitSetting.sync1 =  (uint8e_t)((sync_word>>8)&0xFF);//ï¿½ï¿½Byte
+    E07x_InitSetting.sync0 =  (uint8e_t)(sync_word & 0xFF);   //ï¿½ï¿½Byte
     
-    /* CRC¿ª¹Ø 
-     * PKTCTRL0¼Ä´æÆ÷µØÖ·:0x08 bit2 */
-    if( crc > 1 ) return 1;//²ÎÊý¼ì²é Ö»ÄÜÎª0»ò1
+    /* CRCï¿½ï¿½ï¿½ï¿½ 
+     * PKTCTRL0ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:0x08 bit2 */
+    if( crc > 1 ) return 1;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ö»ï¿½ï¿½Îª0ï¿½ï¿½1
     if( crc )
     {
-        E07x_InitSetting.pktctrl0 |= 0x04; //¿ªÆô 
+        E07x_InitSetting.pktctrl0 |= 0x04; //ï¿½ï¿½ï¿½ï¿½ 
     }else
     {
         E07x_InitSetting.pktctrl0 &= 0xFB;
     }
     
-    /* Êý¾Ý°ü³¤¶È Ä¬ÈÏÎª¿É±ä³¤Ä£Ê½ÇÒ³¤¶È·ÅÔÚÊý¾ÝµÚÒ»×Ö½Ú
-     * PKTCTRL0¼Ä´æÆ÷µØÖ·:0x08 bit[1:0] */
-    E07x_InitSetting.pktctrl0 &= 0xFC;//ÇåÁã
-    E07x_InitSetting.pktctrl0 |= 0x01;//0x01Ä£Ê½ (¿É±ä³¤)
+    /* ï¿½ï¿½ï¿½Ý°ï¿½ï¿½ï¿½ï¿½ï¿½ Ä¬ï¿½ï¿½Îªï¿½É±ä³¤Ä£Ê½ï¿½Ò³ï¿½ï¿½È·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ýµï¿½Ò»ï¿½Ö½ï¿½
+     * PKTCTRL0ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ö·:0x08 bit[1:0] */
+    E07x_InitSetting.pktctrl0 &= 0xFC;//ï¿½ï¿½ï¿½ï¿½
+    E07x_InitSetting.pktctrl0 |= 0x01;//0x01Ä£Ê½ (ï¿½É±ä³¤)
     
-    /* ×¢ÒâÊÂÏî:Èç¹ûÏ£ÍûÍêÈ«Ê¹ÓÃ¹Ù·½SmartRF StudioµÄÅäÖÃ²ÎÊý£¬ÄÇÃ´Ö±½Ó×¢ÊÍµôÉÏ·½µÄÐÞ¸Äº¯Êý¼´¿É */
-    /* ÏòÄ£¿éÐ´Èë¼ÆËãºóµÄ E07x_InitSetting ²ÎÊý±í */
+    /* ×¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:ï¿½ï¿½ï¿½Ï£ï¿½ï¿½ï¿½ï¿½È«Ê¹ï¿½Ã¹Ù·ï¿½SmartRF Studioï¿½ï¿½ï¿½ï¿½ï¿½Ã²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã´Ö±ï¿½ï¿½×¢ï¿½Íµï¿½ï¿½Ï·ï¿½ï¿½ï¿½ï¿½Þ¸Äºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+    /* ï¿½ï¿½Ä£ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ E07x_InitSetting ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
     E07x_SetRegister( 0x02, E07x_InitSetting.iocfg0 );
     E07x_SetRegister( 0x03, E07x_InitSetting.fifothr);
     E07x_SetRegister( 0x04, E07x_InitSetting.sync1);
@@ -753,41 +758,41 @@ static uint8e_t E07x_Config( uint32e_t frequency , uint32e_t data_rate , uint32e
     E07x_SetRegister( 0x26, E07x_InitSetting.fscal0);
     E07x_SetRegister( 0x2C, E07x_InitSetting.test2);
     E07x_SetRegister( 0x2D, E07x_InitSetting.test1);
-//    E07x_SetRegister( 0x2E, E07x_InitSetting.test0); //·¢ÏÖ: ÉèÖÃTEST0µ¼ÖÂ×Ô¶¨Òå¼ÆËãÆµÂÊÆ«ÒÆ  
-                                                       //ÏÖÏó: µ±ÆµµãÉèÖÃÎªÐ¡ÓÚ411MHzÊ±£¬ÆµµãËøËÀÔÚÁË411MHz¡£µ±ÆµµãÉèÖÃÎª´óÓÚ411MHzÊ±£¬ÆµµãÇÐ»»Õý³£
-                                                       //½¨Òé: µ±ÍêÈ«ÆôÓÃ¹Ù·½SmartRF Studio²ÎÊýÊ±£¬½â³ýTEST0µÄ×¢ÊÍ¡£µ±Ê¹ÓÃ×ÔÓÉ²ÎÊý¼ÆËãÊ±£¬±£³Ö×¢ÊÍ
+//    E07x_SetRegister( 0x2E, E07x_InitSetting.test0); //ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½TEST0ï¿½ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½Æ«ï¿½ï¿½  
+                                                       //ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÎªÐ¡ï¿½ï¿½411MHzÊ±ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½411MHzï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½411MHzÊ±ï¿½ï¿½Æµï¿½ï¿½ï¿½Ð»ï¿½ï¿½ï¿½ï¿½ï¿½
+                                                       //ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½È«ï¿½ï¿½ï¿½Ã¹Ù·ï¿½SmartRF Studioï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½TEST0ï¿½ï¿½×¢ï¿½Í¡ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½ï¿½ï¿½ï¿½É²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×¢ï¿½ï¿½
     
-    /* ²¹³ä£ºÍ¨µÀ±àÂë(¿ÉÓÃÓÚÌøÆµ)  ¼Ä´æÆ÷µØÖ·: 0x0A */
+    /* ï¿½ï¿½ï¿½ä£ºÍ¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµ)  ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ö·: 0x0A */
     E07x_SetRegister( 0x0A ,0 );
     
-    /* ²¹³ä£º¹Ø±ÕµØÖ·¹ýÂË  ¼Ä´æÆ÷µØÖ·: 0x07 */
+    /* ï¿½ï¿½ï¿½ä£ºï¿½Ø±Õµï¿½Ö·ï¿½ï¿½ï¿½ï¿½  ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ö·: 0x07 */
     reg_value = E07x_GetRegister(0x07);
-    reg_value &= 0xFC;//ÇåÁã
+    reg_value &= 0xFC;//ï¿½ï¿½ï¿½ï¿½
     E07x_SetRegister(0x07,reg_value);
     
-    /* ²¹³ä: ÅäÖÃÊä³ö¹¦ÂÊ ¼Ä´æÆ÷µØÖ·: 0x3E */
+    /* ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ö·: 0x3E */
     E07x_SetRegisters( 0x3E ,E07x_PaTabel,8 );
     
     return 0;
 }
 
 /*!
- * @brief Ä£¿é³õÊ¼»¯
+ * @brief Ä£ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
  * 
- * @return 0:Õý³£ 1:³õÊ¼»¯Ê§°Ü
+ * @return 0:ï¿½ï¿½ï¿½ï¿½ 1:ï¿½ï¿½Ê¼ï¿½ï¿½Ê§ï¿½ï¿½
  */
 uint8e_t E07x_Init( void )
 {
     uint8e_t result = 0;
     
-    /* Èí¸´Î» */
+    /* ï¿½ï¿½Î» */
     E07x_Reset();
     
-    /* ÅÐ¶ÏÄ£¿éÊÇ·ñ´æÔÚ */
+    /* ï¿½Ð¶ï¿½Ä£ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ */
     result = E07x_IsExist();
     if( result != 0 ) return 1;
     
-    /* »ù´¡²ÎÊýÉèÖÃ */
+    /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
     result = E07x_Config(  E07_FREQUENCY_START,
                            E07_DATA_RATE, 
                            E07_FREQUENCY_DEVIATION,
@@ -799,101 +804,118 @@ uint8e_t E07x_Init( void )
                            );
     if( result != 0 ) return 1;
     
-    /* Ä¬ÈÏ½øÈë½ÓÊÕÄ£Ê½ */
+    /* Ä¬ï¿½Ï½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£Ê½ */
     E07x_GoReceive();
     return 0;
 }
 
 /*!
- * @brief ±£Áô 
+ * @brief ï¿½ï¿½ï¿½ï¿½ 
  */
 void E07x_TaskForIRQ(void)
 {
+    //received = 1;
+    //irq_counter++;
 
+    uint8e_t recvSize;
+    recvSize = 0;
+    E07x_GetFIFO(&recvSize , 1);
+
+    if( recvSize != 0 )
+    {
+        E07x_GetFIFO( E07x_RxBuffer, recvSize );
+        Ebyte_Port_ReceiveCallback( 0x0002 , E07x_RxBuffer , recvSize );
+    } else {
+        E07x_GoReceive();
+    }
 }
 
 /*!
- * @brief ÂÖÑ¯º¯Êý ¸¨ÖúÍê³ÉÊý¾Ý½ÓÊÕ
+ * @brief ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý½ï¿½ï¿½ï¿½
  *  
- * @param data Ö¸Ïò·¢ËÍÊý¾Ý
- * @param size Êý¾Ý³¤¶È
+ * @param data Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * @param size ï¿½ï¿½ï¿½Ý³ï¿½ï¿½ï¿½
  * @return 0
  */
 uint8e_t E07x_GoTransmit( uint8e_t *data, uint8e_t size )
 {
     uint8e_t irqStatus = 0;
-    
-    /* Ä£Ê½ÇÐ»»: ´ý»ú */
+    // disable receive IRQ
+    BSP_GPIO_PORT_E07_GDO0->CR2 &= (uint8_t)(~(BSP_GPIO_PIN_E07_GDO0));
+
+    /* Ä£Ê½ï¿½Ð»ï¿½: ï¿½ï¿½ï¿½ï¿½ */
     E07x_SetStby();
     
-    /* Çå³ý·¢ËÍÊý¾Ý¶ÓÁÐ */
+    /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý¶ï¿½ï¿½ï¿½ */
     E07x_ClearFIFO( FIFO_WRITE );
    
-    /* ·¢ËÍÊý¾ÝÎª¿É±ä³¤Ä£ µÚÒ»×Ö½ÚÏÈÐ´Èë³¤¶È */
+    /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½É±ä³¤Ä£ ï¿½ï¿½Ò»ï¿½Ö½ï¿½ï¿½ï¿½Ð´ï¿½ë³¤ï¿½ï¿½ */
     E07x_SetFIFO( &size , 1 );
     
-    /* ºóÐøÐ´ÈëÍêÕûÊý¾Ý°ü */
+    /* ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý°ï¿½ */
     E07x_SetFIFO( data , size);
     
-    /* ÉèÖÃÒý½Å GPIO0 Ó³Éäµ½ÖÐ¶Ï
-     * µ±·¢ËÍ½øÐÐÍ¬²½×ÖÊ± ´¥·¢ÖÐ¶Ï £¡£¡£¡×¢Òâ:µ±FIFOÖÐµÄÊý¾ÝÍêÈ«·¢ËÍºó ×Ô¶¯£¡Çå³ýÖÐ¶Ï */
+    /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ GPIO0 Ó³ï¿½äµ½ï¿½Ð¶ï¿½
+     * ï¿½ï¿½ï¿½ï¿½ï¿½Í½ï¿½ï¿½ï¿½Í¬ï¿½ï¿½ï¿½ï¿½Ê± ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×¢ï¿½ï¿½:ï¿½ï¿½FIFOï¿½Ðµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È«ï¿½ï¿½ï¿½Íºï¿½ ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ */
     E07x_SetGPIO(0 ,IRQ_TX_SYNC_SEND );
 
-    /* ·¢ËÍÖ¸Áî:0x35 Ä£¿é½øÈë½ÓÊÕÄ£Ê½ */   
+    /* ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½:0x35 Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£Ê½ */   
     E07x_SendCommand( 0x35 );      
     
-    /* ×´Ì¬¼ÇÂ¼ */
+    /* ×´Ì¬ï¿½ï¿½Â¼ */
     E07x_Status = GO_WAIT_TRANSMIT;    
     
-    /* ×èÈû·¢ËÍ·½Ê½ ÔÚ´ËµÈ´ý·¢ËÍÍê³É */  
+    /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í·ï¿½Ê½ ï¿½Ú´ËµÈ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */  
     do
     {
       Ebyte_Port_DelayMs(1);
       
-      /* ¶ÁÈ¡×´Ì¬¼Ä´æÆ÷ MARCSTATE µØÖ·:0x35 */
+      /* ï¿½ï¿½È¡×´Ì¬ï¿½Ä´ï¿½ï¿½ï¿½ MARCSTATE ï¿½ï¿½Ö·:0x35 */
       irqStatus = E07x_GetRegister(0x35);
 
     }
-    while( (irqStatus != 0x01) );//·¢ËÍÍê³Éºó×Ô¶¯ÍË»Øµ½¿ÕÏÐ×´Ì¬ ¼´Îª0x01  
-                                  //Èç¹ûÉèÖÃÁË¼Ä´æÆ÷MCSM1 µØÖ·:0x17 ¿ªÆôÁËTXOFF_MODE ÄÇÃ´·¢ËÍÍê³Éºó×´Ì¬²¢²»Ò»¶¨ÊÇ¿ÕÏÐ ÐèÒªÁíÐÐ´¦Àí 
+    while( (irqStatus != 0x01) );//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éºï¿½ï¿½Ô¶ï¿½ï¿½Ë»Øµï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬ ï¿½ï¿½Îª0x01  
+                                  //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¼Ä´ï¿½ï¿½ï¿½MCSM1 ï¿½ï¿½Ö·:0x17 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½TXOFF_MODE ï¿½ï¿½Ã´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éºï¿½×´Ì¬ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ç¿ï¿½ï¿½ï¿½ ï¿½ï¿½Òªï¿½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ 
     
-    /* ×´Ì¬¼ÇÂ¼ */
+    /* ×´Ì¬ï¿½ï¿½Â¼ */
     E07x_Status = GO_STBY;  
     
-    /* »Øµ÷ÓÃ»§º¯Êý */
+    /* ï¿½Øµï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ */
     Ebyte_Port_TransmitCallback( 0x0001 );
     
     return 0;
 }
 
 /*!
- * @brief ¿ªÊ¼¼àÌýÊý¾Ý
+ * @brief ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  *  
  * @return 0
  */
 uint8e_t E07x_GoReceive( void )
 {
   
-    /* Ä£Ê½ÇÐ»»: ´ý»ú */
+    /* Ä£Ê½ï¿½Ð»ï¿½: ï¿½ï¿½ï¿½ï¿½ */
     E07x_SetStby();
     
-    /* Çå³ý½ÓÊÕÊý¾Ý¶ÓÁÐ */
+    /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý¶ï¿½ï¿½ï¿½ */
     E07x_ClearFIFO( FIFO_READ );  
   
-    /* ÉèÖÃÒý½Å GPIO0 Ó³Éäµ½ÖÐ¶Ï */
+    /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ GPIO0 Ó³ï¿½äµ½ï¿½Ð¶ï¿½ */
 //    E07x_SetGPIO(0 ,IRQ_RX_CRC_OK );
      E07x_SetGPIO(0 ,IRQ_RX_SYNC_RECV );
   
-    /* ·¢ËÍÖ¸Áî:0x34 Ä£¿é½øÈë½ÓÊÕÄ£Ê½ */   
+    /* ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½:0x34 Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£Ê½ */   
     E07x_SendCommand( 0x34 );  
     
-    /* ×´Ì¬¼ÇÂ¼ */
+    /* ×´Ì¬ï¿½ï¿½Â¼ */
     E07x_Status = GO_WAIT_RECEIVE;
+    // enable receive IRQ
+    BSP_GPIO_PORT_E07_GDO0->CR2 |= (uint8_t)(BSP_GPIO_PIN_E07_GDO0);
     return 0;
 }
 
 /*!
- * @brief Ä£¿é½øÈëÐÝÃßÄ£Ê½(µÍ¹¦ºÄ)
+ * @brief Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£Ê½(ï¿½Í¹ï¿½ï¿½ï¿½)
  * 
  * @return 0;
  */
@@ -905,10 +927,10 @@ uint8e_t E07x_GoSleep(void)
 }
 
 /*!
- * @brief »ñÈ¡Ä£¿é³ÌÐò°æ±¾
+ * @brief ï¿½ï¿½È¡Ä£ï¿½ï¿½ï¿½ï¿½ï¿½æ±¾
  * 
- * @return 8Î»µÄ±àÂë 
- * @note ÀýÈç0x10 ´ú±íV1.0
+ * @return 8Î»ï¿½Ä±ï¿½ï¿½ï¿½ 
+ * @note ï¿½ï¿½ï¿½ï¿½0x10 ï¿½ï¿½ï¿½ï¿½V1.0
  */
 uint8e_t E07x_GetDriverVersion(void)
 {
@@ -916,10 +938,10 @@ uint8e_t E07x_GetDriverVersion(void)
 }
 
 /*!
- * @brief »ñÈ¡Ä£¿éÃû×Ö
+ * @brief ï¿½ï¿½È¡Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
  * 
- * @return Ö¸ÏòÃû×Ö×Ö·û´®µÄÖ¸Õë 
- * @note ±ê×¼×Ö·û´® Ä©Î²º¬ÓÐ½áÊø·û '\0'
+ * @return Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ 
+ * @note ï¿½ï¿½×¼ï¿½Ö·ï¿½ï¿½ï¿½ Ä©Î²ï¿½ï¿½ï¿½Ð½ï¿½ï¿½ï¿½ï¿½ï¿½ '\0'
  */
 uint8e_t* E07x_GetName(void)
 {
@@ -927,18 +949,18 @@ uint8e_t* E07x_GetName(void)
 }
 
 /*!
- * @brief »ñÈ¡Ä£¿é×´Ì¬
+ * @brief ï¿½ï¿½È¡Ä£ï¿½ï¿½×´Ì¬
  * 
- * @return ×´Ì¬±àÂë
- *        Î´³õÊ¼»¯     GO_INIT          =0x00        
- *        ÕýÔÚÇÐ»»×´Ì¬ GO_BUSY          =0x01   
- *        ´ý»ú/¿ÕÏÐ    GO_STBY          =0x02   
- *        ×¼±¸½ÓÊÕ»·¾³ GO_RECEIVE       =0x03   
- *        ÕýÔÚ¼àÌýÊý¾Ý GO_WAIT_RECEIVE  =0x04          
- *        ×¼±¸·¢ËÍ»·¾³ GO_TRANSMIT      =0x05   
- *        µÈ´ý·¢ËÍÍê³É GO_WAIT_TRANSMIT =0x06   
- *        ÐÝÃß         GO_SLEEP         =0x07   
- *        ÄÚ²¿´íÎó     GO_ERROR         =0x08 
+ * @return ×´Ì¬ï¿½ï¿½ï¿½ï¿½
+ *        Î´ï¿½ï¿½Ê¼ï¿½ï¿½     GO_INIT          =0x00        
+ *        ï¿½ï¿½ï¿½ï¿½ï¿½Ð»ï¿½×´Ì¬ GO_BUSY          =0x01   
+ *        ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½    GO_STBY          =0x02   
+ *        ×¼ï¿½ï¿½ï¿½ï¿½ï¿½Õ»ï¿½ï¿½ï¿½ GO_RECEIVE       =0x03   
+ *        ï¿½ï¿½ï¿½Ú¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ GO_WAIT_RECEIVE  =0x04          
+ *        ×¼ï¿½ï¿½ï¿½ï¿½ï¿½Í»ï¿½ï¿½ï¿½ GO_TRANSMIT      =0x05   
+ *        ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ GO_WAIT_TRANSMIT =0x06   
+ *        ï¿½ï¿½ï¿½ï¿½         GO_SLEEP         =0x07   
+ *        ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½     GO_ERROR         =0x08 
  */
 uint8e_t E07x_GetStatus(void)
 {
@@ -946,33 +968,37 @@ uint8e_t E07x_GetStatus(void)
 }
 
 /*!
- * @brief ÂÖÑ¯º¯Êý ¸¨ÖúÍê³ÉÊý¾Ý½ÓÊÕ
+ * @brief ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý½ï¿½ï¿½ï¿½
  *  
  * @return 0
- * @note ÐèÒª±»Ö÷º¯ÊýÖÜÆÚÐÔµ÷ÓÃ
+ * @note ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôµï¿½ï¿½ï¿½
  */
 uint8e_t E07x_TaskForPoll(void)
 {
     uint8e_t recvSize;
-    if (0 == Ebyte_Port_Gdo0IoRead())             // ¼ì²âÎÞÏßÄ£¿éÊÇ·ñ²úÉú½ÓÊÕÖÐ¶Ï 
+    //if (0 == Ebyte_Port_Gdo0IoRead())             // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½
+    if (received)
     {
-        while (Ebyte_Port_Gdo0IoRead() == 0);
+        received = 0;
+    //    while (Ebyte_Port_Gdo0IoRead() == 0);
 
-        // ¶ÁÈ¡½ÓÊÕµ½µÄÊý¾Ý³¤¶È 
+        // ï¿½ï¿½È¡ï¿½ï¿½ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý³ï¿½ï¿½ï¿½ 
         recvSize = 0;
         E07x_GetFIFO(&recvSize , 1);
 
-        // Èç¹û½ÓÊÕ³¤¶È²»Îª0
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ³ï¿½ï¿½È²ï¿½Îª0
         if( recvSize != 0 )
         {
             E07x_GetFIFO( E07x_RxBuffer, recvSize );
-            //»Øµ÷ÓÃ»§º¯Êý
-            Ebyte_Port_ReceiveCallback( 0x0002 , E07x_RxBuffer , recvSize );            
+            //ï¿½Øµï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½
+            Ebyte_Port_ReceiveCallback( 0x0002 , E07x_RxBuffer , recvSize );
+            mprintf("irq %d\n", irq_counter)          ;
+            irq_counter = 0;
         }
         else
         {
-            //To-Do Çë×ÔÐÐ´¦ÀíÆäËûÇé¿ö ÀýÈçÖ»ÓÐÇ°µ¼Âë?¸ÉÈÅÐÍµÄÖÐ¶Ï£¿
-            E07x_GoReceive();//Ê¾Àý ¼ÌÐø½ÓÊÕ
+            //To-Do ï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ö»ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½?ï¿½ï¿½ï¿½ï¿½ï¿½Íµï¿½ï¿½Ð¶Ï£ï¿½
+            E07x_GoReceive();//Ê¾ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         }
     }
 

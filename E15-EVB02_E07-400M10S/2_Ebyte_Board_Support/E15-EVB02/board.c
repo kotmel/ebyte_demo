@@ -47,7 +47,9 @@ void Ebyte_BSP_HSI_Init( void )
  */
 void Ebyte_BSP_E07xGPIO_Init( void )
 {
-    GPIO_Init( BSP_GPIO_PORT_E07_GDO0, BSP_GPIO_PIN_E07_GDO0, GPIO_Mode_In_PU_No_IT );
+    GPIO_Init( BSP_GPIO_PORT_E07_GDO0, BSP_GPIO_PIN_E07_GDO0, GPIO_Mode_In_PU_IT );
+    EXTI_SetPinSensitivity( EXTI_Pin_0, EXTI_Trigger_Rising );
+
     GPIO_Init( BSP_GPIO_PORT_E07_GDO1, BSP_GPIO_PIN_E07_GDO1, GPIO_Mode_In_PU_No_IT );
 }
 
@@ -223,7 +225,7 @@ void Ebyte_BSP_Init( void )
     Ebyte_BSP_SPI_Init();
     /* ��ʱ��   ��ʼ�� */
     Ebyte_BSP_TIMER_Init();
-    //Ebyte_BSP_TIMER2_Init(); // kk 2Hz blink LED 1 just for test
+    Ebyte_BSP_TIMER2_Init(); // kk 2Hz blink LED 1 just for test
     /* �����¼����� ��ʼ�� */
     Ebyte_BTN_FIFO_Init( &BSP_BTN_FIFO );
 }

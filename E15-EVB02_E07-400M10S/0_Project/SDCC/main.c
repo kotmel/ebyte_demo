@@ -59,25 +59,25 @@ uint8_t PC_isConnected = 0;
 
 static BSP_BTN_EVENT_t BTN_Event;
 
-static void test_decrypt_cbc(uint8_t in[], uint8_t len)
+static void test_decrypt_cbc(uint8_t* in, uint8_t len)
 {
 
-    /*uint8_t key[] = { 0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c };
+    uint8_t key[] = { 0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c };
     uint8_t iv[]  = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
     struct AES_ctx ctx;
 
     AES_init_ctx_iv(&ctx, key, iv);
-    AES_CBC_decrypt_buffer(&ctx, in, len);*/
+    AES_CBC_decrypt_buffer(&ctx, in, len);
 }
 
-static void test_encrypt_cbc(uint8_t in[], uint8_t len)
+static void test_encrypt_cbc(uint8_t* in, uint8_t len)
 {
-    /*uint8_t key[] = { 0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c };
+    uint8_t key[] = { 0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c };
     uint8_t iv[]  = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
     struct AES_ctx ctx;
 
     AES_init_ctx_iv(&ctx, key, iv);
-    AES_CBC_encrypt_buffer(&ctx, in, len);*/
+    AES_CBC_encrypt_buffer(&ctx, in, len);
 }
 
 
@@ -125,7 +125,7 @@ int main( void )
         /* ����:��⴮�����ݲ����߷��� �ͻ��밴���Զ��� */
         Task_Transmit();
         /* ����:EBYTE��������������ִ������  �ͻ������޸� */
-        Ebyte_RF.TaskForPoll();
+        // kkk handled in IRQ Ebyte_RF.TaskForPoll();
     }
 }
 
@@ -325,7 +325,7 @@ void UserReceiveDoneCallback( uint8_t* buffer, uint8_t length )
     if( ! PC_isConnected )
     {
         DEBUG( "\r\n #RECV: " );
-        //test_decrypt_cbc(TxBuffer, 16); // TODO: length
+        //test_decrypt_cbc(buffer, 16); // TODO: length
         Ebyte_BSP_UartTransmit( buffer, length );
     }
     Ebyte_BSP_LedControl( BSP_LED_1, OFF );

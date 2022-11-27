@@ -577,3 +577,76 @@ void USART_ClearITPendingBit(USART_TypeDef* USARTx, USART_IT_TypeDef USART_IT)
   /*< Clear RXNE or TC pending bit */
   USARTx->SR &= (uint8_t)(~USART_SR_TC);
 }
+
+
+/**
+  * @brief  Sets the external interrupt sensitivity of the selected pin.
+  * @note   Global interrupts must be disabled before calling this function.
+  * @note   The modification of external interrupt sensitivity is only possible
+  *         when he interrupts are disabled.
+  * @note   The normal behavior is to disable the interrupts before calling this
+  *         function, and re-enable them after.
+  * @param  EXTI_Pin : The pin to configure.
+  *          This parameter can be one of the following values:
+  *            @arg EXTI_Pin_0: GPIO Pin 0
+  *            @arg EXTI_Pin_1: GPIO Pin 1
+  *            @arg EXTI_Pin_2: GPIO Pin 2
+  *            @arg EXTI_Pin_3: GPIO Pin 3
+  *            @arg EXTI_Pin_4: GPIO Pin 4
+  *            @arg EXTI_Pin_5: GPIO Pin 5
+  *            @arg EXTI_Pin_6: GPIO Pin 6
+  *            @arg EXTI_Pin_7: GPIO Pin 7
+  * @param  EXTI_Trigger : The external interrupt sensitivity value to set.
+  *          This parameter can be one of the following values:
+  *            @arg EXTI_Trigger_Falling_Low: Interrupt on Falling edge and Low level
+  *            @arg EXTI_Trigger_Rising: Interrupt on Rising edge only
+  *            @arg EXTI_Trigger_Falling: Interrupt on Falling edge only
+  *            @arg EXTI_Trigger_Rising_Falling: Interrupt on Rising and Falling edges
+  * @retval None
+  */
+void EXTI_SetPinSensitivity(EXTI_Pin_TypeDef EXTI_Pin, EXTI_Trigger_TypeDef EXTI_Trigger)
+{
+
+  /* Check function parameters */
+  assert_param(IS_EXTI_PINNUM(EXTI_Pin));
+  assert_param(IS_EXTI_TRIGGER(EXTI_Trigger));
+
+  /* Clear port sensitivity bits */
+  switch (EXTI_Pin)
+  {
+    case EXTI_Pin_0:
+      EXTI->CR1 &=  (uint8_t)(~EXTI_CR1_P0IS);
+      EXTI->CR1 |= (uint8_t)((uint8_t)(EXTI_Trigger) << EXTI_Pin);
+      break;
+    case EXTI_Pin_1:
+      EXTI->CR1 &=  (uint8_t)(~EXTI_CR1_P1IS);
+      EXTI->CR1 |= (uint8_t)((uint8_t)(EXTI_Trigger) << EXTI_Pin);
+      break;
+    case EXTI_Pin_2:
+      EXTI->CR1 &=  (uint8_t)(~EXTI_CR1_P2IS);
+      EXTI->CR1 |= (uint8_t)((uint8_t)(EXTI_Trigger) << EXTI_Pin);
+      break;
+    case EXTI_Pin_3:
+      EXTI->CR1 &=  (uint8_t)(~EXTI_CR1_P3IS);
+      EXTI->CR1 |= (uint8_t)((uint8_t)(EXTI_Trigger) << EXTI_Pin);
+      break;
+    case EXTI_Pin_4:
+      EXTI->CR2 &=  (uint8_t)(~EXTI_CR2_P4IS);
+      EXTI->CR2 |= (uint8_t)((uint8_t)(EXTI_Trigger) << ((uint8_t)EXTI_Pin & (uint8_t)0xEF));
+      break;
+    case EXTI_Pin_5:
+      EXTI->CR2 &=  (uint8_t)(~EXTI_CR2_P5IS);
+      EXTI->CR2 |= (uint8_t)((uint8_t)(EXTI_Trigger) << ((uint8_t)EXTI_Pin & (uint8_t)0xEF));
+      break;
+    case EXTI_Pin_6:
+      EXTI->CR2 &=  (uint8_t)(~EXTI_CR2_P6IS);
+      EXTI->CR2 |= (uint8_t)((uint8_t)(EXTI_Trigger) << ((uint8_t)EXTI_Pin & (uint8_t)0xEF));
+      break;
+    case EXTI_Pin_7:
+      EXTI->CR2 &=  (uint8_t)(~EXTI_CR2_P7IS);
+      EXTI->CR2 |= (uint8_t)((uint8_t)(EXTI_Trigger) << ((uint8_t)EXTI_Pin & (uint8_t)0xEF));
+      break;
+    default:
+      break;
+  }
+}

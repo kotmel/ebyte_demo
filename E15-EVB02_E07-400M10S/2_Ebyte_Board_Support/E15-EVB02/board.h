@@ -62,6 +62,9 @@
 #define BSP_GPIO_PIN_E07_GDO0     GPIO_Pin_0    
 #define BSP_GPIO_PORT_E07_GDO1    GPIOD
 #define BSP_GPIO_PIN_E07_GDO1     GPIO_Pin_4 
+#define DEBUG_Port                GPIOB
+#define DEBUG_Pin0                GPIO_Pin_0
+#define DEBUG_Pin1                GPIO_Pin_1
 
 
 /* �������� SPI */
