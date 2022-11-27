@@ -1,14 +1,14 @@
 /**
   **********************************************************************************
   * @file      ebyte_core.h
-  * @brief     EBYTE��������ϲ�API��װ�� �����ͻ�����ײ��߼�    
-  * @details   ������μ� https://www.ebyte.com/       
+  * @brief     The upper API encapsulation layer of the EBYTE driver library helps customers abstract the underlying logic
+  * @details See https://www.ebyte.com/ for details
   * @author    JiangHeng     
   * @date      2021-05-13     
   * @version   1.0.0     
   **********************************************************************************
   * @copyright BSD License 
-  *            �ɶ��ڰ��ص��ӿƼ����޹�˾  
+  *            Chengdu Ebyte Electronic Technology Co., Ltd.
   *   ______   ____   __     __  _______   ______ 
   *  |  ____| |  _ \  \ \   / / |__   __| |  ____|
   *  | |__    | |_) |  \ \_/ /     | |    | |__   

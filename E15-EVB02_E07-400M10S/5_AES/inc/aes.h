@@ -1,11 +1,7 @@
 #ifndef _AES_H_
 #define _AES_H_
 
-/*#include <stdint.h>
-#include <stddef.h>
-*/
 #include "stm8l15x.h"
-//#include "stm8s.h"
 
 
 #define AES128 1

@@ -1,14 +1,14 @@
 /**
   **********************************************************************************
   * @file      board.h
-  * @brief     E15-EVB02 �弶����������     
+  * @brief     E15-EVB02 board-level software driver layer
   * @details   ������μ� https://www.ebyte.com/       
   * @author    JiangHeng     
   * @date      2021-05-06     
   * @version   1.0.0     
   **********************************************************************************
   * @copyright BSD License 
-  *            �ɶ��ڰ��ص��ӿƼ����޹�˾  
+  *            Chengdu Ebyte Electronic Technology Co., Ltd.
   *   ______   ____   __     __  _______   ______ 
   *  |  ____| |  _ \  \ \   / / |__   __| |  ____|
   *  | |__    | |_) |  \ \_/ /     | |    | |__   
@@ -22,21 +22,21 @@
 #include "stm8l15x_conf.h"
 #include "board_mini_printf.h"
 
-/* �������� LED   */
+/* pin configuration LED */
 #define BSP_GPIO_PORT_LED_1       GPIOC
 #define BSP_GPIO_PIN_LED_1        GPIO_Pin_6
 
 #define BSP_GPIO_PORT_LED_2       GPIOC
 #define BSP_GPIO_PIN_LED_2        GPIO_Pin_5
 
-/* �������� ���� */
+/* Pin configuration button */
 #define BSP_GPIO_PORT_BUTTON_1    GPIOA
 #define BSP_GPIO_PIN_BUTTON_1     GPIO_Pin_4
 
 #define BSP_GPIO_PORT_BUTTON_2    GPIOA
 #define BSP_GPIO_PIN_BUTTON_2     GPIO_Pin_5
 
-/* �������� SPIͨ�Žӿ� */
+/* pin configuration SPI communication interface */
 #define BSP_GPIO_PORT_SPI_NSS     GPIOB
 #define BSP_GPIO_PIN_SPI_NSS      GPIO_Pin_4
 
@@ -49,14 +49,14 @@
 #define BSP_GPIO_PORT_SPI_SCK     GPIOB
 #define BSP_GPIO_PIN_SPI_SCK      GPIO_Pin_5
 
-/* �������� ͨ�Ŵ��� */
+/* Pin configuration communication serial port */
 #define BSP_GPIO_PORT_UART_TX     GPIOA
 #define BSP_GPIO_PIN_UART_TX      GPIO_Pin_2
 
 #define BSP_GPIO_PORT_UART_RX     GPIOA
 #define BSP_GPIO_PIN_UART_RX      GPIO_Pin_3
 
-/* �������� EBYTE����ģ����� */
+/* Pin configuration EBYTE wireless module control */
 /* E07 */
 #define BSP_GPIO_PORT_E07_GDO0    GPIOC
 #define BSP_GPIO_PIN_E07_GDO0     GPIO_Pin_0    
@@ -67,7 +67,7 @@
 #define DEBUG_Pin1                GPIO_Pin_1
 
 
-/* �������� SPI */
+/* Parameter configuration SPI */
 #define BSP_RF_SPI                  SPI1
 #define BSP_RF_SPI_CLOCK            CLK_Peripheral_SPI1
 #define Ebyte_BSP_RfSpiSelected()   GPIO_WriteBit( BSP_GPIO_PORT_SPI_NSS , BSP_GPIO_PIN_SPI_NSS, RESET )
@@ -78,7 +78,7 @@
 #define Ebyte_BSP_RfGdo0IoRead()  GPIO_ReadInputDataBit( BSP_GPIO_PORT_E07_GDO0 , BSP_GPIO_PIN_E07_GDO0)
 #define Ebyte_BSP_RfGdo1IoRead()  GPIO_ReadInputDataBit( BSP_GPIO_PORT_E07_GDO1 , BSP_GPIO_PIN_E07_GDO1)
 
-/* ȫ���ж� */
+/* Global interrupt */
 #if defined(__CSMC__) || defined(_SDCC_)
 #define Ebyte_BSP_GlobalIntEnable()               enableInterrupts()
 #define Ebyte_BSP_GlobalIntDisable()              disableInterrupts()
@@ -86,19 +86,19 @@
 #define Ebyte_BSP_GlobalIntEnable()                __enable_interrupt()
 #define Ebyte_BSP_GlobalIntDisable()               __disable_interrupt()
 #endif
-/* �������� UART */
+/* Parameter configuration UART */
 #define BSP_USER_UART             USART1
 #define BSP_USER_UART_CLOCK       CLK_Peripheral_USART1
-#define BSP_USER_UART_BAUDRATE    9600                  //������
-#define BSP_USER_UART_PARITY      USART_Parity_No       //USART_Parity_No:��У��  USART_Parity_Even:��У��  USART_Parity_Odd:żУ��     
-#define BSP_USER_UART_IRQ         USART1_RX_IRQn        //�ж�����
-#define BSP_USER_UART_IRQ_LEVEL   ITC_PriorityLevel_2   //���ȼ�
+#define BSP_USER_UART_BAUDRATE    9600                  // baud rate
+#define BSP_USER_UART_PARITY      USART_Parity_No       // USART_Parity_No: no parity USART_Parity_Even: odd parity USART_Parity_Odd: even parity
+#define BSP_USER_UART_IRQ         USART1_RX_IRQn        // Interrupt type
+#define BSP_USER_UART_IRQ_LEVEL   ITC_PriorityLevel_2   // Priority
 
 
-/* �������� �����¼����� */
+/* parameter configuration button event queue */
 #define BSP_BTN_FIFO_LENGTH       16
 
-/* �������� ���Դ�ӡ��Ϣ �رմ�ӡ��Ҫע�͵��궨�� EBYTE_DEBUG */
+/* Parameter configuration debugging print information to close the print needs to comment out the macro definition EBYTE_DEBUG */
 #define EBYTE_DEBUG 
 #ifdef __CSMC__
 //kkk cosmic compiler doesn't support macros vith variable number of  parameters 
@@ -117,10 +117,10 @@ typedef enum { UART_8N1 = 0, UART_8O1, UART_8E1 } BSP_UART_Parity_t;
 typedef enum { BSP_BUTTON_1 = 0, BSP_BUTTON_2 } BSP_BUTTON_t;
 typedef enum
 {
-    BTN_1_SHORT, //����1 �̰� 
-    BTN_1_LONG,	 //����1 ���� 
-    BTN_2_SHORT, //����2 �̰� 
-    BTN_2_LONG	 //����2 ���� 
+    BTN_1_SHORT, // button 1 short press
+    BTN_1_LONG,	 // Key 1 long press
+    BTN_2_SHORT, // button 2 short press
+    BTN_2_LONG	 // long press button 2
 }BSP_BTN_EVENT_t;
 
 typedef struct

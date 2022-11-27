@@ -1,14 +1,14 @@
 /**
   **********************************************************************************
   * @file      main.c
-  * @brief     E15-EVB02 ������̼�
-  * @details   ������Ϊ: ��������͸��ʾ��  ������μ� https://www.ebyte.com/
+  * @brief E15-EVB02 evaluation board firmware
+  * @details This routine is: Serial port wireless transparent transmission example For details, please refer to https://www.ebyte.com/
   * @author    JiangHeng
   * @date      2021-05-06
   * @version   1.0.0
   **********************************************************************************
   * @copyright BSD License
-  *            �ɶ��ڰ��ص��ӿƼ����޹�˾
+  *            Chengdu Ebyte Electronic Technology Co., Ltd.
   *   ______   ____   __     __  _______   ______
   *  |  ____| |  _ \  \ \   / / |__   __| |  ____|
   *  | |__    | |_) |  \ \_/ /     | |    | |__
@@ -37,13 +37,13 @@ void Task_Button( void );
 /* ���� ���ݴ洢���� */
 Ebyte_FIFO_t hfifo;
 
-/* ���� ֡������ɱ�ʶ */
+/* Serial port frame receiving completion flag */
 uint8_t Uart_isRecvReady = 0;
 
-/* ���� FIFO����ʶ */
+/* Serial port FIFO check mark */
 uint8_t FIFO_isTimeCheckReady = 0;
 
-/* ���� �Զ�����/������ */
+/* Serial custom receive/send cache */
 uint8_t TxBuffer[64] = {0};
 uint8_t RxBuffer[64] = {0};
 uint8_t PcEchoBuffer[20] = {0};
@@ -51,15 +51,15 @@ uint8_t PcEchoBuffer[20] = {0};
 uint8_t BufferPing[5] = {'p', 'i', 'n', 'g'};
 uint8_t BufferPong[5] = {'p', 'o', 'n', 'g'};
 
-/* ���� FIFO����ʶ */
+/* Serial port FIFO check mark */
 uint8_t Callback_isPingCheckReady = 0;
 
-/* �Լ�ģʽ ��ʶ */
+/* Self-test mode identification */
 uint8_t PC_isConnected = 0;
 
 static BSP_BTN_EVENT_t BTN_Event;
 
-static void test_decrypt_cbc(uint8_t* in, uint8_t len)
+static void decrypt_cbc(uint8_t* in, uint8_t len)
 {
 
     uint8_t key[] = { 0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c };
@@ -70,7 +70,7 @@ static void test_decrypt_cbc(uint8_t* in, uint8_t len)
     AES_CBC_decrypt_buffer(&ctx, in, len);
 }
 
-static void test_encrypt_cbc(uint8_t* in, uint8_t len)
+static void encrypt_cbc(uint8_t* in, uint8_t len)
 {
     uint8_t key[] = { 0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c };
     uint8_t iv[]  = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
@@ -82,87 +82,79 @@ static void test_encrypt_cbc(uint8_t* in, uint8_t len)
 
 
 /* !
- * @brief ������
+ * @brief main function
  */
 int main( void )
 {
     uint8_t result;
     uint8_t* pName;
-    /* ����Ӳ����Դ ��ʼ�� */
+    /* Onboard hardware resource initialization */
     Ebyte_BSP_Init();
-    /* (��ѡ) �����жϽ���FIFO �ɸ�����Ҫ���д��� */
+    /* (Optional) The serial port interrupt receiving FIFO can be processed by itself according to needs */
     Ebyte_FIFO_Init( &hfifo, EBYTE_FIFO_SIZE );
-    /* EBYTE ����ģ���ʼ�� ����ظ��ݾ����Ʒ��IAR��ѡ���Ӧ��Workspace*/
+    /* EBYTE wireless module initialization, please be sure to select the corresponding Workspace in IAR according to the specific product */
     result = Ebyte_RF.Init();
     if( result != 0 )
     {
         DEBUG( "Wireless module initialization failed ! \r\n" );
-        while( 1 ); //��ʼ��ʧ�� ����Ӳ��
+        while( 1 ); // Initialization failed, please check the hardware
     }
     else
     {
         pName = Ebyte_RF.GetName();
         DEBUG( "Wireless module initialization success . Name:%s  \r\n", pName );
     }
-    /* MCU ��ȫ���ж� */
+    /* MCU enable global interrupt */
     Ebyte_BSP_GlobalIntEnable();
     
-    /*result = test_encrypt_cbc();
-    result |= test_decrypt_cbc();
-    if (result) {
-        DEBUG("AES encryption test error\r\n");
-    } else {
-        DEBUG("AES encryption test OK\r\n");
-    }*/
-
+    
     DEBUG( "===== This is an example of wireless transmission ==== \r\n" );
     DEBUG( "Please push button1 or button2 \r\n" );
     DEBUG( "Waiting ........ \r\n" );
     while( 1 )
     {
-        /* �����¼���Ӧ */
+        /* key event response */
         Task_Button();
-        /* ����:��⴮�����ݲ����߷��� �ͻ��밴���Զ��� */
+        /* Task: Detect serial port data and send it wirelessly, please customize as needed */
         Task_Transmit();
-        /* ����:EBYTE��������������ִ������  �ͻ������޸� */
+        /* Task: EBYTE driver library must periodically execute the task and the customer does not need to modify it */
         // kkk handled in IRQ Ebyte_RF.TaskForPoll();
     }
 }
-
 /* !
- * @brief  ��ѯ���� ���ڽ��յ�����ͨ��ģ�鷢��
- *
- * @note ����ͻ�����Ҫ���͵����ݽ������������������Ҫ���Ƕ�������ߴ��俪��
- *       ע������ģ���ģʽ�л���һ������¿��Դ��ڽ���/����/��������  ��ʾ������Ϊ: ����ģʽ->����ģʽ->����ģʽ
- */
+* @brief The data received by the serial port of the polling task is sent through the module
+*
+* @note It is recommended that customers package the data to be sent, otherwise additional wireless transmission overhead needs to be considered
+* Pay attention to the mode switching of the wireless module. Generally, it can be in receiving/sleep/period sleep. This example process is: receive mode->send mode->receive mode
+*/
 void Task_Transmit( void )
 {
     uint16_t length = 0;
     uint8_t pcEchoLength = 0;
     uint8_t pongLength = 0;
-    /* �Ƿ���������Ҫ���ߴ��� (���Դ��ڽ���FIFO����) */
+    /* Whether there is data that needs to be transmitted wirelessly (from the serial port receiving FIFO buffer) */
     Ebyte_FIFO_GetDataLength( &hfifo, &length );
-    /* �漰���첽�ж�,�����ʾ�� �ж���������
-       1; ����FIFO�����������Ѿ����������յ�֡����ʱ�������߷���( ����ʱ���֡��ʽ,��������ʱ�����ж�ʱ��ᵼ������ճ�� ����ݾ�����Ŀ���п���֡�ж� )
-       2: ����FIFO�������ݵ������Ѿ��˳��˽���״̬����ʱ����������� ( �ᵼ��FIFOʣ��δ�������ݱ�������߷��� ����ݾ�����Ŀ���п���֡�ж� )*/
+    /* Involving asynchronous interrupt, here is a simple demonstration to judge two conditions
+    1; There is data in the serial port FIFO and there have been completely received frames. At this time, wireless transmission is enabled (the method of time-breaking frame is adopted, and the continuous transmission is lower than the judgment time, which will cause data sticking. Please consider the frame judgment according to the specific project)
+    2: There is data in the serial port FIFO but the serial port has exited the receiving state, and the timeout detection condition is established (it will cause the remaining unsent data in the FIFO to be packaged and sent wirelessly, please consider the frame judgment according to the specific project) */
     if( ( length != 0 && Uart_isRecvReady ) || ( length != 0 && FIFO_isTimeCheckReady ) )
     {
         Ebyte_BSP_LedControl( BSP_LED_1, ON );
-        /* ��ȡFIFO ���ݷ���TxBuffer */
+        /* read FIFO data into TxBuffer */
         Ebyte_FIFO_Read( &hfifo, TxBuffer, length );
-        /* PC����ָ����Ӧ */
+        /* PC special command response */
         if( Ebyte_DEBUG_CommandEcho( TxBuffer, length, PcEchoBuffer, &pcEchoLength ) )
         {
             Ebyte_BSP_UartTransmit( PcEchoBuffer, pcEchoLength );
         }
-        /* ������ָ��������͸�� */
+        /* Wireless transparent transmission if there is no special command */
         else
         {
-            /* ��������ģ����з���  */
-            //test_encrypt_cbc(TxBuffer, 16); // TODO: length
+            /* Enable the wireless module to send */
+            //encrypt_cbc(TxBuffer, 16); // TODO: length
             Ebyte_RF.GoTransmit( TxBuffer, length/* 16*/ );
         }
-        /* ÿ����һ֡�ͼ���֡���� �����жϿ����Ѿ�д���˶�֡ */
+        /* Reduce the frame count every time a frame is sent. The serial port interrupt may have written multiple frames */
         if( Uart_isRecvReady )
         {
             Uart_isRecvReady --;
@@ -173,7 +165,7 @@ void Task_Transmit( void )
         }
         Ebyte_BSP_LedControl( BSP_LED_1, OFF );
     }
-    /* ������ɻص�������⵽�� ping ���� �ظ� pong */
+    /* Receive completion callback function detects ping command and replies pong */
     if( Callback_isPingCheckReady )
     {
         if( PC_isConnected )
@@ -185,15 +177,15 @@ void Task_Transmit( void )
             DEBUG( "\r\n #SEND: pong \r\n" );
             pongLength = 4;
         }
-        /* ��������ģ����з���  */
-        Ebyte_BSP_DelayMs(10);//���ݲ���ģ����/���л������ӳ�
+        /* Enable the wireless module to send */
+        Ebyte_BSP_DelayMs(10);// There is a delay in receiving/transmitting switching of compatible modules
         Ebyte_RF.GoTransmit( BufferPong, pongLength );
         Callback_isPingCheckReady = 0;
     }
 }
 
 /* !
- * @brief �����¼���Ӧ
+ * @brief key event response
  */
 void Task_Button( void )
 {
@@ -203,12 +195,12 @@ void Task_Button( void )
     {
         switch( BTN_Event )
         {
-            /* ����1 �̰� */
+            /* Key 1 short press */
             case BTN_1_SHORT:
                 Ebyte_BSP_LedControl( BSP_LED_1, ON );
                 if( PC_isConnected )
                 {
-                    /* ֪ͨPC */
+                    /* Notify PC */
                     Ebyte_DEBUG_CommandEcho( ( uint8_t* )SimulatedCommandsButton1, EBYTE_CMD_PACKAGE_LENGTH, PcEchoBuffer, &pcEchoLength );
                     Ebyte_BSP_UartTransmit( PcEchoBuffer, pcEchoLength );
                     BufferPing[4] = 0x01;
@@ -219,20 +211,20 @@ void Task_Button( void )
                     DEBUG( "\r\n #SEND: ping \r\n" );
                     pingLength = 4;
                 }
-                /* ���� ping */
+                /* send ping */
                 Ebyte_RF.GoTransmit( BufferPing, pingLength );
                 Ebyte_BSP_LedControl( BSP_LED_1, OFF );
                 break;
-            /* ����1 ���� */
+            /* Key 1 long press */
             case BTN_1_LONG:
                 Ebyte_BSP_LedControl( BSP_LED_1, TOGGLE );
                 break;
-            /* ����2 �̰� */
+            /* Key 2 short press */
             case BTN_2_SHORT:
                 Ebyte_BSP_LedControl( BSP_LED_2, ON );
                 if( PC_isConnected )
                 {
-                    /* ֪ͨPC */
+                    /* Notify PC */
                     Ebyte_DEBUG_CommandEcho( ( uint8_t* )SimulatedCommandsButton2, EBYTE_CMD_PACKAGE_LENGTH, PcEchoBuffer, &pcEchoLength );
                     Ebyte_BSP_UartTransmit( PcEchoBuffer, pcEchoLength );
                     BufferPing[4] = 0x02;
@@ -243,11 +235,11 @@ void Task_Button( void )
                     DEBUG( "\r\n #SEND: ping \r\n" );
                     pingLength = 4;
                 }
-                /* ���� ping */
+                /* send ping */
                 Ebyte_RF.GoTransmit( BufferPing, pingLength );
                 Ebyte_BSP_LedControl( BSP_LED_2, OFF );
                 break;
-            /* ����2 ���� */
+            /* Key 2 long press */
             case BTN_2_LONG:
                 Ebyte_BSP_LedControl( BSP_LED_2, TOGGLE );
                 break;
@@ -258,26 +250,26 @@ void Task_Button( void )
 }
 
 /* !
- * @brief �û�������ɻص�����
+ * @brief The user sends the completion callback function
  *
- * @note ��䵽ebyte_callback.h�м���
+ * @note can be filled into ebyte_callback.h
  */
 void UserTransmitDoneCallback( void )
 {
-    /* ����ʾ�� ������ɺ�ֱ�ӽ������ģʽ */
+    /* This example directly enters the receiving mode after sending */
     Ebyte_RF.GoReceive( );
 }
 
 /* !
- * @brief �û�������ɻص�����
- *
- * @note ��䵽ebyte_callback.h�м���
+* @brief The user receives the completion callback function
+*
+* @note can be filled into ebyte_callback.h
  */
 void UserReceiveDoneCallback( uint8_t* buffer, uint8_t length )
 {
     uint8_t  j,  pcEchoLength;
     uint8_t* p;
-    /* ͨ�������ж��Ƿ���ping pongָ��  */
+    /* Determine whether it is a ping pong command by length */
     if( length == 4 || length == 5 )
     {
         p = buffer;
@@ -288,13 +280,13 @@ void UserReceiveDoneCallback( uint8_t* buffer, uint8_t length )
                 break;
             }
         }
-        //�Ƚϵ���ĩβ��ʾ��ȫƥ��ping
+        // Compared to the end, it means a complete match of ping
         if( j == 4 )
         {
-            Callback_isPingCheckReady = 1;//֪ͨ�ظ�Pong
+            Callback_isPingCheckReady = 1;// notify reply Pong
             if( length == 5 && PC_isConnected )
             {
-                BufferPong[4] = buffer[4];//��5�ֽ�Ϊ������ʶ
+                BufferPong[4] = buffer[4];// The fifth byte is the button identification
             }
         }
         if( j != 4 && length == 5 && PC_isConnected )
@@ -307,7 +299,7 @@ void UserReceiveDoneCallback( uint8_t* buffer, uint8_t length )
                     break;
                 }
             }
-            if( j == 4 )//��ȫƥ��pong
+            if( j == 4 )// fully match pong
             {
                 if( 0x01 == buffer[4] )
                 {
@@ -325,11 +317,11 @@ void UserReceiveDoneCallback( uint8_t* buffer, uint8_t length )
     if( ! PC_isConnected )
     {
         DEBUG( "\r\n #RECV: " );
-        //test_decrypt_cbc(buffer, 16); // TODO: length
+        //decrypt_cbc(buffer, 16); // TODO: length
         Ebyte_BSP_UartTransmit( buffer, length );
     }
     Ebyte_BSP_LedControl( BSP_LED_1, OFF );
-    /* ��������
-       ע�⣺ģ����ô˻ص�����ʱ���Ѿ������˽���״̬�����Ҫ�������գ�����Ҫ�ٴν������״̬ */
+    /* Continue to receive
+    Note: When the module calls this callback function, the receiving state has ended, if you want to continue receiving, you need to enter the receiving state again */
     Ebyte_RF.GoReceive( );
 }

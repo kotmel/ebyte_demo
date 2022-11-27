@@ -1,14 +1,14 @@
 /**
   **********************************************************************************
-  * @file      board.c
-  * @brief     E15-EVB02 检测模式     
-  * @details   详情请参见 https://www.ebyte.com/       
-  * @author    JiangHeng     
-  * @date      2021-05-20     
-  * @version   1.0.0     
+  * @file board.c
+  * @brief E15-EVB02 detection mode
+  * @details See https://www.ebyte.com/ for details
+  * @author JiangHeng
+  * @date 2021-05-20
+  * @version 1.0.0
   **********************************************************************************
   * @copyright BSD License 
-  *            成都亿佰特电子科技有限公司  
+  *            Chengdu Ebyte Electronic Technology Co., Ltd.
   *   ______   ____   __     __  _______   ______ 
   *  |  ____| |  _ \  \ \   / / |__   __| |  ____|
   *  | |__    | |_) |  \ \_/ /     | |    | |__   
@@ -52,14 +52,14 @@ const unsigned char SimulatedCommandsWireless2[5] = { EBYTE_CMD_PACKAGE_START,
 
 
 /* !
- * @brief 测试命令检查
- * 
- * @param rxBuffer 可能含有命令的数据包 
- * @param length rxBuffer数据长度
- * @param txBuffer 响应数据包   长度>10
- * @param tLength 响应数据包长度
- * @return 0:未检测到命令 1:检测到了命令
- */
+* @brief test command check
+*
+* @param rxBuffer may contain command packets
+* @param length rxBuffer data length
+* @param txBuffer response data packet length>10
+* @param tLength response packet length
+* @return 0: command not detected 1: command detected
+*/
 unsigned char  Ebyte_DEBUG_CommandEcho( unsigned char *rxBuffer , unsigned char length, unsigned char *txBuffer, unsigned char *tLength)
 {
     unsigned char result = 0;
@@ -68,14 +68,14 @@ unsigned char  Ebyte_DEBUG_CommandEcho( unsigned char *rxBuffer , unsigned char 
     unsigned char *nameString;
     unsigned long nameHex = 0;
     
-    /* 只关心固定长度为10的数据帧 间隔时间长 粘包几率很小*/
+    /* Only care about the data frame with a fixed length of 10. The chance of sticking packets is very small */
     if( length == EBYTE_CMD_PACKAGE_LENGTH )
     {
         p = rxBuffer;
         
         if( *p++== EBYTE_CMD_PACKAGE_START &&  *p++== EBYTE_CMD_PACKAGE_START &&  *p++== EBYTE_CMD_PACKAGE_START)
         {
-            /* 数据体第一字节 指令码  */
+            /* The first byte instruction code of the data body */
             tmp = *p;
             switch( tmp )
             {
@@ -83,23 +83,23 @@ unsigned char  Ebyte_DEBUG_CommandEcho( unsigned char *rxBuffer , unsigned char 
                 
                   nameString = Ebyte_RF.GetName();
                   version = Ebyte_RF.GetDriver();
-                  if( nameString[4]=='-' )//以符号'-'分割
+                  if( nameString[4]=='-' )// Split by symbol '-'
                   {
-                      /* 4位编码 例如E220 = 0x0220 */
+                      /* 4-bit encoding such as E220 = 0x0220 */
                       nameHex |= ((unsigned long)(nameString[1]-0x30)<<24);
                       nameHex |= ((unsigned long)(nameString[2]-0x30)<<20);
                       nameHex |= ((unsigned long)(nameString[3]-0x30)<<16);  
-                      /* 频段 例如400 = 0x0400 */
+                      /* frequency band such as 400 = 0x0400 */
                       nameHex |= ((unsigned long)(nameString[5]-0x30)<<8);  
                       nameHex |= ((unsigned long)(nameString[6]-0x30)<<4); 
                       nameHex |=  (nameString[7]-0x30);
                       
                   }else
                   {
-                      /* 3位编码 如E22 = 0x0022 */
+                      /* 3-bit encoding such as E22 = 0x0022 */
                       nameHex |= ((unsigned long)(nameString[1]-0x30)<<20);
                       nameHex |= ((unsigned long)(nameString[2]-0x30)<<16);  
-                      /* 频段 例如400 = 0x0400 */
+                      /* 3-bit encoding such as E22 = 0x0022 */
                       nameHex |= ((unsigned long)(nameString[4]-0x30)<<8);  
                       nameHex |= ((unsigned long)(nameString[5]-0x30)<<4); 
                       nameHex |=  (nameString[6]-0x30);                      
@@ -117,7 +117,7 @@ unsigned char  Ebyte_DEBUG_CommandEcho( unsigned char *rxBuffer , unsigned char 
                   *txBuffer++ = version;
                   
                   *tLength    = EBYTE_CMD_PACKAGE_LENGTH;
-                  PC_isConnected = 1; //模式变更
+                  PC_isConnected = 1;  // mode change
               break;
             case EBYTE_CMD_TEST_BUTTON:
                   *txBuffer++ = EBYTE_CMD_PACKAGE_START;

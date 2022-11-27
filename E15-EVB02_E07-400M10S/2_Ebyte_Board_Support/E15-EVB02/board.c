@@ -1,14 +1,14 @@
 /**
   **********************************************************************************
-  * @file      board.c
-  * @brief     E15-EVB02 �弶����������
-  * @details   ������μ� https://www.ebyte.com/
-  * @author    JiangHeng
-  * @date      2021-05-06
-  * @version   1.0.0
+* @file board.c
+* @brief E15-EVB02 board-level software driver layer
+* @details See https://www.ebyte.com/ for details
+* @author JiangHeng
+* @date 2021-05-06
+* @version 1.0.0
   **********************************************************************************
   * @copyright BSD License
-  *            �ɶ��ڰ��ص��ӿƼ����޹�˾
+  *            Chengdu Ebyte Electronic Technology Co., Ltd.
   *   ______   ____   __     __  _______   ______
   *  |  ____| |  _ \  \ \   / / |__   __| |  ____|
   *  | |__    | |_) |  \ \_/ /     | |    | |__
@@ -21,29 +21,29 @@
 
 #include "board.h"
 
-/// �����¼�����
+// / Key event queue
 BSP_BTN_FIFO_t BSP_BTN_FIFO;
 
 
-/// ������ʱ���� ���ڶ�ʱ���ж� �ݼ� 
+// / Auxiliary delay calculation for timer interrupt decrement
 volatile uint32_t Ebyte_TimerDelayCounter = 0;
 
 
-/*!
- * @brief �ڲ�ʱ�ӳ�ʼ��
- */
+/* !
+* @brief internal clock initialization
+*/
 void Ebyte_BSP_HSI_Init( void )
 {
-    /* �ڲ� 16M HSI ʱ�� */
+/* Internal 16M HSI clock */
     //CLK_SYSCLKSourceConfig( CLK_SYSCLKSource_HSI );
      CLK->SWR = (uint8_t)CLK_SYSCLKSource_HSI;
-    /* 1��Ƶ  16M/1 */
+    /* 1 frequency division 16M/1 */
     //CLK_SYSCLKDivConfig( CLK_SYSCLKDiv_1 );
     CLK->CKDIVR = (uint8_t)(CLK_SYSCLKDiv_1);
 }
 
-/*!
- * @brief ���E07 ��ͨ��������ʼ��
+/* !
+* @brief Initialization for E22 E220 common pins
  */
 void Ebyte_BSP_E07xGPIO_Init( void )
 {
@@ -53,76 +53,76 @@ void Ebyte_BSP_E07xGPIO_Init( void )
     GPIO_Init( BSP_GPIO_PORT_E07_GDO1, BSP_GPIO_PIN_E07_GDO1, GPIO_Mode_In_PU_No_IT );
 }
 
-/*!
- * @brief ��ʼ������IO
- *
- * @note  Ŀ��Ӳ��: EBYTE E15-EVB02
- */
+/* !
+* @brief initialize all IO
+*
+* @note target hardware: EBYTE E15-EVB02
+*/
 void Ebyte_BSP_GPIO_Init( void )
 {
-    /* ����ģ�����������ų�ʼ�� */
+    /* Pin initialization according to the module category */
     Ebyte_BSP_E07xGPIO_Init();
-    /* LED  ���� */
+    /* LED pins */
     GPIO_Init( BSP_GPIO_PORT_LED_1, BSP_GPIO_PIN_LED_1, GPIO_Mode_Out_PP_Low_Slow );
     GPIO_Init( BSP_GPIO_PORT_LED_2, BSP_GPIO_PIN_LED_2, GPIO_Mode_Out_PP_Low_Slow );
-    /* ���� ���� */
+    /* button pin */
     GPIO_Init( BSP_GPIO_PORT_BUTTON_1, BSP_GPIO_PIN_BUTTON_1, GPIO_Mode_In_PU_No_IT );
     GPIO_Init( BSP_GPIO_PORT_BUTTON_2, BSP_GPIO_PIN_BUTTON_2, GPIO_Mode_In_PU_No_IT );
 }
 
-/*!
- * @brief ͨ�Ŵ��ڳ�ʼ��
- *
- * @note  ��ע�⣬��ͬ��MCU��������˿�ӳ��
- */
+/* !
+* @brief communication serial port initialization
+*
+* @note Please note that different MCUs may not require port mapping
+*/
 void Ebyte_BSP_UART_Init( void )
 {
-    /* ʱ�� */
+    /* clock */
     CLK_PeripheralClockConfig( BSP_USER_UART_CLOCK, ENABLE );
     /* GPIO */
     GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_UART_TX, BSP_GPIO_PIN_UART_TX, ENABLE );
     GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_UART_RX, BSP_GPIO_PIN_UART_RX, ENABLE );
-    /* �˿���ӳ��  */
+    /* Port remapping */
     SYSCFG_REMAPPinConfig( REMAP_Pin_USART1TxRxPortA, ENABLE );
-    /* ������������ E15-EVB02Ĭ�ϲ�����9600 8N1 */
+    /* Basic parameter configuration E15-EVB02 default baud rate 9600 8N1 */
     USART_Init( BSP_USER_UART, BSP_USER_UART_BAUDRATE, USART_WordLength_8b, USART_StopBits_1, BSP_USER_UART_PARITY, ( USART_Mode_TypeDef )( USART_Mode_Rx | USART_Mode_Tx ) );  //�������պͷ���
-    /* �򿪽����ж� */;
+    /* Turn on receive interrupt */ ;
     USART_ITConfig( BSP_USER_UART, USART_IT_RXNE, ENABLE );
-    /* ���� ʹ�� */
+    /* Serial port enable */
     USART_Cmd( BSP_USER_UART, ENABLE );
 }
 
-/*!
- * @brief ����ģ��ͨ��SPI�ӿڳ�ʼ������
- */
+/* !
+* @brief Wireless module communication SPI interface initialization function
+*/
 void Ebyte_BSP_SPI_Init( void )
 {
-    /* ʱ�� */
+    /* clock */
     CLK_PeripheralClockConfig( CLK_Peripheral_SPI1, ENABLE );
     /* GPIO */
     GPIO_Init( BSP_GPIO_PORT_SPI_NSS,  BSP_GPIO_PIN_SPI_NSS,  GPIO_Mode_Out_PP_High_Fast ); //Ƭѡ CS
     GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_SPI_SCK, BSP_GPIO_PIN_SPI_MOSI | BSP_GPIO_PIN_SPI_MISO | BSP_GPIO_PIN_SPI_SCK, ENABLE ); // MOSI MISO SCK
-    /* �������� */
+    /* Parameter configuration */
     SPI_Init( BSP_RF_SPI,
-              SPI_FirstBit_MSB,                 //�Ӹ�λ��ʼ����
-              SPI_BaudRatePrescaler_2,          //16M/2 SCK����
-              SPI_Mode_Master,                  //����ģʽ
-              SPI_CPOL_Low,                     //���� CPOL=0
-              SPI_CPHA_1Edge,                   //���� CPHA=0  ��һ��ʱ�ӱ��ز�������
-              SPI_Direction_2Lines_FullDuplex,  //ȫ˫��
-              SPI_NSS_Soft,                     //�������ƴӻ�CSƬѡ
-              0x07 );                           //CRC����
-    /* ʹ�� */
+              SPI_FirstBit_MSB,                 // Start transmission from high bit
+              SPI_BaudRatePrescaler_2,          // 16M/2 SCK rate
+              SPI_Mode_Master,                  // Master mode
+              SPI_CPOL_Low,                     // According to CPOL=0
+              SPI_CPHA_1Edge,                   // Sampling data according to the first clock edge of CPHA=0
+              SPI_Direction_2Lines_FullDuplex,  // full duplex
+              SPI_NSS_Soft,                     // Software control slave CS chip selection
+              0x07 );                           // CRC parameter
+    /* enable */
     SPI_Cmd( BSP_RF_SPI, ENABLE );
 }
 
-/*!
- * @brief RFģ��SPIͨ����/������
- *
- * @param data ��������
- * @return ��������
- * @note stm8l SPI�⺯���е�SPI_SendData()/SPI_ReceiveData() ����ֱ��ʹ��
- */
+/* !
+* @brief RF module SPI communication receiving/sending function
+*
+* @param data send data
+* @return receive data
+* @note SPI_SendData()/SPI_ReceiveData() in the stm8l SPI library function cannot be used directly
+*/
 uint8_t Ebyte_BSP_SpiTransAndRecv( uint8_t data )
 {
     BSP_RF_SPI->DR = data;
@@ -130,18 +130,18 @@ uint8_t Ebyte_BSP_SpiTransAndRecv( uint8_t data )
     while( ( BSP_RF_SPI->SR & SPI_FLAG_RXNE ) == RESET );
     return BSP_RF_SPI->DR;
 }
-/*!
- * @brief ��ʱ����ʼ��
- *
- * @note  ʹ����TIM3����1ms�������ж�
- *        TIM3����ʱ��ΪHSI 16MHz, 128��Ƶ��Ϊ 16 MHz / 128 = 125 000 Hz
- *        Ŀ�궨ʱ1ms �������ڼ�Ϊ ( 0.001 x 125000 - 1) = 124
+/* !
+* @brief timer initialization
+*
+* @note uses TIM3 to generate 1ms periodic interrupt
+* The main clock of TIM3 is HSI 16MHz, 128 frequency division is 16 MHz / 128 = 125 000 Hz
+* The 1ms counting cycle of target timing is ( 0.001 x 125000 - 1) = 124
  */
 void Ebyte_BSP_TIMER_Init( void )
 {
-    /* ʱ�� */
+    /* clock */
     CLK_PeripheralClockConfig( CLK_Peripheral_TIM3, ENABLE );
-    /* ���� */
+    /* parameter */
     //TIM3_TimeBaseInit( TIM3_Prescaler_128, TIM3_CounterMode_Up, 124 );
     /* Set the Autoreload value */
     TIM3->ARRH = (uint8_t)(124 >> 8) ;
@@ -156,13 +156,13 @@ void Ebyte_BSP_TIMER_Init( void )
 
     /* Generate an update event to reload the Prescaler value immediately */
     TIM3->EGR = TIM3_EventSource_Update;
-    /* �����ж� */
+    /* enable interrupt */
     //TIM3_ClearFlag( TIM3_FLAG_Update );
     TIM3->SR1 = (uint8_t)(~(uint8_t)(TIM3_FLAG_Update));
     TIM3->SR2 = (uint8_t)(~(uint8_t)((uint16_t)TIM3_FLAG_Update >> 8));
     //TIM3_ITConfig( TIM3_IT_Update, ENABLE );
     TIM3->IER |= (uint8_t)TIM3_IT_Update;
-    /* ʹ�� */
+    /* enable */
     //TIM3_Cmd( ENABLE );
     TIM3->CR1 |= TIM_CR1_CEN;
 }
@@ -204,43 +204,44 @@ void Ebyte_BSP_TIMER2_Init( void )
 }
 
 /*!
- * @brief E15-EVB02 ������Դ��ʼ��
+ * @brief E15-EVB02 onboard resource initialization
  *
- * @note  �ڲ�ʱ��HSI  x 16MHz
- *        �û�ͨ�Ŵ��� x USART1
- *        ����ģ��ͨ�Žӿ� x SPI1
- *        ��ʱ��  x TIM3
- *        ����    x 2
- *        ָʾ��  x 2
+ * @note internal clock HSI x 16MHz
+ *       User communication serial port x USART1
+ *       Wireless module communication interface x SPI1
+ *       Timer x TIM3
+ *       Button x 2
+ *       LED x 2
+ *       Timer x TIM2
  */
 void Ebyte_BSP_Init( void )
 {
-    /* ʱ��     ��ʼ�� */
+    /* clock initialization */
     Ebyte_BSP_HSI_Init();
-    /* IO       ��ʼ�� */
+    /* IO initialization */
     Ebyte_BSP_GPIO_Init();
-    /* ����     ��ʼ�� */
+    /* Serial port initialization */
     Ebyte_BSP_UART_Init();
-    /* SPI�ӿ�  ��ʼ��  (E49�Ƚ�����) */
+    /* SPI interface initialization */
     Ebyte_BSP_SPI_Init();
-    /* ��ʱ��   ��ʼ�� */
+    /* Timer initialization */
     Ebyte_BSP_TIMER_Init();
     Ebyte_BSP_TIMER2_Init(); // kk 2Hz blink LED 1 just for test
-    /* �����¼����� ��ʼ�� */
+    /* Key event queue initialization */
     Ebyte_BTN_FIFO_Init( &BSP_BTN_FIFO );
 }
 
 /*!
- * @brief ����LED ��/��/��ת
+ * @brief control LED on/off/flip
  *
- * @param LEDx  �������ŷ��������
+ * @param LEDx Two light-emitting diodes on board
  *              @arg BSP_LED_1 : LED1
  *              @arg BSP_LED_2 : LED2
  *
- * @param ctl   �� / ��
- *              @arg OFF     : ��
- *              @arg ON      : ��
- *              @arg TOGGLE  : ��ת
+ * @param ctl    on/off
+ *              @arg OFF     : off
+ *              @arg ON      : on
+ *              @arg TOGGLE  : flip
  */
 void Ebyte_BSP_LedControl( BSP_LED_t LEDx, BSP_LED_Ctl_t ctl )
 {
@@ -276,9 +277,9 @@ void Ebyte_BSP_LedControl( BSP_LED_t LEDx, BSP_LED_Ctl_t ctl )
 
 
 /*!
- * @brief ���ڶ�ʱ���ĺ�����ʱ����
+ * @brief Timer-based millisecond delay function
  *
- * @param nTime ��λ:����
+ * @param nTime unit: milliseconds
  */
 void Ebyte_BSP_DelayMs( volatile uint32_t nTime )
 {
@@ -287,7 +288,7 @@ void Ebyte_BSP_DelayMs( volatile uint32_t nTime )
 }
 
 /*!
- * @brief ����������ʱ���� ��ʱ���жϵ���
+ * @brief Auxiliary millisecond delay calculation timer interrupt call
  */
 void Ebyte_BSP_TimerDecrement( void )
 {
@@ -298,13 +299,13 @@ void Ebyte_BSP_TimerDecrement( void )
 }
 
 /*!
- * @brief ��ȡ����״̬
+ * @brief read button state
  *
- * @param btn ��Ӧ�İ������
- *            @arg BSP_BUTTON_1 :����1
- *            @arg BSP_BUTTON_2 :����2
- * @return 0:����������  ��0:����δ����
- * @note  ���ذ���δ����ʱ IO��������״̬ ��Ϊ1�����º�IO�ӵ� ��Ϊ0
+ * @param btn corresponding button number
+ *            @arg BSP_BUTTON_1 :Button 1
+ *            @arg BSP_BUTTON_2 :Button 2
+ * @return 0:the button is pressed, not 0: the button is not pressed
+ * @note When the onboard button is not pressed, the IO is in the pull-up state, which means 1; when the IO is grounded, it is 0
  */
 uint8_t Ebyte_BSP_ReadButton( BSP_BUTTON_t btn )
 {
@@ -324,7 +325,7 @@ uint8_t Ebyte_BSP_ReadButton( BSP_BUTTON_t btn )
 }
 
 /*!
- * @brief ���ڷ��ͺ���
+ * @brief serial port sending function
  */
 void Ebyte_BSP_UartTransmit( uint8_t* buffer, uint16_t length )
 {
