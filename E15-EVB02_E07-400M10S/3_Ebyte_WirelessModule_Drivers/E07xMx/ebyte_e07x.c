@@ -1,4 +1,9 @@
+#include "board.h"
 #include "ebyte_e07x.h"
+
+extern volatile int received;
+
+volatile int irq_counter = 0;
 
 // / Auxiliary identification module
 #if defined(EBYTE_E07_400M10S)
@@ -110,7 +115,7 @@ static RF_SETTINGS E07x_InitSetting = {
 };
 
 
-/*!
+/* !
  * @brief set internal register value
  *
  * @param address register address
@@ -131,7 +136,7 @@ static void E07x_SetRegister( uint8e_t address, uint8e_t data )
     Ebyte_Port_SpiCsIoControl(1);    
 }
 
-/*!
+/* !
  * @brief read internal register value
  *
  * @param address register address
@@ -167,7 +172,7 @@ static uint8e_t E07x_GetRegister( uint8e_t address )
     return result;
 }
 
-/*!
+/* !
  * @brief Set internal register values in batches
  *
  * @param address register address
@@ -194,7 +199,7 @@ static void E07x_SetRegisters( uint8e_t address , uint8e_t *data , uint8e_t size
     Ebyte_Port_SpiCsIoControl(1);
 }
 
-/*!
+/* !
  * @brief write command
  *
  * @param address register address
@@ -211,7 +216,7 @@ static void E07x_SendCommand( uint8e_t command )
     Ebyte_Port_SpiCsIoControl(1);
 }
 
-/*!
+/* !
  * @brief Write data to be sent to FIFO
  *
  * @param data points to send data
@@ -237,7 +242,7 @@ static void E07x_SetFIFO( uint8e_t *data, uint8e_t size)
     Ebyte_Port_SpiCsIoControl(1);
 }
 
-/*!
+/* !
  * @brief read data to FIFO
  *
  * @param data points to cache
@@ -264,7 +269,7 @@ static void E07x_GetFIFO( uint8e_t *data, uint8e_t size)
 }
 
 
-/*!
+/* !
  * @brief clear FIFO content
  * @param mode mode
  * @arg FIFO_WRITE: specifies the sending FIFO
@@ -316,7 +321,7 @@ static void E07x_SetStby(void)
     E07x_Status = GO_STBY;
 }
 
-/*!
+/* !
  * @brief switch to sleep mode
  *
  * @note Please refer to the manual, the parameters of some registers will be lost!
@@ -351,7 +356,7 @@ static void E07x_SetGPIO( uint8e_t gpio , uint8e_t config )
   }
 }
 
-/*!
+/* !
  * @brief Determine whether the module exists
  *
  * @return 0: normal 1: module exception
@@ -374,15 +379,15 @@ static uint8e_t E07x_IsExist(void)
     return result;
 }
 
-/*!
+/* !
  * @brief modulation method
  *
- * @param mod �����ĵ��Ʒ�ʽ 
- *        @arg 0:2-FSK
- *        @arg 1:GFSK
- *        @arg 3:ASK/OOK
- *        @arg 4:4-FSK
- *        @arg 7:MSK
+ * @param mod desired modulation
+ * @arg 0:2-FSK
+ * @arg 1:GFSK
+ * @arg 3:ASK/OOK
+ * @arg 4:4-FSK
+ * @arg 7:MSK
  */
 static void E07x_SetModulation(uint8e_t mod)
 {
@@ -395,16 +400,16 @@ static void E07x_SetModulation(uint8e_t mod)
     /* Set bit[6:4] */
     E07x_InitSetting.mdmcfg2 |= tmp;
 }
-/*!
+/* !
  * @brief Free carrier frequency reference value calculation
  *
- * @param frequency �������ز�Ƶ�� Hz
- * @return 0:���� 1:��������
- * @note ����������Ƶ��֮��( Hz ):
- *        300000000 - 348000000
- *        387000000 - 464000000
- *        779000000 - 928000000
- *       ������ע��:��ͬ�ܹ�������������С�����ֿ��ܲ�һ�£��п��ܲ���ƫ��
+ * @param frequency expected carrier frequency Hz
+ * @return 0: normal 1: parameter error
+ * @note must be between the following frequency bands ( Hz ):
+ * 300000000 - 348000000
+ * 387000000 - 464000000
+ * 779000000 - 928000000
+ *! ! ! Note: The decimal part of the calculation results of processors with different architectures may be inconsistent, and there may be deviations
  *
  * Spectrum analyzer test frequency point OK. The actual measurement can communicate with the module of the official calculator parameter configuration frequency.
  */
@@ -433,7 +438,7 @@ static uint8e_t E07x_SetFrequency( uint32e_t frequency )
    return 0;
 }
 
-/*!
+/* !
 * @brief free data rate baseline calculation
 *
 * @param datarate expected data rate
@@ -479,7 +484,7 @@ static void E07x_SetDataRate( uint32e_t datarate )
     
 }
 
-/*!
+/* !
  * @brief free bandwidth benchmark calculation
  *
  * @param bandwidth Expected receiving bandwidth (Hz)
@@ -541,7 +546,7 @@ static void E07x_SetChannelBandwidth( uint32e_t bandwidth )
     
 }
 
-/*!
+/* !
  * @brief Calculate the reference value of frequency offset
  *
  * @param frequency_dev unit: Hz
@@ -586,7 +591,7 @@ static void E07x_SetFrequencyDeviation( uint32e_t frequency_dev )
     }    
 }
 
-/*!
+/* !
  * @brief set the output power
  *
  * @param power unit dBm Note: there is a limit to the input value
@@ -728,7 +733,7 @@ static uint8e_t E07x_Config( uint32e_t frequency , uint32e_t data_rate , uint32e
     E07x_InitSetting.pktctrl0 |= 0x01;// 0x01 mode (variable length)
     
     /* Precautions: If you want to fully use the configuration parameters of the official SmartRF Studio, then just comment out the modification function above */
-    /* Write the calculated E07x_InitSetting parameter table to the module */
+     /* Write the calculated E07x_InitSetting parameter table to the module */
     E07x_SetRegister( 0x02, E07x_InitSetting.iocfg0 );
     E07x_SetRegister( 0x03, E07x_InitSetting.fifothr);
     E07x_SetRegister( 0x04, E07x_InitSetting.sync1);
@@ -772,7 +777,7 @@ static uint8e_t E07x_Config( uint32e_t frequency , uint32e_t data_rate , uint32e
     return 0;
 }
 
-/*!
+/* !
  * @brief module initialization
  *
  * @return 0: normal 1: initialization failed
@@ -806,14 +811,27 @@ uint8e_t E07x_Init( void )
 }
 
 /*!
- * @brief IRQ handling
+ * @brief kkk - IRQ handling implementation - use with caution !
  */
 void E07x_TaskForIRQ(void)
 {
+    //received = 1;
+    //irq_counter++;
 
+    uint8e_t recvSize;
+    recvSize = 0;
+    E07x_GetFIFO(&recvSize , 1);
+
+    if( recvSize != 0 )
+    {
+        E07x_GetFIFO( E07x_RxBuffer, recvSize );
+        Ebyte_Port_ReceiveCallback( 0x0002 , E07x_RxBuffer , recvSize );
+    } else {
+        E07x_GoReceive();
+    }
 }
 
-/*!
+/* !
  * @brief polling function assists in completing data reception
  *
  * @param data points to send data
@@ -823,7 +841,9 @@ void E07x_TaskForIRQ(void)
 uint8e_t E07x_GoTransmit( uint8e_t *data, uint8e_t size )
 {
     uint8e_t irqStatus = 0;
-    
+    // disable receive IRQ
+    BSP_GPIO_PORT_E07_GDO0->CR2 &= (uint8_t)(~(BSP_GPIO_PIN_E07_GDO0));
+
     /* Mode switching: standby */
     E07x_SetStby();
     
@@ -867,12 +887,11 @@ uint8e_t E07x_GoTransmit( uint8e_t *data, uint8e_t size )
     return 0;
 }
 
-/*!
+/* !
  * @brief start listening data
  *
  * @return 0
- */
-uint8e_t E07x_GoReceive( void )
+ */uint8e_t E07x_GoReceive( void )
 {
   
     /* Mode switching: standby */
@@ -890,10 +909,12 @@ uint8e_t E07x_GoReceive( void )
     
     /* ״̬��¼ *//* Status record */
     E07x_Status = GO_WAIT_RECEIVE;
+    // kkk enable receive IRQ
+    BSP_GPIO_PORT_E07_GDO0->CR2 |= (uint8_t)(BSP_GPIO_PIN_E07_GDO0);
     return 0;
 }
 
-/*!
+/* !
  * @brief module enters sleep mode (low power consumption)
  *
  * @return 0;
@@ -905,7 +926,7 @@ uint8e_t E07x_GoSleep(void)
     return 0;
 }
 
-/*!
+/* !
  * @brief get module program version
  *
  * @return 8-bit encoding
@@ -916,7 +937,7 @@ uint8e_t E07x_GetDriverVersion(void)
   return  EBYTE_E07_TYPE_PROGRAM;
 }
 
-/*!
+/* !
  * @brief Get the module name
  *
  * @return pointer to name string
@@ -927,7 +948,7 @@ uint8e_t* E07x_GetName(void)
     return E07x_NameString;
 }
 
-/*!
+/* !
  * @brief get module status
  *
  * @return status code
@@ -946,7 +967,7 @@ uint8e_t E07x_GetStatus(void)
   return (uint8e_t)E07x_Status;;
 }
 
-/*!
+/* !
  * @brief polling function assists in completing data reception
  *
  * @return 0
@@ -955,9 +976,11 @@ uint8e_t E07x_GetStatus(void)
 uint8e_t E07x_TaskForPoll(void)
 {
     uint8e_t recvSize;
-    if (0 == Ebyte_Port_Gdo0IoRead())             // Detect whether the wireless module generates a receiving interrupt
+    //if (0 == Ebyte_Port_Gdo0IoRead())             // Detect whether the wireless module generates a receiving interrupt
+    if (received) // flag filled in IRQ
     {
-        while (Ebyte_Port_Gdo0IoRead() == 0);
+        received = 0;
+    //    while (Ebyte_Port_Gdo0IoRead() == 0);
 
         // Read the received data length
         recvSize = 0;

@@ -17,19 +17,12 @@ ODIR_LIB = bin_lib
 ODIR = bin
 
 
-MAINSRC =../IAR_for_Stm8/ExMx_Demo/$(TARGET).c
+MAINSRC =./$(TARGET).c
 
 
 EXTRASRCS = \
-	$(LIBROOT)/src/stm8l15x_gpio.c \
-	$(LIBROOT)/src/stm8l15x_tim3.c \
-	$(LIBROOT)/src/stm8l15x_usart.c \
-	$(LIBROOT)/src/stm8l15x_clk.c \
-	$(LIBROOT)/src/stm8l15x_spi.c \
-	$(LIBROOT)/src/stm8l15x_exti.c \
-	$(LIBROOT)/src/stm8l15x_comp.c \
-	$(LIBROOT)/src/stm8l15x_syscfg.c \
-	../IAR_for_Stm8/ExMx_Demo/stm8l15x_it.c \
+	./stm8l15x_it.c \
+	./stm8l15x_stdlib.c \
 	../../1_Middleware/Kfifo/ebyte_kfifo.c \
 	../../1_Middleware/Produce/ebyte_debug.c \
 	../../2_Ebyte_Board_Support/E15-EVB02/board_button.c \
@@ -38,7 +31,8 @@ EXTRASRCS = \
 	../../3_Ebyte_WirelessModule_Drivers/ebyte_core.c \
 	../../3_Ebyte_WirelessModule_Drivers/E07xMx/ebyte_callback.c \
 	../../3_Ebyte_WirelessModule_Drivers/E07xMx/ebyte_e07x.c \
-	../../3_Ebyte_WirelessModule_Drivers/E07xMx/ebyte_port.c 
+	../../3_Ebyte_WirelessModule_Drivers/E07xMx/ebyte_port.c \
+	../../5_AES/src/aes.c
 
 # The list of .rel files can be derived from the list of their source files
 RELS = $(EXTRASRCS:.c=.rel)
@@ -51,7 +45,8 @@ INCLUDES = -I$(LIBROOT)/inc \
 		   -I../../1_Middleware/Produce \
 		   -I../../2_Ebyte_Board_Support/E15-EVB02 \
 		   -I../../3_Ebyte_WirelessModule_Drivers \
-		   -I../../3_Ebyte_WirelessModule_Drivers/E07xMx
+		   -I../../3_Ebyte_WirelessModule_Drivers/E07xMx \
+		   -I../../5_AES/inc
 
 CFLAGS   = -m$(PLATFORM) -DSTM8L15x -DSTM8L15X_LD -DEBYTE_E07_900M10S
 LIBS     = -l$(PLATFORM)

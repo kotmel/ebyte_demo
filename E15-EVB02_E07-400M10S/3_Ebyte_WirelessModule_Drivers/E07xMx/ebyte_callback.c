@@ -1,4 +1,4 @@
-/**
+/* *
 ***************************************************** *********************************
 * @file ebyte_callback.h
 * @brief EBYTE driver library's send and receive completion callback function is implemented by the customer's own logic code
@@ -62,13 +62,13 @@ void Ebyte_Port_TransmitCallback( uint16e_t state )
  *
  * @param state The status code provided by the upper layer callback Customers please find the corresponding area according to the sample comments
  */
-void Ebyte_Port_ReceiveCallback(  uint16e_t state, uint8e_t *buffer, uint8e_t length )
+void Ebyte_Port_ReceiveCallback( uint16e_t state, uint8e_t *buffer, uint8e_t length )
 {
 
     /* Receive: normal */
     if ( state &= 0x0002 )
     {
-        UserReceiveDoneCallback( buffer , length);
+        UserReceiveDoneCallback ( buffer , length);
     }
     /* Receive: exception timeout */
     else  if ( state &= 0x0200 )

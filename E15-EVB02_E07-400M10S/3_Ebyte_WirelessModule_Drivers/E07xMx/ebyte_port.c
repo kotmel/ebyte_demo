@@ -25,7 +25,7 @@
 #include "board.h"  // E15-EVB02 evaluation board
 /*==================================================================*/
 
-/*!
+/* !
  * @brief Configure target hardware platform SPI interface transceiver function
  *
  * @param send EBYTE The upper layer of the driver library calls the data that needs to be transmitted 1 Byte
@@ -41,7 +41,7 @@ uint8e_t Ebyte_Port_SpiTransmitAndReceivce( uint8e_t send )
     return result;
 }
 
-/*!
+/* !
  * @brief (optional) Configure target hardware platform SPI_CS(NSS) function
  *
  * @param cmd EBYTE drive library upper expected control command
@@ -63,7 +63,7 @@ void Ebyte_Port_SpiCsIoControl( uint8e_t cmd )
 }
 
 
-/*!
+/* !
  * @brief Configure target hardware platform receive enable pin GDO 0 control function
  *
  * @note The GDO0 pin is a configurable digital signal output pin, generally used as a FIFO status indicator signal
@@ -78,7 +78,7 @@ uint8e_t Ebyte_Port_Gdo0IoRead( void )
     return result;
 }
 
-/*!
+/* !
  * @brief Configure the target hardware platform to receive the enable pin GDO 1 control function
  */
 uint8e_t Ebyte_Port_Gdo1IoRead( void )
@@ -91,7 +91,7 @@ uint8e_t Ebyte_Port_Gdo1IoRead( void )
 }
 
 
-/*!
+/* !
  * @brief Configure target hardware platform delay function
  *
  * @param time expected delay in milliseconds

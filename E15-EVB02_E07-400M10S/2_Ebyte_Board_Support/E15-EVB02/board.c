@@ -35,89 +35,22 @@ volatile uint32_t Ebyte_TimerDelayCounter = 0;
 void Ebyte_BSP_HSI_Init( void )
 {
 /* Internal 16M HSI clock */
-    CLK_SYSCLKSourceConfig( CLK_SYSCLKSource_HSI );
+    //CLK_SYSCLKSourceConfig( CLK_SYSCLKSource_HSI );
+     CLK->SWR = (uint8_t)CLK_SYSCLKSource_HSI;
     /* 1 frequency division 16M/1 */
-    CLK_SYSCLKDivConfig( CLK_SYSCLKDiv_1 );
+    //CLK_SYSCLKDivConfig( CLK_SYSCLKDiv_1 );
+    CLK->CKDIVR = (uint8_t)(CLK_SYSCLKDiv_1);
 }
 
-/*!
- * @brief ���E22 E220 ��ͨ��������ʼ��
- */
-void Ebyte_BSP_E22xE220xGPIO_Init( void )
-{
-    GPIO_Init( BSP_GPIO_PORT_NRST, BSP_GPIO_PIN_NRST, GPIO_Mode_Out_PP_High_Slow );
-    GPIO_Init( BSP_GPIO_PORT_BUSY, BSP_GPIO_PIN_BUSY, GPIO_Mode_In_FL_No_IT );
-    GPIO_Init( BSP_GPIO_PORT_RXEN, BSP_GPIO_PIN_RXEN, GPIO_Mode_Out_PP_Low_Slow );
-    GPIO_Init( BSP_GPIO_PORT_TXEN, BSP_GPIO_PIN_TXEN, GPIO_Mode_Out_PP_Low_Slow );
-    GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_NRST, BSP_GPIO_PIN_NRST, ENABLE );
-    GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_RXEN, BSP_GPIO_PIN_RXEN, ENABLE );
-    GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_TXEN, BSP_GPIO_PIN_TXEN, ENABLE );
-}
-
-/*!
- * @brief ���E19 ��ͨ��������ʼ��
- */
-void Ebyte_BSP_E19xGPIO_Init( void )
-{
-    GPIO_Init( BSP_GPIO_PORT_E19_NRST, BSP_GPIO_PIN_E19_NRST, GPIO_Mode_Out_PP_High_Slow );
-    GPIO_Init( BSP_GPIO_PORT_E19_DIO0, BSP_GPIO_PIN_E19_DIO0, GPIO_Mode_In_PU_No_IT );
-    GPIO_Init( BSP_GPIO_PORT_E19_RXEN, BSP_GPIO_PIN_E19_RXEN, GPIO_Mode_Out_PP_Low_Slow );
-    GPIO_Init( BSP_GPIO_PORT_E19_TXEN, BSP_GPIO_PIN_E19_TXEN, GPIO_Mode_Out_PP_Low_Slow );
-    GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_E19_NRST, BSP_GPIO_PIN_E19_NRST, ENABLE );
-    GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_E19_RXEN, BSP_GPIO_PIN_E19_RXEN, ENABLE );
-    GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_E19_TXEN, BSP_GPIO_PIN_E19_TXEN, ENABLE );
-}
-
-/*!
- * @brief ���E10 ��ͨ��������ʼ��
- */
-void Ebyte_BSP_E10xGPIO_Init( void )
-{
-    GPIO_Init( BSP_GPIO_PORT_E10_SDN, BSP_GPIO_PIN_E10_SDN, GPIO_Mode_Out_PP_High_Slow ); //E10 �ߵ�ƽ��λ
-    GPIO_Init( BSP_GPIO_PORT_E10_IRQ, BSP_GPIO_PIN_E10_IRQ, GPIO_Mode_In_PU_No_IT );
-}
-
-/*!
- * @brief ���E30 ��ͨ��������ʼ��
- */
-void Ebyte_BSP_E30xGPIO_Init( void )
-{
-    GPIO_Init( BSP_GPIO_PORT_E30_SDN, BSP_GPIO_PIN_E30_SDN, GPIO_Mode_Out_PP_High_Slow ); //E30 �ߵ�ƽ��λ
-    GPIO_Init( BSP_GPIO_PORT_E30_IRQ, BSP_GPIO_PIN_E30_IRQ, GPIO_Mode_In_PU_No_IT );
-}
-
-/*!
- * @brief ���E31 ��ͨ��������ʼ��
- */
-void Ebyte_BSP_E31xGPIO_Init( void )
-{
-    GPIO_Init( BSP_GPIO_PORT_E31_IRQ, BSP_GPIO_PIN_E31_IRQ, GPIO_Mode_In_PU_No_IT );
-}
-
-/*!
- * @brief ���E07 ��ͨ��������ʼ��
+/* !
+* @brief Initialization for E22 E220 common pins
  */
 void Ebyte_BSP_E07xGPIO_Init( void )
 {
-    GPIO_Init( BSP_GPIO_PORT_E07_GDO0, BSP_GPIO_PIN_E07_GDO0, GPIO_Mode_In_PU_No_IT );
-    GPIO_Init( BSP_GPIO_PORT_E07_GDO1, BSP_GPIO_PIN_E07_GDO1, GPIO_Mode_In_PU_No_IT );
-}
+    GPIO_Init( BSP_GPIO_PORT_E07_GDO0, BSP_GPIO_PIN_E07_GDO0, GPIO_Mode_In_PU_IT );
+    EXTI_SetPinSensitivity( EXTI_Pin_0, EXTI_Trigger_Rising );
 
-/*!
- * @brief ���E49 ��ͨ��������ʼ��
- */
-void Ebyte_BSP_E49xGPIO_Init( void )
-{
-    GPIO_Init( BSP_GPIO_PORT_E49_DIO1, BSP_GPIO_PIN_E49_DIO1,  GPIO_Mode_In_PU_No_IT );
-    GPIO_Init( BSP_GPIO_PORT_E49_DIO2, BSP_GPIO_PIN_E49_DIO2,  GPIO_Mode_In_PU_IT );
-    EXTI_SetPinSensitivity( EXTI_Pin_2, EXTI_Trigger_Rising );
-    GPIO_Init( BSP_GPIO_PORT_E49_CSB,  BSP_GPIO_PIN_E49_CSB,  GPIO_Mode_Out_PP_High_Fast );
-    GPIO_Init( BSP_GPIO_PORT_E49_FCSB, BSP_GPIO_PIN_E49_FCSB, GPIO_Mode_Out_PP_High_Fast );
-    GPIO_Init( BSP_GPIO_PORT_E49_SDIO, BSP_GPIO_PIN_E49_SDIO, GPIO_Mode_Out_PP_High_Fast );
-    GPIO_Init( BSP_GPIO_PORT_E49_SLCK, BSP_GPIO_PIN_E49_SLCK, GPIO_Mode_Out_PP_Low_Fast );
-    GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_E49_CSB, BSP_GPIO_PIN_E49_CSB, ENABLE );
-    GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_E49_FCSB, BSP_GPIO_PIN_E49_FCSB, ENABLE );
-    GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_E49_SLCK, BSP_GPIO_PIN_E49_SLCK, ENABLE );
+    GPIO_Init( BSP_GPIO_PORT_E07_GDO1, BSP_GPIO_PIN_E07_GDO1, GPIO_Mode_In_PU_No_IT );
 }
 
 /* !
@@ -128,21 +61,7 @@ void Ebyte_BSP_E49xGPIO_Init( void )
 void Ebyte_BSP_GPIO_Init( void )
 {
     /* Pin initialization according to the module category */
-#if defined(EBYTE_E22_400M22S)||defined(EBYTE_E22_900M22S)||defined(EBYTE_E220_400M22S)||defined(EBYTE_E220_900M22S)
-    Ebyte_BSP_E22xE220xGPIO_Init();
-#elif defined(EBYTE_E10_400M20S)
-    Ebyte_BSP_E10xGPIO_Init();
-#elif defined(EBYTE_E30_900M20S)
-    Ebyte_BSP_E30xGPIO_Init();    
-#elif defined(EBYTE_E31_400M17S)||defined(EBYTE_E31_900M17S)
-    Ebyte_BSP_E31xGPIO_Init();      
-#elif defined(EBYTE_E07_400M10S)||defined(EBYTE_E07_900M10S)
     Ebyte_BSP_E07xGPIO_Init();
-#elif defined(EBYTE_E49_400M20S)||defined(EBYTE_E49_900M20S)
-    Ebyte_BSP_E49xGPIO_Init();
-#elif defined(EBYTE_E19_433M20SC)
-    Ebyte_BSP_E19xGPIO_Init();
-#endif
     /* LED pins */
     GPIO_Init( BSP_GPIO_PORT_LED_1, BSP_GPIO_PIN_LED_1, GPIO_Mode_Out_PP_Low_Slow );
     GPIO_Init( BSP_GPIO_PORT_LED_2, BSP_GPIO_PIN_LED_2, GPIO_Mode_Out_PP_Low_Slow );
@@ -171,14 +90,6 @@ void Ebyte_BSP_UART_Init( void )
     USART_ITConfig( BSP_USER_UART, USART_IT_RXNE, ENABLE );
     /* Serial port enable */
     USART_Cmd( BSP_USER_UART, ENABLE );
-}
-
-/*!
- * @brief E49ʹ�õİ�˫��SPI
- */
-void Ebyte_BSP_HalfSPI_Init()
-{
-    /* �ϲ�����E49 GPIO��ʼ���� */
 }
 
 /* !
@@ -231,12 +142,65 @@ void Ebyte_BSP_TIMER_Init( void )
     /* clock */
     CLK_PeripheralClockConfig( CLK_Peripheral_TIM3, ENABLE );
     /* parameter */
-    TIM3_TimeBaseInit( TIM3_Prescaler_128, TIM3_CounterMode_Up, 124 );
+    //TIM3_TimeBaseInit( TIM3_Prescaler_128, TIM3_CounterMode_Up, 124 );
+    /* Set the Autoreload value */
+    TIM3->ARRH = (uint8_t)(124 >> 8) ;
+    TIM3->ARRL = (uint8_t)(124);
+
+    /* Set the Prescaler value */
+    TIM3->PSCR = (uint8_t)(TIM3_Prescaler_128);
+
+    /* Select the Counter Mode */
+    TIM3->CR1 &= (uint8_t)((uint8_t)(~TIM_CR1_CMS)) & ((uint8_t)(~TIM_CR1_DIR));
+    TIM3->CR1 |= (uint8_t)(TIM3_CounterMode_Up);
+
+    /* Generate an update event to reload the Prescaler value immediately */
+    TIM3->EGR = TIM3_EventSource_Update;
     /* enable interrupt */
-    TIM3_ClearFlag( TIM3_FLAG_Update );
-    TIM3_ITConfig( TIM3_IT_Update, ENABLE );
+    //TIM3_ClearFlag( TIM3_FLAG_Update );
+    TIM3->SR1 = (uint8_t)(~(uint8_t)(TIM3_FLAG_Update));
+    TIM3->SR2 = (uint8_t)(~(uint8_t)((uint16_t)TIM3_FLAG_Update >> 8));
+    //TIM3_ITConfig( TIM3_IT_Update, ENABLE );
+    TIM3->IER |= (uint8_t)TIM3_IT_Update;
     /* enable */
-    TIM3_Cmd( ENABLE );
+    //TIM3_Cmd( ENABLE );
+    TIM3->CR1 |= TIM_CR1_CEN;
+}
+
+// 16 MHz / 128 = 125 000 Hz
+// 125000 / 65535 = 1.907
+void Ebyte_BSP_TIMER2_Init( void )
+{
+    /* ʱ�� */
+    CLK_PeripheralClockConfig( CLK_Peripheral_TIM2, ENABLE );
+    /* ���� */
+    //TIM2_TimeBaseInit( TIM2_Prescaler_128, TIM2_CounterMode_Up, 124 );
+
+     /* Set the Autoreload value */
+    TIM2->ARRH = (uint8_t)(255) ;
+    TIM2->ARRL = (uint8_t)(255);
+
+    /* Set the Prescaler value */
+    TIM2->PSCR = (uint8_t)(TIM2_Prescaler_128);
+
+    /* Select the Counter Mode */
+    TIM2->CR1 &= (uint8_t)((uint8_t)(~TIM_CR1_CMS)) & ((uint8_t)(~TIM_CR1_DIR));
+    TIM2->CR1 |= (uint8_t)(TIM2_CounterMode_Up);
+
+    /* Generate an update event to reload the Prescaler value immediately */
+    TIM2->EGR = TIM2_EventSource_Update;
+
+    /* �����ж� */
+    //TIM2_ClearFlag( TIM2_FLAG_Update );
+    TIM2->SR1 = (uint8_t)(~(uint8_t)(TIM2_FLAG_Update));
+    TIM2->SR2 = (uint8_t)(~(uint8_t)((uint16_t)TIM2_FLAG_Update >> 8));
+
+    //TIM2_ITConfig( TIM2_IT_Update, ENABLE );
+    TIM2->IER |= (uint8_t)TIM2_IT_Update;
+
+     /* ʹ�� */
+    //TIM2_Cmd( ENABLE );
+    TIM2->CR1 |= TIM_CR1_CEN;
 }
 
 /*!
@@ -259,13 +223,10 @@ void Ebyte_BSP_Init( void )
     /* Serial port initialization */
     Ebyte_BSP_UART_Init();
     /* SPI interface initialization */
-#if defined(EBYTE_E49_400M20S)||defined(EBYTE_E49_900M20S)
-    Ebyte_BSP_HalfSPI_Init();
-#else
     Ebyte_BSP_SPI_Init();
-#endif
     /* Timer initialization */
     Ebyte_BSP_TIMER_Init();
+    Ebyte_BSP_TIMER2_Init(); // kk 2Hz blink LED 1 just for test
     /* Key event queue initialization */
     Ebyte_BTN_FIFO_Init( &BSP_BTN_FIFO );
 }

@@ -20,32 +20,8 @@
   */
 
 
-#if   defined(EBYTE_E22_400M22S)||defined(EBYTE_E22_900M22S)
-#include "ebyte_e22x.h"
 
-#elif defined(EBYTE_E220_400M22S)||defined(EBYTE_E220_900M22S)
-#include "ebyte_e220x.h"
-
-#elif defined(EBYTE_E10_400M20S)
-#include "ebyte_e10x.h"
-
-#elif defined(EBYTE_E30_900M20S)
-#include "ebyte_e30x.h"
-
-#elif defined(EBYTE_E31_400M17S)||defined(EBYTE_E31_900M17S)
-#include "ebyte_e31x.h"
-
-#elif defined(EBYTE_E07_400M10S)||defined(EBYTE_E07_900M10S) 
 #include "ebyte_e07x.h"
-
-#elif defined(EBYTE_E49_400M20S)||defined(EBYTE_E49_900M20S)
-#include "ebyte_e49x.h"
-
-#elif defined(EBYTE_E19_433M20SC)
-#include "ebyte_e19x.h"
-#else
-#error No product selected !
-#endif
 
 typedef struct
 {
