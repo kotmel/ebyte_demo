@@ -650,3 +650,398 @@ void EXTI_SetPinSensitivity(EXTI_Pin_TypeDef EXTI_Pin, EXTI_Trigger_TypeDef EXTI
       break;
   }
 }
+
+
+/**
+  * @brief  Enables or disables the specified TIM3 interrupts.
+  * @param  TIM3_IT: Specifies the TIM3 interrupts sources to be enabled or disabled.
+  *          This parameter can be any combination of the following values:
+  *            @arg TIM3_IT_Update: Update
+  *            @arg TIM3_IT_CC1: Capture Compare Channel1
+  *            @arg TIM3_IT_CC2: Capture Compare Channel2
+  *            @arg TIM3_IT_Trigger: Trigger
+  *            @arg TIM3_IT_Break: Break
+  * @param  NewState: The new state of the TIM3 peripheral.
+  *          This parameter can be ENABLE or DISABLE
+  * @retval None
+  */
+void TIM3_ITConfig(TIM3_IT_TypeDef TIM3_IT, FunctionalState NewState)
+{
+  /* Check the parameters */
+  assert_param(IS_TIM3_IT(TIM3_IT));
+  assert_param(IS_FUNCTIONAL_STATE(NewState));
+
+  if (NewState != DISABLE)
+  {
+    /* Enable the Interrupt sources */
+    TIM3->IER |= (uint8_t)TIM3_IT;
+  }
+  else
+  {
+    /* Disable the Interrupt sources */
+    TIM3->IER &= (uint8_t)(~(uint8_t)TIM3_IT);
+  }
+}
+
+/**
+  * @brief  Enables or disables the TIM3 peripheral.
+  * @param  NewState: The new state of the TIM3 peripheral.
+  *          This parameter can be ENABLE or DISABLE
+  * @retval None
+  */
+void TIM3_Cmd(FunctionalState NewState)
+{
+  /* Check the parameters */
+  assert_param(IS_FUNCTIONAL_STATE(NewState));
+
+  /* set or Reset the CEN Bit */
+  if (NewState != DISABLE)
+  {
+    TIM3->CR1 |= TIM_CR1_CEN;
+  }
+  else
+  {
+    TIM3->CR1 &= (uint8_t)(~TIM_CR1_CEN);
+  }
+}
+
+/**
+  * @brief  Initializes the TIM3 Time Base Unit according to the specified  parameters.
+  * @param  TIM3_Prescaler: Prescaler
+  *          This parameter can be one of the following values:
+  *            @arg TIM3_Prescaler_1: Time base Prescaler = 1 (No effect)
+  *            @arg TIM3_Prescaler_2: Time base Prescaler = 2
+  *            @arg TIM3_Prescaler_4: Time base Prescaler = 4
+  *            @arg TIM3_Prescaler_8: Time base Prescaler = 8
+  *            @arg TIM3_Prescaler_16: Time base Prescaler = 16
+  *            @arg TIM3_Prescaler_32: Time base Prescaler = 32
+  *            @arg TIM3_Prescaler_64: Time base Prescaler = 64
+  *            @arg TIM3_Prescaler_128: Time base Prescaler = 128
+  * @param  TIM3_CounterMode: Counter mode
+  *          This parameter can be one of the following values:
+  *            @arg TIM3_CounterMode_Up: Counter Up Mode
+  *            @arg TIM3_CounterMode_Down: Counter Down Mode
+  *            @arg TIM3_CounterMode_CenterAligned1: Counter Central aligned Mode 1
+  *            @arg TIM3_CounterMode_CenterAligned2: Counter Central aligned Mode 2
+  *            @arg TIM3_CounterMode_CenterAligned3: Counter Central aligned Mode 3
+  * @param  TIM3_Period: This parameter must be a value between 0x0000 and 0xFFFF.
+  * @retval None
+  */
+
+void TIM3_TimeBaseInit(TIM3_Prescaler_TypeDef TIM3_Prescaler,
+                       TIM3_CounterMode_TypeDef TIM3_CounterMode,
+                       uint16_t TIM3_Period)
+{
+
+  assert_param(IS_TIM3_PRESCALER(TIM3_Prescaler));
+  assert_param(IS_TIM3_COUNTER_MODE(TIM3_CounterMode));
+
+
+
+  /* Set the Autoreload value */
+  TIM3->ARRH = (uint8_t)(TIM3_Period >> 8) ;
+  TIM3->ARRL = (uint8_t)(TIM3_Period);
+
+  /* Set the Prescaler value */
+  TIM3->PSCR = (uint8_t)(TIM3_Prescaler);
+
+  /* Select the Counter Mode */
+  TIM3->CR1 &= (uint8_t)((uint8_t)(~TIM_CR1_CMS)) & ((uint8_t)(~TIM_CR1_DIR));
+  TIM3->CR1 |= (uint8_t)(TIM3_CounterMode);
+
+  /* Generate an update event to reload the Prescaler value immediately */
+  TIM3->EGR = TIM3_EventSource_Update;
+}
+
+
+/**
+  * @brief  Clears the TIM's pending flags.
+  * @param  TIM3_FLAG: Specifies the flag to clear.
+  *          This parameter can be any combination of the following values:
+  *            @arg TIM3_FLAG_Update: Update
+  *            @arg TIM3_FLAG_CC1: Capture Compare Channel1
+  *            @arg TIM3_FLAG_CC2: Capture Compare Channel2
+  *            @arg TIM3_FLAG_Trigger: Trigger
+  *            @arg TIM3_FLAG_Break: Break
+  * @retval None
+  */
+void TIM3_ClearFlag(TIM3_FLAG_TypeDef TIM3_FLAG)
+{
+  /* Check the parameters */
+  assert_param(IS_TIM3_CLEAR_FLAG((uint16_t)TIM3_FLAG));
+  /* Clear the flags (rc_w0) clear this bit by writing 0. Writing '1' has no effect*/
+  TIM3->SR1 = (uint8_t)(~(uint8_t)(TIM3_FLAG));
+  TIM3->SR2 = (uint8_t)(~(uint8_t)((uint16_t)TIM3_FLAG >> 8));
+}
+
+
+
+/**
+  * @brief  Initializes the TIM2 Time Base Unit according to the specified  parameters.
+  * @param  TIM2_Prescaler: Prescaler
+  *          This parameter can be one of the following values:
+  *            @arg TIM2_Prescaler_1: Time base Prescaler = 1 (No effect)
+  *            @arg TIM2_Prescaler_2: Time base Prescaler = 2
+  *            @arg TIM2_Prescaler_4: Time base Prescaler = 4
+  *            @arg TIM2_Prescaler_8: Time base Prescaler = 8
+  *            @arg TIM2_Prescaler_16: Time base Prescaler = 16
+  *            @arg TIM2_Prescaler_32: Time base Prescaler = 32
+  *            @arg TIM2_Prescaler_64: Time base Prescaler = 64
+  *            @arg TIM2_Prescaler_128: Time base Prescaler = 128
+  * @param  TIM2_CounterMode: Counter mode
+  *          This parameter can be one of the following values:
+  *            @arg TIM2_CounterMode_Up: Counter Up Mode
+  *            @arg TIM2_CounterMode_Down: Counter Down Mode
+  *            @arg TIM2_CounterMode_CenterAligned1: Counter Central aligned Mode 1
+  *            @arg TIM2_CounterMode_CenterAligned2: Counter Central aligned Mode 2
+  *            @arg TIM2_CounterMode_CenterAligned3: Counter Central aligned Mode 3
+  * @param  TIM2_Period: This parameter must be a value between 0x0000 and 0xFFFF.
+  * @retval None
+  */
+
+void TIM2_TimeBaseInit(TIM2_Prescaler_TypeDef TIM2_Prescaler,
+                       TIM2_CounterMode_TypeDef TIM2_CounterMode,
+                       uint16_t TIM2_Period)
+{
+
+  assert_param(IS_TIM2_PRESCALER(TIM2_Prescaler));
+  assert_param(IS_TIM2_COUNTER_MODE(TIM2_CounterMode));
+
+
+
+  /* Set the Autoreload value */
+  TIM2->ARRH = (uint8_t)(TIM2_Period >> 8) ;
+  TIM2->ARRL = (uint8_t)(TIM2_Period);
+
+  /* Set the Prescaler value */
+  TIM2->PSCR = (uint8_t)(TIM2_Prescaler);
+
+  /* Select the Counter Mode */
+  TIM2->CR1 &= (uint8_t)((uint8_t)(~TIM_CR1_CMS)) & ((uint8_t)(~TIM_CR1_DIR));
+  TIM2->CR1 |= (uint8_t)(TIM2_CounterMode);
+
+  /* Generate an update event to reload the Prescaler value immediately */
+  TIM2->EGR = TIM2_EventSource_Update;
+}
+
+
+/**
+  * @brief  Clears the TIM's pending flags.
+  * @param  TIM2_FLAG: Specifies the flag to clear.
+  *          This parameter can be any combination of the following values:
+  *            @arg TIM2_FLAG_Update: Update
+  *            @arg TIM2_FLAG_CC1: Capture Compare Channel1
+  *            @arg TIM2_FLAG_CC2: Capture Compare Channel2
+  *            @arg TIM2_FLAG_Trigger: Trigger
+  *            @arg TIM2_FLAG_Break: Break
+  * @retval None
+  */
+void TIM2_ClearFlag(TIM2_FLAG_TypeDef TIM2_FLAG)
+{
+  /* Check the parameters */
+  assert_param(IS_TIM2_CLEAR_FLAG((uint16_t)TIM2_FLAG));
+  /* Clear the flags (rc_w0) clear this bit by writing 0. Writing '1' has no effect*/
+  TIM2->SR1 = (uint8_t)(~(uint8_t)(TIM2_FLAG));
+  TIM2->SR2 = (uint8_t)(~(uint8_t)((uint16_t)TIM2_FLAG >> 8));
+}
+
+
+/**
+  * @brief  Enables or disables the specified TIM2 interrupts.
+  * @param  TIM2_IT: Specifies the TIM2 interrupts sources to be enabled or disabled.
+  *          This parameter can be any combination of the following values:
+  *            @arg TIM2_IT_Update: Update
+  *            @arg TIM2_IT_CC1: Capture Compare Channel1
+  *            @arg TIM2_IT_CC2: Capture Compare Channel2
+  *            @arg TIM2_IT_Trigger: Trigger
+  *            @arg TIM2_IT_Break: Break
+  * @param  NewState: The new state of the TIM2 peripheral.
+  *          This parameter can be ENABLE or DISABLE
+  * @retval None
+  */
+void TIM2_ITConfig(TIM2_IT_TypeDef TIM2_IT, FunctionalState NewState)
+{
+  /* Check the parameters */
+  assert_param(IS_TIM2_IT(TIM2_IT));
+  assert_param(IS_FUNCTIONAL_STATE(NewState));
+
+  if (NewState != DISABLE)
+  {
+    /* Enable the Interrupt sources */
+    TIM2->IER |= (uint8_t)TIM2_IT;
+  }
+  else
+  {
+    /* Disable the Interrupt sources */
+    TIM2->IER &= (uint8_t)(~(uint8_t)TIM2_IT);
+  }
+}
+
+
+/**
+  * @brief  Enables or disables the TIM2 peripheral.
+  * @param  NewState: The new state of the TIM2 peripheral.
+  *          This parameter can be ENABLE or DISABLE
+  * @retval None
+  */
+void TIM2_Cmd(FunctionalState NewState)
+{
+  /* Check the parameters */
+  assert_param(IS_FUNCTIONAL_STATE(NewState));
+
+  /* set or Reset the CEN Bit */
+  if (NewState != DISABLE)
+  {
+    TIM2->CR1 |= TIM_CR1_CEN;
+  }
+  else
+  {
+    TIM2->CR1 &= (uint8_t)(~TIM_CR1_CEN);
+  }
+}
+
+/**
+  * @brief  Configures the system clock (SYSCLK).
+  * @note   The HSI is used (enabled by hardware) as system clock source after
+  *         startup from Reset, wake-up from Halt and active Halt modes, or in case
+  *         of failure of the HSE used as system clock (if the Clock Security System CSS is enabled).
+  * @note   A switch from one clock source to another occurs only if the target
+  *         clock source is ready (clock stable after startup delay or PLL locked).
+  *         You can use CLK_GetSYSCLKSource() function to know which clock is
+  *         currently used as system clock source.
+  * @param  CLK_SYSCLKSource: specifies the clock source used as system clock.
+  *          This parameter can be one of the following values:
+  *            @arg CLK_SYSCLKSource_HSI: HSI selected as system clock source
+  *            @arg CLK_SYSCLKSource_HSE: HSE selected as system clock source
+  *            @arg CLK_SYSCLKSource_LSI: LSI selected as system clock source
+  *            @arg CLK_SYSCLKSource_LSE: LSE selected as system clock source
+  * @retval None
+  */
+void CLK_SYSCLKSourceConfig(CLK_SYSCLKSource_TypeDef CLK_SYSCLKSource)
+{
+  /* check teh parameters */
+  assert_param(IS_CLK_SOURCE(CLK_SYSCLKSource));
+
+  /* Selection of the target clock source */
+  CLK->SWR = (uint8_t)CLK_SYSCLKSource;
+}
+
+/**
+  * @brief  Configures the System clock (SYSCLK) dividers.
+  * @param  CLK_SYSCLKDiv : Specifies the system clock divider to apply.
+  *          This parameter can be one of the following values:
+  *            @arg CLK_SYSCLKDiv_1
+  *            @arg CLK_SYSCLKDiv_2
+  *            @arg CLK_SYSCLKDiv_4
+  *            @arg CLK_SYSCLKDiv_8
+  *            @arg CLK_SYSCLKDiv_16
+  *            @arg CLK_SYSCLKDiv_64
+  *            @arg CLK_SYSCLKDiv_128
+  * @retval None
+  */
+void CLK_SYSCLKDivConfig(CLK_SYSCLKDiv_TypeDef CLK_SYSCLKDiv)
+{
+  /* check the parameters */
+  assert_param(IS_CLK_SYSTEM_DIVIDER(CLK_SYSCLKDiv));
+
+  CLK->CKDIVR = (uint8_t)(CLK_SYSCLKDiv);
+}
+
+
+
+/**
+  * @brief  Checks whether the specified SPI flag is set or not.
+  * @param  SPIx: where x can be 1 to select the specified SPI peripheral.
+  * @param  SPI_FLAG: Specifies the flag to check.
+  *          This parameter can be one of the following values:
+  *            @arg SPI_FLAG_BSY: Busy
+  *            @arg SPI_FLAG_OVR: Overrun
+  *            @arg SPI_FLAG_MODF: Mode fault
+  *            @arg SPI_FLAG_CRCERR: CRC error
+  *            @arg SPI_FLAG_WKUP: Wake-up
+  *            @arg SPI_FLAG_TXE: Transmit buffer empty
+  *            @arg SPI_FLAG_RXNE: Receive buffer empty
+  * @retval Indicates the state of SPI_FLAG.
+  *         This parameter can be SET or RESET.
+  */
+FlagStatus SPI_GetFlagStatus(SPI_TypeDef* SPIx, SPI_FLAG_TypeDef SPI_FLAG)
+{
+  FlagStatus status = RESET;
+  /* Check parameters */
+  assert_param(IS_SPI_FLAG(SPI_FLAG));
+
+  /* Check the status of the specified SPI flag */
+  if ((SPIx->SR & (uint8_t)SPI_FLAG) != (uint8_t)RESET)
+  {
+    status = SET; /* SPI_FLAG is set */
+  }
+  else
+  {
+    status = RESET; /* SPI_FLAG is reset*/
+  }
+
+  /* Return the SPI_FLAG status */
+  return status;
+}
+
+/**
+  * @brief  Transmits a Data through the SPI peripheral.
+  * @param  SPIx: where x can be 1 to select the specified SPI peripheral.
+  * @param  Data: Byte to be transmitted.
+  * @retval None
+  */
+void SPI_SendData(SPI_TypeDef* SPIx, uint8_t Data)
+{
+  SPIx->DR = Data; /* Write in the DR register the data to be sent*/
+}
+
+/**
+  * @brief  Returns the most recent received data by the SPI peripheral.
+  * @param  SPIx: where x can be 1 to select the specified SPI peripheral.
+  * @retval The value of the received data.
+  */
+uint8_t SPI_ReceiveData(SPI_TypeDef* SPIx)
+{
+  return ((uint8_t)SPIx->DR); /* Return the data in the DR register*/
+}
+
+/**
+  * @brief  Clears the TIM's interrupt pending bits.
+  * @param  TIM3_IT: Specifies the pending bit to clear.
+  *          This parameter can be any combination of the following values:
+  *            @arg TIM3_IT_Update: Update
+  *            @arg TIM3_IT_CC1: Capture Compare Channel1
+  *            @arg TIM3_IT_CC2: Capture Compare Channel2
+  *            @arg TIM3_IT_Trigger: Trigger
+  *            @arg TIM3_IT_Break: Break
+  * @retval None
+  */
+void TIM3_ClearITPendingBit(TIM3_IT_TypeDef TIM3_IT)
+{
+  /* Check the parameters */
+  assert_param(IS_TIM3_IT(TIM3_IT));
+
+  /* Clear the IT pending Bit */
+  TIM3->SR1 = (uint8_t)(~(uint8_t)TIM3_IT);
+}
+
+
+/**
+  * @brief  Clears the TIM's interrupt pending bits.
+  * @param  TIM2_IT: Specifies the pending bit to clear.
+  *          This parameter can be any combination of the following values:
+  *            @arg TIM2_IT_Update: Update
+  *            @arg TIM2_IT_CC1: Capture Compare Channel1
+  *            @arg TIM2_IT_CC2: Capture Compare Channel2
+  *            @arg TIM2_IT_Trigger: Trigger
+  *            @arg TIM2_IT_Break: Break
+  * @retval None
+  */
+void TIM2_ClearITPendingBit(TIM2_IT_TypeDef TIM2_IT)
+{
+  /* Check the parameters */
+  assert_param(IS_TIM2_IT(TIM2_IT));
+
+  /* Clear the IT pending Bit */
+  TIM2->SR1 = (uint8_t)(~(uint8_t)TIM2_IT);
+}

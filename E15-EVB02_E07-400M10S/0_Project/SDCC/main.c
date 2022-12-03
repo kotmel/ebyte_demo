@@ -31,13 +31,15 @@
 #include "aes.h"
 #include "string.h"
 
+// generate own key and iv by openssl enc -aes-128-cbc -k secret -P -md sha1
+
 uint8_t key[] = { 0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c };
 uint8_t iv[]  = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
 
 void Task_Transmit( void );
 void Task_Button( void );
 
-/* ���� ���ݴ洢���� */
+/* Serial data storage queue */
 Ebyte_FIFO_t hfifo;
 
 /* Serial port frame receiving completion flag */
@@ -65,7 +67,7 @@ static BSP_BTN_EVENT_t BTN_Event;
 static void decrypt_cbc(uint8_t* in, uint8_t len)
 {
     struct AES_ctx ctx;
-    DEBUG("decrypt\r\n");
+    DEBUG("\r\ndecrypt\r\n");
     AES_init_ctx_iv(&ctx, key, iv);
     AES_CBC_decrypt_buffer(&ctx, in, len);
 }
@@ -74,7 +76,7 @@ static void encrypt_cbc(uint8_t* in, uint8_t len)
 {
     struct AES_ctx ctx;
 
-    DEBUG("encrypt\r\n");
+    DEBUG("\r\nencrypt\r\n");
     AES_init_ctx_iv(&ctx, key, iv);
     AES_CBC_encrypt_buffer(&ctx, in, len);
 }
@@ -114,7 +116,7 @@ int main( void )
     {
         /* key event response */
         Task_Button();
-        /* Task: Detect serial port data and send it wirelessly, please customize as needed */
+        /* Task: Detect serial port data and send it wireless, please customize as needed */
         Task_Transmit();
         /* Task: EBYTE driver library must periodically execute the task and the customer does not need to modify it */
         // kkk handled in IRQ Ebyte_RF.TaskForPoll();
