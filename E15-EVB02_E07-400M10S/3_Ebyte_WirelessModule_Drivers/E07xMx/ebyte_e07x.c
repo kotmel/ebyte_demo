@@ -1,33 +1,33 @@
 #include "ebyte_e07x.h"
 
-/// ¸¨ÖúÊ¶±ğÄ£¿é
+// / Auxiliary identification module
 #if defined(EBYTE_E07_400M10S)
 static uint8e_t E07x_NameString[] = "E07-400M10S";
 #elif defined(EBYTE_E07_900M10S)
 static uint8e_t E07x_NameString[] = "E07-900M10S";
 #endif 
 
-/// ¸¨ÖúÊ¶±ğÇı¶¯³ÌĞò°æ±¾ºÅ 
+// / Auxiliary identification driver version number
 #define EBYTE_E07_TYPE_PROGRAM   0x10 
 
-#define EBYTE_E07X_XOSC         26000000  //26MHz¾§Õñ
-#define EBYTE_E07X_POW_2_28     268435456 //2µÄ28´Î·½
+#define EBYTE_E07X_XOSC         26000000  // 26MHz crystal oscillator
+#define EBYTE_E07X_POW_2_28     268435456 // 2 to the 28th power
 #define EBYTE_E07X_POW_2_17     131072
 #define EBYTE_E07X_CAL_BASE     ((double)EBYTE_E07X_POW_2_28) / ((double)EBYTE_E07X_XOSC)
 
-///Ö¸¶¨ÄÚ²¿FIFO
+/// Specify the internal FIFO
 #define  FIFO_READ           0x00
 #define  FIFO_WRITE          0x01   
 
-///Ö¸¶¨ÖĞ¶ÏÀàĞÍ
+// / Specify the interrupt type
 #define IRQ_RX_SYNC_RECV 0x06  
 #define IRQ_TX_SYNC_SEND 0x06  
 #define IRQ_RX_CRC_OK    0x07
 
-///Êä³ö¹¦ÂÊ±í ¸¨Öú¼ÆËã
+/// Output power meter auxiliary calculation
 static uint8e_t E07x_PaTabel[] = { 0xC0, 0, 0, 0, 0, 0, 0, 0};
 
-///½ÓÊÕ»º´æ
+/// Receive buffer
 static uint8e_t E07x_RxBuffer[64];
 
 typedef enum 
@@ -43,12 +43,12 @@ typedef enum
     GO_ERROR         =0x08
 }E07x_Status_t;
 
-/// ×´Ì¬±êÊ¶
+// / status flag
 static E07x_Status_t E07x_Status = GO_INIT;
 
-/* »ù´¡ÅäÖÃ²ÎÊı 
- * À´×ÔÅäÖÃÈí¼şTI SmartRF Studio 7 
- * °æ±¾ 2.21.0 */
+/* Basic configuration parameters
+* from configuration software TI SmartRF Studio 7
+* Version 2.21.0 */
 typedef struct {
     uint8e_t iocfg0;     // GDO0 Output Pin Configuration
     uint8e_t fifothr;    // RX FIFO and TX FIFO Thresholds
@@ -111,20 +111,20 @@ static RF_SETTINGS E07x_InitSetting = {
 
 
 /*!
- * @brief ÉèÖÃÄÚ²¿¼Ä´æÆ÷Öµ
- * 
- * @param address ¼Ä´æÆ÷µØÖ·
- * @param data    Ğ´ÈëÖµ
+ * @brief set internal register value
+ *
+ * @param address register address
+ * @param data write value
  */
 static void E07x_SetRegister( uint8e_t address, uint8e_t data )
 {
     /* SPI CS */
     Ebyte_Port_SpiCsIoControl(0);
     
-    /* Ğ´ÈëµØÖ· */
+    /* write address */
     Ebyte_Port_SpiTransmitAndReceivce( address );
     
-    /* Ğ´ÈëÖµ */
+    /* write value */
     Ebyte_Port_SpiTransmitAndReceivce( data );
     
     /* SPI CS */
@@ -132,10 +132,10 @@ static void E07x_SetRegister( uint8e_t address, uint8e_t data )
 }
 
 /*!
- * @brief ¶ÁÈ¡ÄÚ²¿¼Ä´æÆ÷Öµ
- * 
- * @param address ¼Ä´æÆ÷µØÖ·
- * @return ¼Ä´æÆ÷Öµ
+ * @brief read internal register value
+ *
+ * @param address register address
+ * @return register value
  */
 static uint8e_t E07x_GetRegister( uint8e_t address )
 {
@@ -146,19 +146,19 @@ static uint8e_t E07x_GetRegister( uint8e_t address )
     /* SPI CS */
     Ebyte_Port_SpiCsIoControl(0);
     
-    /* 0x30µØÖ·ÒÔºóµÄ¼Ä´æÆ÷ ¶ÁÈ¡Ö¸ÁîĞèÒª¸Ä±ä */
+    /* Register read instructions after address 0x30 need to be changed */
     if( address < 0x30 )
     {
-        /* Ğ´µØÖ·  bit7ÖÃ1 ±íÊ¾ºóĞøĞèÒª¶ÁÈ¡ ¼´|0x80 */
+        /* Write address bit7 is set to 1, which means that it needs to be read later, that is |0x80 */
         Ebyte_Port_SpiTransmitAndReceivce( address | 0x80);    
     }
     else
     {
-         /* Ğ´µØÖ·  */
+         /* write address */
         Ebyte_Port_SpiTransmitAndReceivce( address | 0xC0);         
     }
 
-    /* ¶ÁÈ¡ 1Byte */
+    /* read 1Byte */
     result = Ebyte_Port_SpiTransmitAndReceivce( 0xFF );
     
     /* SPI CS */
@@ -168,11 +168,11 @@ static uint8e_t E07x_GetRegister( uint8e_t address )
 }
 
 /*!
- * @brief ÅúÁ¿ÉèÖÃÄÚ²¿¼Ä´æÆ÷Öµ
- * 
- * @param address ¼Ä´æÆ÷µØÖ·
- * @param data    Ö¸ÏòĞ´ÈëÊı¾İÊ×µØÖ·
- * @param size    Ğ´Èë³¤¶È
+ * @brief Set internal register values in batches
+ *
+ * @param address register address
+ * @param data points to the first address of writing data
+ * @param size write length
  */
 static void E07x_SetRegisters( uint8e_t address , uint8e_t *data , uint8e_t size )
 {
@@ -181,10 +181,10 @@ static void E07x_SetRegisters( uint8e_t address , uint8e_t *data , uint8e_t size
     /* SPI CS */
     Ebyte_Port_SpiCsIoControl(0);
     
-    /* Ğ´ÈëÆğÊ¼µØÖ· µØÖ·bit6ÖÃÎ»´ú±íÁ¬ĞøĞ´Ö¸Áî ¼´|0x40 */
+    /* Write start address address bit6 is set to represent continuous write instructions, ie |0x40 */
     Ebyte_Port_SpiTransmitAndReceivce( address | 0x40 );
     
-    /* Ğ´ÈëÊı¾İ */
+    /* write data */
     while( i-- )
     {
         Ebyte_Port_SpiTransmitAndReceivce( *data++ );
@@ -195,16 +195,16 @@ static void E07x_SetRegisters( uint8e_t address , uint8e_t *data , uint8e_t size
 }
 
 /*!
- * @brief Ğ´ÃüÁî
- * 
- * @param address ¼Ä´æÆ÷µØÖ·
+ * @brief write command
+ *
+ * @param address register address
  */
 static void E07x_SendCommand( uint8e_t command )
 {
     /* SPI CS */
     Ebyte_Port_SpiCsIoControl(0);
     
-    /* Ğ´ÈëÃüÁî */
+    /* write command */
     Ebyte_Port_SpiTransmitAndReceivce( command );
     
     /* SPI CS */
@@ -212,10 +212,10 @@ static void E07x_SendCommand( uint8e_t command )
 }
 
 /*!
- * @brief ÏòFIFOĞ´Èë´ı·¢ËÍÊı¾İ
- * 
- * @param data Ö¸Ïò·¢ËÍÊı¾İ
- * @param size Ğ´Èë³¤¶È
+ * @brief Write data to be sent to FIFO
+ *
+ * @param data points to send data
+ * @param size write length
  */
 static void E07x_SetFIFO( uint8e_t *data, uint8e_t size)
 {
@@ -224,10 +224,10 @@ static void E07x_SetFIFO( uint8e_t *data, uint8e_t size)
     /* SPI CS */
     Ebyte_Port_SpiCsIoControl(0);
     
-    /* FIFOµØÖ·:0x3F µØÖ·bit6ÖÃÎ»´ú±íÁ¬ĞøĞ´Ö¸Áî ¼´|0x40 */
+    /* FIFO address: 0x3F Address bit6 is set to represent continuous write instructions, ie |0x40 */
     Ebyte_Port_SpiTransmitAndReceivce( 0x3F | 0x40 );
     
-    /* Ğ´ÈëÊı¾İ */
+    /* write data */
     while( i-- )
     {
         Ebyte_Port_SpiTransmitAndReceivce( *data++ );
@@ -238,10 +238,10 @@ static void E07x_SetFIFO( uint8e_t *data, uint8e_t size)
 }
 
 /*!
- * @brief ÏòFIFO¶ÁÈ¡Êı¾İ
- * 
- * @param data Ö¸Ïò»º´æ
- * @param size ¶ÁÈ¡³¤¶È
+ * @brief read data to FIFO
+ *
+ * @param data points to cache
+ * @param size read length
  */
 static void E07x_GetFIFO( uint8e_t *data, uint8e_t size)
 {
@@ -250,10 +250,10 @@ static void E07x_GetFIFO( uint8e_t *data, uint8e_t size)
     /* SPI CS */
     Ebyte_Port_SpiCsIoControl(0);
     
-    /* FIFOµØÖ·:0x3F µØÖ·bit6ÖÃÎ»´ú±íÁ¬Ğø¶ÁÖ¸Áî ¼´|0x40 */
+    /* FIFO address: 0x3F Address bit6 is set to represent continuous read instructions, namely |0x40 */
     Ebyte_Port_SpiTransmitAndReceivce( 0x3F | 0xC0 );
     
-    /* Ğ´ÈëÊı¾İ */
+    /* write data */
     while( i-- )
     {
         *data++ = Ebyte_Port_SpiTransmitAndReceivce( 0xFF );
@@ -263,30 +263,31 @@ static void E07x_GetFIFO( uint8e_t *data, uint8e_t size)
     Ebyte_Port_SpiCsIoControl(1);
 }
 
+
 /*!
- * @brief Çå³ıFIFOÄÚÈİ
- * @param mode Ä£Ê½
- *           @arg FIFO_WRITE £ºÖ¸¶¨·¢ËÍFIFO
- *           @arg FIFO_READ  £ºÖ¸¶¨½ÓÊÕFIFO
+ * @brief clear FIFO content
+ * @param mode mode
+ * @arg FIFO_WRITE: specifies the sending FIFO
+ * @arg FIFO_READ: Specifies the receive FIFO
  */
 static void E07x_ClearFIFO( uint8e_t mode )
 {
   
     if( mode == FIFO_WRITE )
     {    
-        /* Ö¸Áî:Çå³ı·¢ËÍFIFO(0x3B) */
+        /* Command: clear send FIFO(0x3B) */
         E07x_SendCommand(0x3B);
     }
     else
     {
-        /* Ö¸Áî:Çå³ı½ÓÊÕFIFO(0x3A) */
+        /* Command: clear receive FIFO(0x3A) */
         E07x_SendCommand(0x3A);
     } 
     
 }
 
 /*!
- * @brief Èí¸´Î»
+ * @brief soft reset
  */
 void E07x_Reset(void)
 {
@@ -297,76 +298,76 @@ void E07x_Reset(void)
     Ebyte_Port_SpiCsIoControl(1);
     Ebyte_Port_DelayMs(1);
     
-    /* ÃüÁî:Ğ¾Æ¬¸´Î»(0x30) */
+    /* Command: chip reset (0x30) */
     E07x_SendCommand( 0x30 );
     
     Ebyte_Port_DelayMs(20);
 }
 
 /*!
- * @brief ÇĞ»»½øÈë´ı»úÄ£Ê½
+ * @brief toggle into standby mode
  */
 static void E07x_SetStby(void)
 {
-    /* Ö¸Áî:0x36 ÍË³öTX/RX Ä£Ê½ ½øÈë¿ÕÏĞ×´Ì¬ */
+    /* Command: 0x36 Exit TX/RX mode and enter idle state */
     E07x_SendCommand(0x36);
     
-    /* ×´Ì¬¼ÇÂ¼ */
+/* Status record */
     E07x_Status = GO_STBY;
 }
 
 /*!
- * @brief ÇĞ»»½øÈëĞİÃßÄ£Ê½
- * 
- * @note Çë²éÔÄÊÖ²á£¬²¿·Ö¼Ä´æÆ÷µÄ²ÎÊı»á¶ªÊ§£¡
+ * @brief switch to sleep mode
+ *
+ * @note Please refer to the manual, the parameters of some registers will be lost!
  */
 static void E07x_SetSleep(void)
 {
-    /* Ö¸Áî:0x39 ½øÈëĞİÃßÄ£Ê½ */
+    /* Ö¸ï¿½ï¿½:0x39 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£Ê½ */
     E07x_SendCommand(0x39);
     
-    /* ×´Ì¬¼ÇÂ¼ */
+    /* Command: 0x39 enter sleep mode */
     E07x_Status = GO_SLEEP;
 }
 
 static void E07x_SetGPIO( uint8e_t gpio , uint8e_t config )
 {
   
-  /* ÓÃÓÚÖ¸¶¨IOµÄ¼«ĞÔ ÎŞÖĞ¶ÏÊ±Îª¸ßµçÆ½ ´¥·¢ÖĞ¶ÏÊ±ÎªµÍµçÆ½ */
+  /* Used to specify the polarity of the IO when there is no interrupt, it is high level when triggering an interrupt, and it is low level */
   uint8e_t mask = 0x40;
   
-  /* ºÏ²¢ÖĞ¶ÏÀàĞÍ */ 
+  /* merge interrupt type */
   mask |= (config & 0x3F);
   
   switch ( gpio )
   {
-    /* IOCFG0 ¼Ä´æÆ÷µØÖ·:0x02 */
+    /* IOCFG0 register address: 0x02 */
     case 0:  E07x_SetRegister(0x02,mask) ;break;
-    /* IOCFG1 ¼Ä´æÆ÷µØÖ·:0x01 */
+    /* IOCFG1 register address: 0x01 */
     case 1:  E07x_SetRegister(0x01,mask) ;break;
-    /* IOCFG2 ¼Ä´æÆ÷µØÖ·:0x00 */
+    /* IOCFG2 register address: 0x00 */
     case 2:  E07x_SetRegister(0x00,mask) ;break;
     default: break;
   }
 }
 
 /*!
- * @brief ÅĞ¶ÏÄ£¿éÊÇ·ñ´æÔÚ
+ * @brief Determine whether the module exists
  *
- * @return 0:Õı³£ 1:Ä£¿éÒì³£
+ * @return 0: normal 1: module exception
  */
 static uint8e_t E07x_IsExist(void)
 {
     uint8e_t result = 0;
     uint8e_t reg_value;
     
-    /* ¶ÁÎÂ¶È´«¸ĞÆ÷ÅäÖÃ²ÎÊı ¸´Î»ºóÓ¦¸ÃÎª0x7F ¼Ä´æÆ÷µØÖ·:0x2A  */
+    /* Read temperature sensor configuration parameters should be 0x7F after reset. Register address: 0x2A */
     reg_value = E07x_GetRegister(0x2A);
     
-    /* Ä¬ÈÏÖµ±ØÎª0x7F */
+    /* The default value must be 0x7F */
     if( reg_value != 0x7F ) 
     {
-       /* ¶Á²»µ½ÕıÈ·Êı¾İ Çë¼ì²éÓ²¼ş */
+       /* can not read the correct data, please check the hardware */
        result = 1;
     }
     
@@ -374,9 +375,9 @@ static uint8e_t E07x_IsExist(void)
 }
 
 /*!
- * @brief µ÷ÖÆ·½Ê½
+ * @brief modulation method
  *
- * @param mod ÆÚÍûµÄµ÷ÖÆ·½Ê½ 
+ * @param mod ï¿½ï¿½ï¿½ï¿½ï¿½Äµï¿½ï¿½Æ·ï¿½Ê½ 
  *        @arg 0:2-FSK
  *        @arg 1:GFSK
  *        @arg 3:ASK/OOK
@@ -385,47 +386,46 @@ static uint8e_t E07x_IsExist(void)
  */
 static void E07x_SetModulation(uint8e_t mod)
 {
-    /* ×ª»»Î» */
+/* convert bit */
     uint8e_t tmp = (mod<<4) & 0x70;
   
-    /* MDMCFG2 ¼Ä´æÆ÷µØÖ· 0x12  Çå³ıbit[6:4]*/
+    /* MDMCFG2 register address 0x12 clears bit[6:4] */
     E07x_InitSetting.mdmcfg2  &= 0x8F;
     
-    /* ÉèÖÃbit[6:4] */
+    /* Set bit[6:4] */
     E07x_InitSetting.mdmcfg2 |= tmp;
 }
-
 /*!
- * @brief ×ÔÓÉÔØ²¨ÆµÂÊ»ù×¼Öµ¼ÆËã
+ * @brief Free carrier frequency reference value calculation
  *
- * @param frequency ÆÚÍûµÄÔØ²¨ÆµÂÊ Hz
- * @return 0:Õı³£ 1:²ÎÊı´íÎó
- * @note ±ØĞëÔÚÒÔÏÂÆµ¶ÎÖ®¼ä( Hz ):
+ * @param frequency ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø²ï¿½Æµï¿½ï¿½ Hz
+ * @return 0:ï¿½ï¿½ï¿½ï¿½ 1:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ * @note ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½Ö®ï¿½ï¿½( Hz ):
  *        300000000 - 348000000
  *        387000000 - 464000000
  *        779000000 - 928000000
- *       £¡£¡£¡×¢Òâ:²»Í¬¼Ü¹¹´¦ÀíÆ÷¼ÆËã½á¹ûĞ¡Êı²¿·Ö¿ÉÄÜ²»Ò»ÖÂ£¬ÓĞ¿ÉÄÜ²úÉúÆ«²î
+ *       ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×¢ï¿½ï¿½:ï¿½ï¿½Í¬ï¿½Ü¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ¡ï¿½ï¿½ï¿½ï¿½ï¿½Ö¿ï¿½ï¿½Ü²ï¿½Ò»ï¿½Â£ï¿½ï¿½Ğ¿ï¿½ï¿½Ü²ï¿½ï¿½ï¿½Æ«ï¿½ï¿½
  *
- *       ÆµÆ×ÒÇ²âÊÔÆµµãOK¡£Êµ²â¿ÉÓë¹Ù·½¼ÆËãÆ÷²ÎÊıÅäÖÃÆµÂÊµÄÄ£¿é½øĞĞÍ¨ĞÅ¡£
+ * Spectrum analyzer test frequency point OK. The actual measurement can communicate with the module of the official calculator parameter configuration frequency.
  */
 static uint8e_t E07x_SetFrequency( uint32e_t frequency )
 { 
    uint32e_t freq ;
    uint8e_t  freq2,freq1,freq0;
    
-   /* ²ÎÊı¼ì²é */
+   /* parameter check */
    if(  frequency > 928000000 ) return 1;
    if( (frequency < 779000000) && ( frequency>464000000) )return 1;
    if( (frequency < 387000000) && ( frequency>348000000) )return 1;
    if( (frequency < 300000000)) return 1;
    
-   /* ÆµÂÊ¿ØÖÆÆ÷×Ö(FREQ)=ÔØ²¨ÆµÂÊ *£¨2^16)/ ¾§ÕñÆµÂÊ   */
+   /* Frequency controller word (FREQ)=Carrier frequency*(2^16)/Crystal oscillator frequency */
    freq = (uint32e_t)(((double)frequency * 65535 )/ ( (double)EBYTE_E07X_XOSC ));
    freq2 = ( uint8e_t )( ( freq >> 16 ) & 0xFF );
    freq1 = ( uint8e_t )( ( freq >> 8 ) & 0xFF );
    freq0 = ( uint8e_t )(  freq  & 0xFF );
    
-   /* Ìî³ä³õÊ¼»¯²ÎÊıÊı×éÖĞµÄÆµÂÊ²¿·Ö µÈ´ıºóĞøÍ³Ò»Ğ´Èë  */
+   /* Fill the frequency part in the initialization parameter array and wait for subsequent unified writing */
    E07x_InitSetting.freq2 = freq2;
    E07x_InitSetting.freq1 = freq1;
    E07x_InitSetting.freq0 = freq0;
@@ -434,11 +434,11 @@ static uint8e_t E07x_SetFrequency( uint32e_t frequency )
 }
 
 /*!
- * @brief ×ÔÓÉÊı¾İËÙÂÊ»ù×¼Öµ¼ÆËã
- *
- * @param datarate ÆÚÍûµÄÊı¾İËÙÂÊ
- * @note  ½¨ÒéÔÚÒÔÏÂËÙÂÊÖ®¼ä:
- *        300 (0.3K) - 250000000 (250K)
+* @brief free data rate baseline calculation
+*
+* @param datarate expected data rate
+* @note recommends between the following rates:
+* 300 (0.3K) - 250000000 (250K)
  */
 static void E07x_SetDataRate( uint32e_t datarate )
 {
@@ -446,10 +446,10 @@ static void E07x_SetDataRate( uint32e_t datarate )
     uint16e_t date_e ;
     uint32e_t date_e_sum = 1,temp;
     
-    /* ÖĞ¼ä¹«Ê½»»Ëã (256+DRATE_M)*2^DRATE_E=datarate*2^28/¾§ÕñÆµÂÊ  */
+    /* Intermediate formula conversion (256+DRATE_M)*2^DRATE_E=datarate*2^28/crystal oscillator frequency */
     uint32e_t calculation = (uint32e_t)( datarate * EBYTE_E07X_CAL_BASE);
     
-    /* Öğ´Î±Æ½üÆ¥Åä DRATE_E */
+    /* Successive approximation matches DRATE_E */
     for( date_e=0 ; date_e<=0xFF;date_e++ )
     {
        if(date_e==0)
@@ -461,15 +461,15 @@ static void E07x_SetDataRate( uint32e_t datarate )
           date_e_sum *= 2;//2^DRATE_E 
        }
        
-       temp = calculation/date_e_sum; // ½á¹û±ØĞëÔÚ [256 ,256+DRATE_M]Ö®¼ä
+       temp = calculation/date_e_sum; // The result must be between [256,256+DRATE_M]
        if(  temp>=256 && temp<=511 )
        {
-          date_m = temp - 256;//µÃµ½DRATE_M
+          date_m = temp - 256;// get DRATE_M
           break;
        }
     }
     
-    /* Ìî³ä³õÊ¼»¯²ÎÊıÊı×éÖĞµÄÊı¾İËÙÂÊ²¿·Ö µÈ´ıºóĞøÍ³Ò»Ğ´Èë  */
+    /* Fill the data rate part in the initialization parameter array and wait for subsequent unified writing */
     if ( date_e<256 )
     {
        E07x_InitSetting.mdmcfg4 &= 0xF0;
@@ -480,27 +480,27 @@ static void E07x_SetDataRate( uint32e_t datarate )
 }
 
 /*!
- * @brief ×ÔÓÉÆµ¿í»ù×¼Öµ¼ÆËã
+ * @brief free bandwidth benchmark calculation
  *
- * @param bandwidth ÆÚÍûµÄ½ÓÊÕÆµ¿í (Hz)
- * @note Êµ²âºÍ¹Ù·½¼ÆËãÆ÷½á¹ûÒ»ÖÂ Ä¬ÈÏ×îµÍ58.035714
- *       ×¢Òâ£ºĞ¾Æ¬Êµ¼ÊÖ»ÄÜÅäÖÃÎª¹Ì¶¨¼¸¸öÆµ¿í£¬ÊäÈëµÄÊıÖµ»á±»ÏòÉÏ×ª»¯½Ó½üµ½ÈçÏÂ¹Ì¶¨Æµ¿í£º
- *        58.035714 KHz 
- *        67.708333 KHz 
- *        81.250000 KHz
- *       101.562500 KHz 
- *       116.071429 KHz
- *       135.416667 KHz
- *       162.500000 KHz
- *       203.125000 KHz
- *       232.142857 KHz
- *       270.833333 KHz
- *       325.000000 KHz
- *       406.250000 KHz
- *       464.285714 KHz
- *       541.666667 KHz
- *       650.000000 KHz
- *       812.500000 KHz
+ * @param bandwidth Expected receiving bandwidth (Hz)
+ * @note The measured result is consistent with the official calculator, the default minimum is 58.035714
+ * Note: The chip can actually only be configured to fix a few bandwidths, and the input value will be converted upwards to close to the following fixed bandwidths:
+ * 58.035714 KHz
+ * 67.708333 KHz
+ * 81.250000 KHz
+ * 101.562500 KHz
+ * 116.071429 KHz
+ * 135.416667 KHz
+ * 162.500000 KHz
+ * 203.125000 KHz
+ * 232.142857 KHz
+ * 270.833333 KHz
+ * 325.000000 KHz
+ * 406.250000 KHz
+ * 464.285714 KHz
+ * 541.666667 KHz
+ * 650.000000 KHz
+ * 812.500000 KHz
  */
 static void E07x_SetChannelBandwidth( uint32e_t bandwidth )
 {
@@ -508,10 +508,10 @@ static void E07x_SetChannelBandwidth( uint32e_t bandwidth )
 
     uint32e_t chanbw_e_sum = 1,temp;
     
-    /* ÖĞ¼ä¹«Ê½»»Ëã (4+CHANBW_M)*2^CHANBW_E=¾§ÕñÆµÂÊ/(8*bandwidth)  */
+    /* Intermediate formula conversion (4+CHANBW_M)*2^CHANBW_E=crystal frequency/(8*bandwidth) */
     uint32e_t calculation = (uint32e_t)( EBYTE_E07X_XOSC/(8 * bandwidth));    
     
-    /* Öğ´Î±Æ½üÆ¥Åä CHANBW_E */
+    /* Successive approximation match CHANBW_E */
     for( chanbw_e=0 ; chanbw_e<=3;chanbw_e++ )
     {
        if(chanbw_e==0)
@@ -526,12 +526,12 @@ static void E07x_SetChannelBandwidth( uint32e_t bandwidth )
        temp = calculation/chanbw_e_sum; 
        if(  temp>=4 && temp<=7 )
        {
-          chanbw_m = temp - 4;//µÃµ½CHANBW_M
+          chanbw_m = temp - 4;// get CHANBW_M
           break;
        }
     }    
     
-    /* Ìî³ä³õÊ¼»¯²ÎÊıÊı×éÖĞµÄÆµ¿í²¿·Ö µÈ´ıºóĞøÍ³Ò»Ğ´Èë  */
+    /* Fill the bandwidth part in the initialization parameter array and wait for subsequent unified writing */
     if( chanbw_e<=3 )
     {
         mask = ((uint8e_t)((chanbw_e<<6)|(chanbw_m<<4))) & 0xF0;
@@ -542,21 +542,21 @@ static void E07x_SetChannelBandwidth( uint32e_t bandwidth )
 }
 
 /*!
- * @brief ¼ÆËãÆµÆ«»ù×¼Öµ
- * 
- * @param frequency_dev µ¥Î»:Hz 
- * 
- * @note Êµ²âºÍ¹Ù·½¼ÆËã½á¹ûÒ»ÖÂ
+ * @brief Calculate the reference value of frequency offset
+ *
+ * @param frequency_dev unit: Hz
+ *
+ * @note The measured results are consistent with the official calculation results
  */
 static void E07x_SetFrequencyDeviation( uint32e_t frequency_dev )
 {
     uint8e_t  deviation_m,deviation_e,mask;
     uint32e_t deviation_e_sum = 1,temp;
     
-    /* ÖĞ¼ä¹«Ê½»»Ëã (8+DEVIATION_M)*2^DEVIATION_E=frequency_dev * 2^17 / ¾§ÕñÆµÂÊ  */
+    /* Intermediate formula conversion (8+DEVIATION_M)*2^DEVIATION_E=frequency_dev * 2^17 / crystal oscillator frequency */
     uint32e_t calculation = (uint32e_t)( frequency_dev * EBYTE_E07X_POW_2_17 / EBYTE_E07X_XOSC );   
     
-    /* Öğ´Î±Æ½üÆ¥Åä DEVIATION_E */
+    /* Successive approximation matches DEVIATION_E */
     for( deviation_e=0 ; deviation_e<=7;deviation_e++ )
     {
        if(deviation_e==0)
@@ -568,16 +568,16 @@ static void E07x_SetFrequencyDeviation( uint32e_t frequency_dev )
           deviation_e_sum *= 2;//2^DEVIATION_E
        }
         
-       temp = calculation/deviation_e_sum; //µÃµ½ 8+DEVIATION_M
+       temp = calculation/deviation_e_sum; //get  8+DEVIATION_M
        
        if(  temp>=8 && temp<=15 )
        {
-          deviation_m = temp - 8;//µÃµ½CHANBW_M
+          deviation_m = temp - 8;// get CHANBW_M
           break;
        }
     }      
     
-    /* Ìî³ä³õÊ¼»¯²ÎÊıÊı×éÖĞµÄÆµÆ«²¿·Ö µÈ´ıºóĞøÍ³Ò»Ğ´Èë  */
+    /* Fill the frequency offset part in the initialization parameter array and wait for subsequent unified writing */
     if( deviation_e<=7 )
     {
         mask = ((uint8e_t)((deviation_e<<4)|deviation_m)) & 0x77;
@@ -587,13 +587,13 @@ static void E07x_SetFrequencyDeviation( uint32e_t frequency_dev )
 }
 
 /*!
- * @brief ÉèÖÃÊä³ö¹¦ÂÊ
- * 
- * @param power µ¥Î» dBm ×¢Òâ:ÊäÈëÖµ´æÔÚÏŞÖÆ  
- * 
- * @return 0£ºÕı³£ 1:²ÎÊı²»ÕıÈ·
- * @note ·ÅÆúÁËPA Ramping£¬Ò²ĞíÊ§È¥ÁËÒ»¶¨µÄÏßĞÔ¶ÈºÍÍêÕûĞÔ£¿ÔÓÉ¢ĞÅºÅÔö¼Ó£¿ 
- *       ¹¦ÂÊµÄÊä³ö²¢²»ÊÇÏßĞÔµÄ£¬º¯ÊıÖĞÉèÖÃµÄPAÖµÀ´×ÔTI SmartRF Studio£¬½öÎª²Î¿¼
+ * @brief set the output power
+ *
+ * @param power unit dBm Note: there is a limit to the input value
+ *
+ * @return 0: Normal 1: The parameter is incorrect
+ * @note dropped PA Ramping, perhaps losing some linearity and integrity? Increased spurious signals?
+ * The power output is not linear. The PA value set in the function comes from TI SmartRF Studio and is for reference only
  */
 static uint8e_t E07x_SetOutputPower( int8e_t power )
 {
@@ -613,11 +613,11 @@ static uint8e_t E07x_SetOutputPower( int8e_t power )
     }
 #elif defined(EBYTE_E07_900M10S)  
     
-    if( E07_FREQUENCY_START > 900000000 ) //900MHz µ½ 928MHz
+    if( E07_FREQUENCY_START > 900000000 ) //900MHz to 928MHz
     {
         switch ( power ) 
         {
-            case 11:  E07x_PaTabel[0] = 0xC0;break; //´ËÆµÂÊÇø¼ä ¹¦ÂÊ¿ÉÒÔÌáÉıµ½11dBm    
+            case 11:  E07x_PaTabel[0] = 0xC0;break; // The power of this frequency range can be increased to 11dBm
             case 10:  E07x_PaTabel[0] = 0xC3;break;
             case 7:   E07x_PaTabel[0] = 0xCC;break;
             case 5:   E07x_PaTabel[0] = 0x84;break;
@@ -629,11 +629,11 @@ static uint8e_t E07x_SetOutputPower( int8e_t power )
             default: result=1; break;
         }    
     }
-    else //779MHz µ½ 900MHz
+    else //779MHz to 900MHz
     {
         switch ( power ) 
         {
-            case 12:  E07x_PaTabel[0] = 0xC0;break; //´ËÆµÂÊÇø¼ä ¹¦ÂÊ¿ÉÒÔÌáÉıµ½12dBm    
+            case 12:  E07x_PaTabel[0] = 0xC0;break; // The power of this frequency range can be increased to 12dBm
             case 10:  E07x_PaTabel[0] = 0xC5;break;
             case 7:   E07x_PaTabel[0] = 0xCD;break;
             case 5:   E07x_PaTabel[0] = 0x86;break;
@@ -652,21 +652,21 @@ static uint8e_t E07x_SetOutputPower( int8e_t power )
     return result;
 }
 
-/*!
- * @brief Ä£¿é»ù´¡²ÎÊıÅäÖÃ
- * 
- * @param frequency      ÔØ²¨ÆµÂÊ
- * @param data_rate      ·ûºÅËÙÂÊ(¿ÕÖĞËÙÂÊ)
- * @param frequency_dev  µ÷ÖÆÆµÆ«
- * @param bandwidth      ½ÓÊÕÆµ¿í
- * @param output_power   Êä³ö¹¦ÂÊ
- * @param preamble_size  ·¢ËÍÇ°µ¼Âë³¤¶È 
- * @param sync_word      Í¬²½×Ö
- * @param crc            CRC¿ª¹Ø
- * @param device_address Éè±¸µØÖ·
+/* !
+ * @brief module basic parameter configuration
  *
- * @return 0:Õı³£ 1:²ÎÊı´íÎó
- * @note (¿ÉÑ¡)Ä¬ÈÏ¹Ø±ÕÁËµØÖ·¼ì²é
+ * @param frequency carrier frequency
+ * @param data_rate symbol rate (air rate)
+ * @param frequency_dev modulation frequency deviation
+ * @param bandwidth Receive bandwidth
+ * @param output_power output power
+ * @param preamble_size send preamble length
+ * @param sync_word sync word
+ * @param crc CRC switch
+ * @param device_address device address
+ *
+ * @return 0: normal 1: parameter error
+ * @note (optional) Address checking is turned off by default
  */
 static uint8e_t E07x_Config( uint32e_t frequency , uint32e_t data_rate , uint32e_t frequency_dev ,uint32e_t bandwidth, 
                               int8e_t output_power , uint16e_t preamble_size, uint16e_t sync_word , uint8e_t crc )
@@ -674,60 +674,61 @@ static uint8e_t E07x_Config( uint32e_t frequency , uint32e_t data_rate , uint32e
     uint8e_t result ;  
     uint8e_t reg_value;
     
-    /* ¼ÆËã:ÔØ²¨ÆµÂÊ 
-     * ¼Ä´æÆ÷ÆğÊ¼µØÖ· 0x0D */
+    /* Calculation: carrier frequency
+    * Register start address 0x0D */
     result = E07x_SetFrequency( frequency );
     if( result != 0 ) return 1;
     
-    /* ¼ÆËã:¿ÕËÙ 
-     * MDMCFG4 MDMCFG3¼Ä´æÆ÷µØÖ·:0x10 0x11 */
+    /* Calculation: Airspeed
+    * MDMCFG4 MDMCFG3 register address: 0x10 0x11 */
     E07x_SetDataRate( data_rate );
     
-    /* ¼ÆËã:ÆµÆ« 
-     * DEVIATN¼Ä´æÆ÷µØÖ·:0x15 */
+    /* Calculation: frequency offset
+    * DEVIATN register address: 0x15 */
     E07x_SetFrequencyDeviation( frequency_dev );    
     
-    /* ¼ÆËã:½ÓÊÕÆµ¿í 
-     * MDMCFG4¼Ä´æÆ÷µØÖ·:0x10 */
+    /* Calculation: receive bandwidth
+    * MDMCFG4 register address: 0x10 */
     E07x_SetChannelBandwidth( bandwidth );
     
-    /* ¼ÆËã:Êä³ö¹¦ÂÊ 
-     * ¼Ä´æÆ÷µØÖ·:0x3E */
+    /* Calculation: output power
+    * Register address: 0x3E */
     E07x_SetOutputPower(output_power);
     
-    /* µ÷ÖÆÄ£Ê½
-     * MDMCFG2 ¼Ä´æÆ÷µØÖ·:0x12 */
+    /* modulation mode
+    * MDMCFG2 register address: 0x12 */
     E07x_SetModulation(1);//GFSK
     
-    /* Ç°µ¼Âë³¤¶È 
-     * MDMCFG1 ¼Ä´æÆ÷µØÖ·:0x13 */  
-    if( preamble_size >7 ) return 1;//²ÎÊı¼ì²é
-    E07x_InitSetting.mdmcfg1 &= 0x8F;//ÇåÁã
-    E07x_InitSetting.mdmcfg1 |= (preamble_size<<4);//ÖÃÎ»
+     /* preamble length
+    * MDMCFG1 register address: 0x13 */
+    if( preamble_size >7 ) return 1;// parameter check
+    E07x_InitSetting.mdmcfg1 &= 0x8F;// clear
+    E07x_InitSetting.mdmcfg1 |= (preamble_size<<4); // set
     
-    /* Í¬²½×Ö 
-     * SYNC1 SYNC0 ¼Ä´æÆ÷µØÖ·:0x04 0x05 */
-    E07x_InitSetting.sync1 =  (uint8e_t)((sync_word>>8)&0xFF);//¸ßByte
-    E07x_InitSetting.sync0 =  (uint8e_t)(sync_word & 0xFF);   //µÍByte
+    /* sync word
+    * SYNC1 SYNC0 register address: 0x04 0x05 */
+    E07x_InitSetting.sync1 =  (uint8e_t)((sync_word>>8)&0xFF);//High Byte
+    E07x_InitSetting.sync0 =  (uint8e_t)(sync_word & 0xFF);   //Low Byte
     
-    /* CRC¿ª¹Ø 
-     * PKTCTRL0¼Ä´æÆ÷µØÖ·:0x08 bit2 */
-    if( crc > 1 ) return 1;//²ÎÊı¼ì²é Ö»ÄÜÎª0»ò1
+    /* CRC switch
+    * PKTCTRL0 register address: 0x08 bit2 */
+
+    if( crc > 1 ) return 1;// parameter check can only be 0 or 1
     if( crc )
     {
-        E07x_InitSetting.pktctrl0 |= 0x04; //¿ªÆô 
+        E07x_InitSetting.pktctrl0 |= 0x04; // Open
     }else
     {
         E07x_InitSetting.pktctrl0 &= 0xFB;
     }
     
-    /* Êı¾İ°ü³¤¶È Ä¬ÈÏÎª¿É±ä³¤Ä£Ê½ÇÒ³¤¶È·ÅÔÚÊı¾İµÚÒ»×Ö½Ú
-     * PKTCTRL0¼Ä´æÆ÷µØÖ·:0x08 bit[1:0] */
-    E07x_InitSetting.pktctrl0 &= 0xFC;//ÇåÁã
-    E07x_InitSetting.pktctrl0 |= 0x01;//0x01Ä£Ê½ (¿É±ä³¤)
+    /* The length of the data packet defaults to variable length mode and the length is placed in the first byte of the data
+    * PKTCTRL0 register address: 0x08 bit[1:0] */
+    E07x_InitSetting.pktctrl0 &= 0xFC;// clear
+    E07x_InitSetting.pktctrl0 |= 0x01;// 0x01 mode (variable length)
     
-    /* ×¢ÒâÊÂÏî:Èç¹ûÏ£ÍûÍêÈ«Ê¹ÓÃ¹Ù·½SmartRF StudioµÄÅäÖÃ²ÎÊı£¬ÄÇÃ´Ö±½Ó×¢ÊÍµôÉÏ·½µÄĞŞ¸Äº¯Êı¼´¿É */
-    /* ÏòÄ£¿éĞ´Èë¼ÆËãºóµÄ E07x_InitSetting ²ÎÊı±í */
+    /* Precautions: If you want to fully use the configuration parameters of the official SmartRF Studio, then just comment out the modification function above */
+    /* Write the calculated E07x_InitSetting parameter table to the module */
     E07x_SetRegister( 0x02, E07x_InitSetting.iocfg0 );
     E07x_SetRegister( 0x03, E07x_InitSetting.fifothr);
     E07x_SetRegister( 0x04, E07x_InitSetting.sync1);
@@ -753,41 +754,41 @@ static uint8e_t E07x_Config( uint32e_t frequency , uint32e_t data_rate , uint32e
     E07x_SetRegister( 0x26, E07x_InitSetting.fscal0);
     E07x_SetRegister( 0x2C, E07x_InitSetting.test2);
     E07x_SetRegister( 0x2D, E07x_InitSetting.test1);
-//    E07x_SetRegister( 0x2E, E07x_InitSetting.test0); //·¢ÏÖ: ÉèÖÃTEST0µ¼ÖÂ×Ô¶¨Òå¼ÆËãÆµÂÊÆ«ÒÆ  
-                                                       //ÏÖÏó: µ±ÆµµãÉèÖÃÎªĞ¡ÓÚ411MHzÊ±£¬ÆµµãËøËÀÔÚÁË411MHz¡£µ±ÆµµãÉèÖÃÎª´óÓÚ411MHzÊ±£¬ÆµµãÇĞ»»Õı³£
-                                                       //½¨Òé: µ±ÍêÈ«ÆôÓÃ¹Ù·½SmartRF Studio²ÎÊıÊ±£¬½â³ıTEST0µÄ×¢ÊÍ¡£µ±Ê¹ÓÃ×ÔÓÉ²ÎÊı¼ÆËãÊ±£¬±£³Ö×¢ÊÍ
-    
-    /* ²¹³ä£ºÍ¨µÀ±àÂë(¿ÉÓÃÓÚÌøÆµ)  ¼Ä´æÆ÷µØÖ·: 0x0A */
+//    E07x_SetRegister( 0x2E, E07x_InitSetting.test0); // Found: Setting TEST0 leads to custom calculation frequency offset
+                                                        // Phenomenon: When the frequency point is set to less than 411MHz, the frequency point is locked at 411MHz. When the frequency point is set to be greater than 411MHz, the frequency point switching is normal
+                                                        // Suggestion: Uncomment TEST0 when the official SmartRF Studio parameters are fully enabled. When evaluating with free parameters, keep annotations
+
+   /* Supplement: channel code (can be used for frequency hopping) register address: 0x0A */
     E07x_SetRegister( 0x0A ,0 );
     
-    /* ²¹³ä£º¹Ø±ÕµØÖ·¹ıÂË  ¼Ä´æÆ÷µØÖ·: 0x07 */
+    /* Supplement: Disable address filter register address: 0x07 */
     reg_value = E07x_GetRegister(0x07);
-    reg_value &= 0xFC;//ÇåÁã
+    reg_value &= 0xFC;// clear
     E07x_SetRegister(0x07,reg_value);
     
-    /* ²¹³ä: ÅäÖÃÊä³ö¹¦ÂÊ ¼Ä´æÆ÷µØÖ·: 0x3E */
+    /* Supplement: configure output power register address: 0x3E */
     E07x_SetRegisters( 0x3E ,E07x_PaTabel,8 );
     
     return 0;
 }
 
 /*!
- * @brief Ä£¿é³õÊ¼»¯
- * 
- * @return 0:Õı³£ 1:³õÊ¼»¯Ê§°Ü
+ * @brief module initialization
+ *
+ * @return 0: normal 1: initialization failed
  */
 uint8e_t E07x_Init( void )
 {
     uint8e_t result = 0;
     
-    /* Èí¸´Î» */
+    /* soft reset */
     E07x_Reset();
     
-    /* ÅĞ¶ÏÄ£¿éÊÇ·ñ´æÔÚ */
+    /* Check if the module exists */
     result = E07x_IsExist();
     if( result != 0 ) return 1;
     
-    /* »ù´¡²ÎÊıÉèÖÃ */
+    /* Basic parameter setting */
     result = E07x_Config(  E07_FREQUENCY_START,
                            E07_DATA_RATE, 
                            E07_FREQUENCY_DEVIATION,
@@ -799,13 +800,13 @@ uint8e_t E07x_Init( void )
                            );
     if( result != 0 ) return 1;
     
-    /* Ä¬ÈÏ½øÈë½ÓÊÕÄ£Ê½ */
+    /* Enter receiving mode by default */
     E07x_GoReceive();
     return 0;
 }
 
 /*!
- * @brief ±£Áô 
+ * @brief IRQ handling
  */
 void E07x_TaskForIRQ(void)
 {
@@ -813,88 +814,88 @@ void E07x_TaskForIRQ(void)
 }
 
 /*!
- * @brief ÂÖÑ¯º¯Êı ¸¨ÖúÍê³ÉÊı¾İ½ÓÊÕ
- *  
- * @param data Ö¸Ïò·¢ËÍÊı¾İ
- * @param size Êı¾İ³¤¶È
+ * @brief polling function assists in completing data reception
+ *
+ * @param data points to send data
+ * @param size data length
  * @return 0
  */
 uint8e_t E07x_GoTransmit( uint8e_t *data, uint8e_t size )
 {
     uint8e_t irqStatus = 0;
     
-    /* Ä£Ê½ÇĞ»»: ´ı»ú */
+    /* Mode switching: standby */
     E07x_SetStby();
     
-    /* Çå³ı·¢ËÍÊı¾İ¶ÓÁĞ */
+    /* Clear send data queue */
     E07x_ClearFIFO( FIFO_WRITE );
    
-    /* ·¢ËÍÊı¾İÎª¿É±ä³¤Ä£ µÚÒ»×Ö½ÚÏÈĞ´Èë³¤¶È */
+    /* Send data is variable length modulus, the first byte first writes the length */
     E07x_SetFIFO( &size , 1 );
     
-    /* ºóĞøĞ´ÈëÍêÕûÊı¾İ°ü */
+    /* Subsequent write complete data packet */
     E07x_SetFIFO( data , size);
     
-    /* ÉèÖÃÒı½Å GPIO0 Ó³Éäµ½ÖĞ¶Ï
-     * µ±·¢ËÍ½øĞĞÍ¬²½×ÖÊ± ´¥·¢ÖĞ¶Ï £¡£¡£¡×¢Òâ:µ±FIFOÖĞµÄÊı¾İÍêÈ«·¢ËÍºó ×Ô¶¯£¡Çå³ıÖĞ¶Ï */
-    E07x_SetGPIO(0 ,IRQ_TX_SYNC_SEND );
+    /* Set pin GPIO0 to map to interrupt
+    * Trigger an interrupt when the sync word is sent! ! ! Note: Automatically when the data in the FIFO is completely sent! clear interrupt */
+     E07x_SetGPIO(0 ,IRQ_TX_SYNC_SEND );
 
-    /* ·¢ËÍÖ¸Áî:0x35 Ä£¿é½øÈë½ÓÊÕÄ£Ê½ */   
+    /* Send command: 0x35 module enters receiving mode */
     E07x_SendCommand( 0x35 );      
     
-    /* ×´Ì¬¼ÇÂ¼ */
+    /* Status record */
     E07x_Status = GO_WAIT_TRANSMIT;    
     
-    /* ×èÈû·¢ËÍ·½Ê½ ÔÚ´ËµÈ´ı·¢ËÍÍê³É */  
+    /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í·ï¿½Ê½ ï¿½Ú´ËµÈ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */  
     do
     {
       Ebyte_Port_DelayMs(1);
       
-      /* ¶ÁÈ¡×´Ì¬¼Ä´æÆ÷ MARCSTATE µØÖ·:0x35 */
+      /* Read status register MARCSTATE address: 0x35 */
       irqStatus = E07x_GetRegister(0x35);
 
     }
-    while( (irqStatus != 0x01) );//·¢ËÍÍê³Éºó×Ô¶¯ÍË»Øµ½¿ÕÏĞ×´Ì¬ ¼´Îª0x01  
-                                  //Èç¹ûÉèÖÃÁË¼Ä´æÆ÷MCSM1 µØÖ·:0x17 ¿ªÆôÁËTXOFF_MODE ÄÇÃ´·¢ËÍÍê³Éºó×´Ì¬²¢²»Ò»¶¨ÊÇ¿ÕÏĞ ĞèÒªÁíĞĞ´¦Àí 
+    while( (irqStatus != 0x01) );// Automatically return to the idle state after sending is completed, which is 0x01
+                                  // If the register MCSM1 address is set: 0x17 and TXOFF_MODE is turned on, then the status after sending is not necessarily idle and needs to be processed separately
     
-    /* ×´Ì¬¼ÇÂ¼ */
+    /* Status record */
     E07x_Status = GO_STBY;  
     
-    /* »Øµ÷ÓÃ»§º¯Êı */
+    /* callback user function */
     Ebyte_Port_TransmitCallback( 0x0001 );
     
     return 0;
 }
 
 /*!
- * @brief ¿ªÊ¼¼àÌıÊı¾İ
- *  
+ * @brief start listening data
+ *
  * @return 0
  */
 uint8e_t E07x_GoReceive( void )
 {
   
-    /* Ä£Ê½ÇĞ»»: ´ı»ú */
+    /* Mode switching: standby */
     E07x_SetStby();
     
-    /* Çå³ı½ÓÊÕÊı¾İ¶ÓÁĞ */
+    /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ¶ï¿½ï¿½ï¿½ */
     E07x_ClearFIFO( FIFO_READ );  
   
-    /* ÉèÖÃÒı½Å GPIO0 Ó³Éäµ½ÖĞ¶Ï */
+    /* Clear the receive data queue */
 //    E07x_SetGPIO(0 ,IRQ_RX_CRC_OK );
      E07x_SetGPIO(0 ,IRQ_RX_SYNC_RECV );
   
-    /* ·¢ËÍÖ¸Áî:0x34 Ä£¿é½øÈë½ÓÊÕÄ£Ê½ */   
+    /* Send command: 0x34 module enters receiving mode */
     E07x_SendCommand( 0x34 );  
     
-    /* ×´Ì¬¼ÇÂ¼ */
+    /* ×´Ì¬ï¿½ï¿½Â¼ *//* Status record */
     E07x_Status = GO_WAIT_RECEIVE;
     return 0;
 }
 
 /*!
- * @brief Ä£¿é½øÈëĞİÃßÄ£Ê½(µÍ¹¦ºÄ)
- * 
+ * @brief module enters sleep mode (low power consumption)
+ *
  * @return 0;
  */
 uint8e_t E07x_GoSleep(void)
@@ -905,10 +906,10 @@ uint8e_t E07x_GoSleep(void)
 }
 
 /*!
- * @brief »ñÈ¡Ä£¿é³ÌĞò°æ±¾
- * 
- * @return 8Î»µÄ±àÂë 
- * @note ÀıÈç0x10 ´ú±íV1.0
+ * @brief get module program version
+ *
+ * @return 8-bit encoding
+ * @note For example, 0x10 represents V1.0
  */
 uint8e_t E07x_GetDriverVersion(void)
 {
@@ -916,10 +917,10 @@ uint8e_t E07x_GetDriverVersion(void)
 }
 
 /*!
- * @brief »ñÈ¡Ä£¿éÃû×Ö
- * 
- * @return Ö¸ÏòÃû×Ö×Ö·û´®µÄÖ¸Õë 
- * @note ±ê×¼×Ö·û´® Ä©Î²º¬ÓĞ½áÊø·û '\0'
+ * @brief Get the module name
+ *
+ * @return pointer to name string
+ * @note The end of the standard string contains the terminator '\0'
  */
 uint8e_t* E07x_GetName(void)
 {
@@ -927,18 +928,18 @@ uint8e_t* E07x_GetName(void)
 }
 
 /*!
- * @brief »ñÈ¡Ä£¿é×´Ì¬
- * 
- * @return ×´Ì¬±àÂë
- *        Î´³õÊ¼»¯     GO_INIT          =0x00        
- *        ÕıÔÚÇĞ»»×´Ì¬ GO_BUSY          =0x01   
- *        ´ı»ú/¿ÕÏĞ    GO_STBY          =0x02   
- *        ×¼±¸½ÓÊÕ»·¾³ GO_RECEIVE       =0x03   
- *        ÕıÔÚ¼àÌıÊı¾İ GO_WAIT_RECEIVE  =0x04          
- *        ×¼±¸·¢ËÍ»·¾³ GO_TRANSMIT      =0x05   
- *        µÈ´ı·¢ËÍÍê³É GO_WAIT_TRANSMIT =0x06   
- *        ĞİÃß         GO_SLEEP         =0x07   
- *        ÄÚ²¿´íÎó     GO_ERROR         =0x08 
+ * @brief get module status
+ *
+ * @return status code
+ * Uninitialized GO_INIT =0x00
+ * Switching state GO_BUSY =0x01
+ * Standby/idle GO_STBY =0x02
+ * Ready to receive environment GO_RECEIVE =0x03
+ * Listening to data GO_WAIT_RECEIVE =0x04
+ * Ready to send environment GO_TRANSMIT =0x05
+ * Wait for the sending to complete GO_WAIT_TRANSMIT =0x06
+ * Sleep GO_SLEEP =0x07
+ * Internal error GO_ERROR =0x08
  */
 uint8e_t E07x_GetStatus(void)
 {
@@ -946,33 +947,35 @@ uint8e_t E07x_GetStatus(void)
 }
 
 /*!
- * @brief ÂÖÑ¯º¯Êı ¸¨ÖúÍê³ÉÊı¾İ½ÓÊÕ
- *  
+ * @brief polling function assists in completing data reception
+ *
  * @return 0
- * @note ĞèÒª±»Ö÷º¯ÊıÖÜÆÚĞÔµ÷ÓÃ
+ * @note needs to be called periodically by the main function
  */
 uint8e_t E07x_TaskForPoll(void)
 {
     uint8e_t recvSize;
-    if (0 == Ebyte_Port_Gdo0IoRead())             // ¼ì²âÎŞÏßÄ£¿éÊÇ·ñ²úÉú½ÓÊÕÖĞ¶Ï 
+    if (0 == Ebyte_Port_Gdo0IoRead())             // Detect whether the wireless module generates a receiving interrupt
     {
         while (Ebyte_Port_Gdo0IoRead() == 0);
 
-        // ¶ÁÈ¡½ÓÊÕµ½µÄÊı¾İ³¤¶È 
+        // Read the received data length
         recvSize = 0;
         E07x_GetFIFO(&recvSize , 1);
 
-        // Èç¹û½ÓÊÕ³¤¶È²»Îª0
+        // If the received length is not 0
         if( recvSize != 0 )
         {
             E07x_GetFIFO( E07x_RxBuffer, recvSize );
-            //»Øµ÷ÓÃ»§º¯Êı
-            Ebyte_Port_ReceiveCallback( 0x0002 , E07x_RxBuffer , recvSize );            
+            // callback user function
+            Ebyte_Port_ReceiveCallback( 0x0002 , E07x_RxBuffer , recvSize );
+            mprintf("irq %d\n", irq_counter)          ;
+            irq_counter = 0;
         }
         else
         {
-            //To-Do Çë×ÔĞĞ´¦ÀíÆäËûÇé¿ö ÀıÈçÖ»ÓĞÇ°µ¼Âë?¸ÉÈÅĞÍµÄÖĞ¶Ï£¿
-            E07x_GoReceive();//Ê¾Àı ¼ÌĞø½ÓÊÕ
+            // To-Do please handle other situations by yourself such as preamble only? Interrupt type interrupt?
+            E07x_GoReceive();// Example continues to receive
         }
     }
 

@@ -1,14 +1,14 @@
 /**
   **********************************************************************************
   * @file      ebyte_core.h
-  * @brief     EBYTE驱动库的上层API封装层 帮助客户抽象底层逻辑    
-  * @details   详情请参见 https://www.ebyte.com/       
+  * @brief     The upper API encapsulation layer of the EBYTE driver library helps customers abstract the underlying logic
+  * @details See https://www.ebyte.com/ for details
   * @author    JiangHeng     
   * @date      2021-05-13     
   * @version   1.0.0     
   **********************************************************************************
   * @copyright BSD License 
-  *            成都亿佰特电子科技有限公司  
+  *            Chengdu Ebyte Electronic Technology Co., Ltd.
   *   ______   ____   __     __  _______   ______ 
   *  |  ____| |  _ \  \ \   / / |__   __| |  ____|
   *  | |__    | |_) |  \ \_/ /     | |    | |__   

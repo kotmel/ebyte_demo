@@ -1,14 +1,14 @@
 /**
   **********************************************************************************
-  * @file      board.c
-  * @brief     E15-EVB02 板级软件驱动层
-  * @details   详情请参见 https://www.ebyte.com/
-  * @author    JiangHeng
-  * @date      2021-05-06
-  * @version   1.0.0
+* @file board.c
+* @brief E15-EVB02 board-level software driver layer
+* @details See https://www.ebyte.com/ for details
+* @author JiangHeng
+* @date 2021-05-06
+* @version 1.0.0
   **********************************************************************************
   * @copyright BSD License
-  *            成都亿佰特电子科技有限公司
+  *            Chengdu Ebyte Electronic Technology Co., Ltd.
   *   ______   ____   __     __  _______   ______
   *  |  ____| |  _ \  \ \   / / |__   __| |  ____|
   *  | |__    | |_) |  \ \_/ /     | |    | |__
@@ -21,72 +21,73 @@
 
 #include "board.h"
 
-/// 按键事件队列
+// / Key event queue
 BSP_BTN_FIFO_t BSP_BTN_FIFO;
 
 
-/// 辅助延时计算 用于定时器中断 递减 
+// / Auxiliary delay calculation for timer interrupt decrement
 volatile uint32_t Ebyte_TimerDelayCounter = 0;
 
-/*!
- * @brief 内部时钟初始化
- */
+
+/* !
+* @brief internal clock initialization
+*/
 void Ebyte_BSP_HSI_Init( void )
 {
-    /* 内部 16M HSI 时钟 */
+/* Internal 16M HSI clock */
     CLK_SYSCLKSourceConfig( CLK_SYSCLKSource_HSI );
-    /* 1分频  16M/1 */
+    /* 1 frequency division 16M/1 */
     CLK_SYSCLKDivConfig( CLK_SYSCLKDiv_1 );
 }
 
 /*!
- * @brief 针对E22 E220 普通引脚做初始化
+ * @brief 锟斤拷锟紼22 E220 锟斤拷通锟斤拷锟斤拷锟斤拷锟斤拷始锟斤拷
  */
 void Ebyte_BSP_E22xE220xGPIO_Init( void )
 {
-    GPIO_Init( BSP_GPIO_PORT_NRST, BSP_GPIO_PIN_NRST, GPIO_Mode_Out_PP_High_Slow );  
+    GPIO_Init( BSP_GPIO_PORT_NRST, BSP_GPIO_PIN_NRST, GPIO_Mode_Out_PP_High_Slow );
     GPIO_Init( BSP_GPIO_PORT_BUSY, BSP_GPIO_PIN_BUSY, GPIO_Mode_In_FL_No_IT );
-    GPIO_Init( BSP_GPIO_PORT_RXEN, BSP_GPIO_PIN_RXEN, GPIO_Mode_Out_PP_Low_Slow );   
-    GPIO_Init( BSP_GPIO_PORT_TXEN, BSP_GPIO_PIN_TXEN, GPIO_Mode_Out_PP_Low_Slow );   
+    GPIO_Init( BSP_GPIO_PORT_RXEN, BSP_GPIO_PIN_RXEN, GPIO_Mode_Out_PP_Low_Slow );
+    GPIO_Init( BSP_GPIO_PORT_TXEN, BSP_GPIO_PIN_TXEN, GPIO_Mode_Out_PP_Low_Slow );
     GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_NRST, BSP_GPIO_PIN_NRST, ENABLE );
     GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_RXEN, BSP_GPIO_PIN_RXEN, ENABLE );
     GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_TXEN, BSP_GPIO_PIN_TXEN, ENABLE );
 }
 
 /*!
- * @brief 针对E19 普通引脚做初始化
+ * @brief 锟斤拷锟紼19 锟斤拷通锟斤拷锟斤拷锟斤拷锟斤拷始锟斤拷
  */
 void Ebyte_BSP_E19xGPIO_Init( void )
 {
-    GPIO_Init( BSP_GPIO_PORT_E19_NRST, BSP_GPIO_PIN_E19_NRST, GPIO_Mode_Out_PP_High_Slow );  
+    GPIO_Init( BSP_GPIO_PORT_E19_NRST, BSP_GPIO_PIN_E19_NRST, GPIO_Mode_Out_PP_High_Slow );
     GPIO_Init( BSP_GPIO_PORT_E19_DIO0, BSP_GPIO_PIN_E19_DIO0, GPIO_Mode_In_PU_No_IT );
-    GPIO_Init( BSP_GPIO_PORT_E19_RXEN, BSP_GPIO_PIN_E19_RXEN, GPIO_Mode_Out_PP_Low_Slow );   
-    GPIO_Init( BSP_GPIO_PORT_E19_TXEN, BSP_GPIO_PIN_E19_TXEN, GPIO_Mode_Out_PP_Low_Slow );   
+    GPIO_Init( BSP_GPIO_PORT_E19_RXEN, BSP_GPIO_PIN_E19_RXEN, GPIO_Mode_Out_PP_Low_Slow );
+    GPIO_Init( BSP_GPIO_PORT_E19_TXEN, BSP_GPIO_PIN_E19_TXEN, GPIO_Mode_Out_PP_Low_Slow );
     GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_E19_NRST, BSP_GPIO_PIN_E19_NRST, ENABLE );
     GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_E19_RXEN, BSP_GPIO_PIN_E19_RXEN, ENABLE );
     GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_E19_TXEN, BSP_GPIO_PIN_E19_TXEN, ENABLE );
 }
 
 /*!
- * @brief 针对E10 普通引脚做初始化
+ * @brief 锟斤拷锟紼10 锟斤拷通锟斤拷锟斤拷锟斤拷锟斤拷始锟斤拷
  */
 void Ebyte_BSP_E10xGPIO_Init( void )
 {
-    GPIO_Init( BSP_GPIO_PORT_E10_SDN, BSP_GPIO_PIN_E10_SDN, GPIO_Mode_Out_PP_High_Slow ); //E10 高电平复位
+    GPIO_Init( BSP_GPIO_PORT_E10_SDN, BSP_GPIO_PIN_E10_SDN, GPIO_Mode_Out_PP_High_Slow ); //E10 锟竭碉拷平锟斤拷位
     GPIO_Init( BSP_GPIO_PORT_E10_IRQ, BSP_GPIO_PIN_E10_IRQ, GPIO_Mode_In_PU_No_IT );
 }
 
 /*!
- * @brief 针对E30 普通引脚做初始化
+ * @brief 锟斤拷锟紼30 锟斤拷通锟斤拷锟斤拷锟斤拷锟斤拷始锟斤拷
  */
 void Ebyte_BSP_E30xGPIO_Init( void )
 {
-    GPIO_Init( BSP_GPIO_PORT_E30_SDN, BSP_GPIO_PIN_E30_SDN, GPIO_Mode_Out_PP_High_Slow ); //E30 高电平复位
+    GPIO_Init( BSP_GPIO_PORT_E30_SDN, BSP_GPIO_PIN_E30_SDN, GPIO_Mode_Out_PP_High_Slow ); //E30 锟竭碉拷平锟斤拷位
     GPIO_Init( BSP_GPIO_PORT_E30_IRQ, BSP_GPIO_PIN_E30_IRQ, GPIO_Mode_In_PU_No_IT );
 }
 
 /*!
- * @brief 针对E31 普通引脚做初始化
+ * @brief 锟斤拷锟紼31 锟斤拷通锟斤拷锟斤拷锟斤拷锟斤拷始锟斤拷
  */
 void Ebyte_BSP_E31xGPIO_Init( void )
 {
@@ -94,7 +95,7 @@ void Ebyte_BSP_E31xGPIO_Init( void )
 }
 
 /*!
- * @brief 针对E07 普通引脚做初始化
+ * @brief 锟斤拷锟紼07 锟斤拷通锟斤拷锟斤拷锟斤拷锟斤拷始锟斤拷
  */
 void Ebyte_BSP_E07xGPIO_Init( void )
 {
@@ -103,7 +104,7 @@ void Ebyte_BSP_E07xGPIO_Init( void )
 }
 
 /*!
- * @brief 针对E49 普通引脚做初始化
+ * @brief 锟斤拷锟紼49 锟斤拷通锟斤拷锟斤拷锟斤拷锟斤拷始锟斤拷
  */
 void Ebyte_BSP_E49xGPIO_Init( void )
 {
@@ -119,14 +120,14 @@ void Ebyte_BSP_E49xGPIO_Init( void )
     GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_E49_SLCK, BSP_GPIO_PIN_E49_SLCK, ENABLE );
 }
 
-/*!
- * @brief 初始化所有IO
- *
- * @note  目标硬件: EBYTE E15-EVB02
- */
+/* !
+* @brief initialize all IO
+*
+* @note target hardware: EBYTE E15-EVB02
+*/
 void Ebyte_BSP_GPIO_Init( void )
 {
-    /* 根据模块类别进行引脚初始化 */
+    /* Pin initialization according to the module category */
 #if defined(EBYTE_E22_400M22S)||defined(EBYTE_E22_900M22S)||defined(EBYTE_E220_400M22S)||defined(EBYTE_E220_900M22S)
     Ebyte_BSP_E22xE220xGPIO_Init();
 #elif defined(EBYTE_E10_400M20S)
@@ -142,75 +143,75 @@ void Ebyte_BSP_GPIO_Init( void )
 #elif defined(EBYTE_E19_433M20SC)
     Ebyte_BSP_E19xGPIO_Init();
 #endif
-    /* LED  引脚 */
+    /* LED pins */
     GPIO_Init( BSP_GPIO_PORT_LED_1, BSP_GPIO_PIN_LED_1, GPIO_Mode_Out_PP_Low_Slow );
     GPIO_Init( BSP_GPIO_PORT_LED_2, BSP_GPIO_PIN_LED_2, GPIO_Mode_Out_PP_Low_Slow );
-    /* 按键 引脚 */
+    /* button pin */
     GPIO_Init( BSP_GPIO_PORT_BUTTON_1, BSP_GPIO_PIN_BUTTON_1, GPIO_Mode_In_PU_No_IT );
     GPIO_Init( BSP_GPIO_PORT_BUTTON_2, BSP_GPIO_PIN_BUTTON_2, GPIO_Mode_In_PU_No_IT );
 }
 
-/*!
- * @brief 通信串口初始化
- *
- * @note  请注意，不同的MCU可能无需端口映射
- */
+/* !
+* @brief communication serial port initialization
+*
+* @note Please note that different MCUs may not require port mapping
+*/
 void Ebyte_BSP_UART_Init( void )
 {
-    /* 时钟 */
+    /* clock */
     CLK_PeripheralClockConfig( BSP_USER_UART_CLOCK, ENABLE );
     /* GPIO */
     GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_UART_TX, BSP_GPIO_PIN_UART_TX, ENABLE );
     GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_UART_RX, BSP_GPIO_PIN_UART_RX, ENABLE );
-    /* 端口重映射  */
+    /* Port remapping */
     SYSCFG_REMAPPinConfig( REMAP_Pin_USART1TxRxPortA, ENABLE );
-    /* 基础参数配置 E15-EVB02默认波特率9600 8N1 */
-    USART_Init( BSP_USER_UART, BSP_USER_UART_BAUDRATE, USART_WordLength_8b, USART_StopBits_1, BSP_USER_UART_PARITY, ( USART_Mode_TypeDef )( USART_Mode_Rx | USART_Mode_Tx ) );  //允许接收和发送
-    /* 打开接收中断 */;
+    /* Basic parameter configuration E15-EVB02 default baud rate 9600 8N1 */
+    USART_Init( BSP_USER_UART, BSP_USER_UART_BAUDRATE, USART_WordLength_8b, USART_StopBits_1, BSP_USER_UART_PARITY, ( USART_Mode_TypeDef )( USART_Mode_Rx | USART_Mode_Tx ) );  //锟斤拷锟斤拷锟斤拷锟秸和凤拷锟斤拷
+    /* Turn on receive interrupt */ ;
     USART_ITConfig( BSP_USER_UART, USART_IT_RXNE, ENABLE );
-    /* 串口 使能 */
+    /* Serial port enable */
     USART_Cmd( BSP_USER_UART, ENABLE );
 }
 
 /*!
- * @brief E49使用的半双工SPI
+ * @brief E49使锟矫的帮拷双锟斤拷SPI
  */
 void Ebyte_BSP_HalfSPI_Init()
 {
-    /* 合并到了E49 GPIO初始化中 */
+    /* 锟较诧拷锟斤拷锟斤拷E49 GPIO锟斤拷始锟斤拷锟斤拷 */
 }
 
-/*!
- * @brief 无线模块通信SPI接口初始化函数
- */
+/* !
+* @brief Wireless module communication SPI interface initialization function
+*/
 void Ebyte_BSP_SPI_Init( void )
 {
-    /* 时钟 */
+    /* clock */
     CLK_PeripheralClockConfig( CLK_Peripheral_SPI1, ENABLE );
     /* GPIO */
     GPIO_Init( BSP_GPIO_PORT_SPI_NSS,  BSP_GPIO_PIN_SPI_NSS,  GPIO_Mode_Out_PP_High_Fast ); //片选 CS
     GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_SPI_SCK, BSP_GPIO_PIN_SPI_MOSI | BSP_GPIO_PIN_SPI_MISO | BSP_GPIO_PIN_SPI_SCK, ENABLE ); // MOSI MISO SCK
-    /* 参数配置 */
+    /* Parameter configuration */
     SPI_Init( BSP_RF_SPI,
-              SPI_FirstBit_MSB,                 //从高位开始传输
-              SPI_BaudRatePrescaler_2,          //16M/2 SCK速率
-              SPI_Mode_Master,                  //主机模式
-              SPI_CPOL_Low,                     //根据 CPOL=0
-              SPI_CPHA_1Edge,                   //根据 CPHA=0  第一个时钟边沿采样数据
-              SPI_Direction_2Lines_FullDuplex,  //全双工
-              SPI_NSS_Soft,                     //软件控制从机CS片选
-              0x07 );                           //CRC参数
-    /* 使能 */
+              SPI_FirstBit_MSB,                 // Start transmission from high bit
+              SPI_BaudRatePrescaler_2,          // 16M/2 SCK rate
+              SPI_Mode_Master,                  // Master mode
+              SPI_CPOL_Low,                     // According to CPOL=0
+              SPI_CPHA_1Edge,                   // Sampling data according to the first clock edge of CPHA=0
+              SPI_Direction_2Lines_FullDuplex,  // full duplex
+              SPI_NSS_Soft,                     // Software control slave CS chip selection
+              0x07 );                           // CRC parameter
+    /* enable */
     SPI_Cmd( BSP_RF_SPI, ENABLE );
 }
 
-/*!
- * @brief RF模块SPI通信收/发函数
- *
- * @param data 发送数据
- * @return 接收数据
- * @note stm8l SPI库函数中的SPI_SendData()/SPI_ReceiveData() 不能直接使用
- */
+/* !
+* @brief RF module SPI communication receiving/sending function
+*
+* @param data send data
+* @return receive data
+* @note SPI_SendData()/SPI_ReceiveData() in the stm8l SPI library function cannot be used directly
+*/
 uint8_t Ebyte_BSP_SpiTransAndRecv( uint8_t data )
 {
     BSP_RF_SPI->DR = data;
@@ -218,68 +219,68 @@ uint8_t Ebyte_BSP_SpiTransAndRecv( uint8_t data )
     while( ( BSP_RF_SPI->SR & SPI_FLAG_RXNE ) == RESET );
     return BSP_RF_SPI->DR;
 }
-
-/*!
- * @brief 定时器初始化
- *
- * @note  使用了TIM3产生1ms周期性中断
- *        TIM3的主时钟为HSI 16MHz, 128分频即为 16 MHz / 128 = 125 000 Hz
- *        目标定时1ms 计数周期即为 ( 0.001 x 125000 - 1) = 124
+/* !
+* @brief timer initialization
+*
+* @note uses TIM3 to generate 1ms periodic interrupt
+* The main clock of TIM3 is HSI 16MHz, 128 frequency division is 16 MHz / 128 = 125 000 Hz
+* The 1ms counting cycle of target timing is ( 0.001 x 125000 - 1) = 124
  */
 void Ebyte_BSP_TIMER_Init( void )
 {
-    /* 时钟 */
+    /* clock */
     CLK_PeripheralClockConfig( CLK_Peripheral_TIM3, ENABLE );
-    /* 参数 */
+    /* parameter */
     TIM3_TimeBaseInit( TIM3_Prescaler_128, TIM3_CounterMode_Up, 124 );
-    /* 允许中断 */
+    /* enable interrupt */
     TIM3_ClearFlag( TIM3_FLAG_Update );
     TIM3_ITConfig( TIM3_IT_Update, ENABLE );
-    /* 使能 */
+    /* enable */
     TIM3_Cmd( ENABLE );
 }
 
 /*!
- * @brief E15-EVB02 板载资源初始化
+ * @brief E15-EVB02 onboard resource initialization
  *
- * @note  内部时钟HSI  x 16MHz
- *        用户通信串口 x USART1
- *        无线模块通信接口 x SPI1
- *        定时器  x TIM3
- *        按键    x 2
- *        指示灯  x 2
+ * @note internal clock HSI x 16MHz
+ *       User communication serial port x USART1
+ *       Wireless module communication interface x SPI1
+ *       Timer x TIM3
+ *       Button x 2
+ *       LED x 2
+ *       Timer x TIM2
  */
 void Ebyte_BSP_Init( void )
 {
-    /* 时钟     初始化 */
+    /* clock initialization */
     Ebyte_BSP_HSI_Init();
-    /* IO       初始化 */
+    /* IO initialization */
     Ebyte_BSP_GPIO_Init();
-    /* 串口     初始化 */
+    /* Serial port initialization */
     Ebyte_BSP_UART_Init();
-    /* SPI接口  初始化  (E49比较特殊) */
+    /* SPI interface initialization */
 #if defined(EBYTE_E49_400M20S)||defined(EBYTE_E49_900M20S)
     Ebyte_BSP_HalfSPI_Init();
 #else
     Ebyte_BSP_SPI_Init();
 #endif
-    /* 定时器   初始化 */
+    /* Timer initialization */
     Ebyte_BSP_TIMER_Init();
-    /* 按键事件队列 初始化 */
+    /* Key event queue initialization */
     Ebyte_BTN_FIFO_Init( &BSP_BTN_FIFO );
 }
 
 /*!
- * @brief 控制LED 开/关/翻转
+ * @brief control LED on/off/flip
  *
- * @param LEDx  板载两颗发光二极管
+ * @param LEDx Two light-emitting diodes on board
  *              @arg BSP_LED_1 : LED1
  *              @arg BSP_LED_2 : LED2
  *
- * @param ctl   开 / 关
- *              @arg OFF     : 关
- *              @arg ON      : 开
- *              @arg TOGGLE  : 翻转
+ * @param ctl    on/off
+ *              @arg OFF     : off
+ *              @arg ON      : on
+ *              @arg TOGGLE  : flip
  */
 void Ebyte_BSP_LedControl( BSP_LED_t LEDx, BSP_LED_Ctl_t ctl )
 {
@@ -315,9 +316,9 @@ void Ebyte_BSP_LedControl( BSP_LED_t LEDx, BSP_LED_Ctl_t ctl )
 
 
 /*!
- * @brief 基于定时器的毫秒延时函数
+ * @brief Timer-based millisecond delay function
  *
- * @param nTime 单位:毫秒
+ * @param nTime unit: milliseconds
  */
 void Ebyte_BSP_DelayMs( volatile uint32_t nTime )
 {
@@ -326,7 +327,7 @@ void Ebyte_BSP_DelayMs( volatile uint32_t nTime )
 }
 
 /*!
- * @brief 辅助毫秒延时计算 定时器中断调用
+ * @brief Auxiliary millisecond delay calculation timer interrupt call
  */
 void Ebyte_BSP_TimerDecrement( void )
 {
@@ -337,13 +338,13 @@ void Ebyte_BSP_TimerDecrement( void )
 }
 
 /*!
- * @brief 读取按键状态
+ * @brief read button state
  *
- * @param btn 对应的按键编号
- *            @arg BSP_BUTTON_1 :按键1
- *            @arg BSP_BUTTON_2 :按键2
- * @return 0:按键被按下  非0:按键未按下
- * @note  板载按键未按下时 IO处于上拉状态 即为1；按下后IO接地 即为0
+ * @param btn corresponding button number
+ *            @arg BSP_BUTTON_1 :Button 1
+ *            @arg BSP_BUTTON_2 :Button 2
+ * @return 0:the button is pressed, not 0: the button is not pressed
+ * @note When the onboard button is not pressed, the IO is in the pull-up state, which means 1; when the IO is grounded, it is 0
  */
 uint8_t Ebyte_BSP_ReadButton( BSP_BUTTON_t btn )
 {
@@ -363,7 +364,7 @@ uint8_t Ebyte_BSP_ReadButton( BSP_BUTTON_t btn )
 }
 
 /*!
- * @brief 串口发送函数
+ * @brief serial port sending function
  */
 void Ebyte_BSP_UartTransmit( uint8_t* buffer, uint16_t length )
 {

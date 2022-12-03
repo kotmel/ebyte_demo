@@ -1,14 +1,14 @@
 /**
   **********************************************************************************
   * @file      ebyte_core.c
-  * @brief     EBYTEÇý¶¯¿âµÄÉÏ²ãAPI·â×°²ã ³éÏóµ×²ãÂß¼­    
-  * @details   ÏêÇéÇë²Î¼û https://www.ebyte.com/       
+  * @brief     The upper API encapsulation layer of the EBYTE driver library abstracts the underlying logic
+  * @details   See https://www.ebyte.com/ for details
   * @author    JiangHeng     
   * @date      2021-05-13     
   * @version   1.0.0     
   **********************************************************************************
   * @copyright BSD License 
-  *            ³É¶¼ÒÚ°ÛÌØµç×Ó¿Æ¼¼ÓÐÏÞ¹«Ë¾  
+  *            Chengdu Ebyte Electronic Technology Co., Ltd.
   *   ______   ____   __     __  _______   ______ 
   *  |  ____| |  _ \  \ \   / / |__   __| |  ____|
   *  | |__    | |_) |  \ \_/ /     | |    | |__   
@@ -21,7 +21,7 @@
 
 #include "ebyte_core.h"
 
-/* Ö¸Ïò E22x µ×²ãÇý¶¯º¯Êý */
+/* Ö¸ï¿½ï¿½ E22x ï¿½×²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 #if defined(EBYTE_E22_400M22S)||defined(EBYTE_E22_900M22S)
 const Ebyte_RF_t Ebyte_RF =
 {
@@ -36,14 +36,14 @@ const Ebyte_RF_t Ebyte_RF =
   E22x_GetDriverVersion
 };
 
-/* Ö¸Ïò E220x µ×²ãÇý¶¯º¯Êý */
+/* Ö¸ï¿½ï¿½ E220x ï¿½×²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 #elif defined(EBYTE_E220_400M22S)||defined(EBYTE_E220_900M22S)
 const Ebyte_RF_t Ebyte_RF =
 {
   E220x_Init,
   E220x_GoTransmit,
   E220x_GoSleep,
-  E220x_GoReceive,  
+  E220x_GoReceive,
   E220x_TaskForPoll,
   E220x_TaskForIRQ,
   0,
@@ -51,8 +51,8 @@ const Ebyte_RF_t Ebyte_RF =
   E220x_GetDriverVersion
 };
 
-/* Ö¸Ïò E07x µ×²ãÇý¶¯º¯Êý */
-#elif defined(EBYTE_E07_400M10S)||defined(EBYTE_E07_900M10S)  
+/* point to E07x underlying driver function */
+#elif defined(EBYTE_E07_400M10S)||defined(EBYTE_E07_900M10S)
 const Ebyte_RF_t Ebyte_RF =
 {
   E07x_Init,
@@ -66,7 +66,7 @@ const Ebyte_RF_t Ebyte_RF =
   E07x_GetDriverVersion
 };
 
-/* Ö¸Ïò E10x µ×²ãÇý¶¯º¯Êý */
+/* Ö¸ï¿½ï¿½ E10x ï¿½×²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 #elif defined(EBYTE_E10_400M20S)
 const Ebyte_RF_t Ebyte_RF =
 {
@@ -81,7 +81,7 @@ const Ebyte_RF_t Ebyte_RF =
   E10x_GetDriverVersion
 };
 
-/* Ö¸Ïò E30x µ×²ãÇý¶¯º¯Êý */
+/* Ö¸ï¿½ï¿½ E30x ï¿½×²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 #elif defined(EBYTE_E30_900M20S)
 const Ebyte_RF_t Ebyte_RF =
 {
@@ -96,7 +96,7 @@ const Ebyte_RF_t Ebyte_RF =
   E30x_GetDriverVersion
 };
 
-/* Ö¸Ïò E31x µ×²ãÇý¶¯º¯Êý */
+/* Ö¸ï¿½ï¿½ E31x ï¿½×²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 #elif defined(EBYTE_E31_400M17S)||defined(EBYTE_E31_900M17S)
 const Ebyte_RF_t Ebyte_RF =
 {
@@ -111,7 +111,7 @@ const Ebyte_RF_t Ebyte_RF =
   E31x_GetDriverVersion
 };
 
-/* Ö¸Ïò E49x µ×²ãÇý¶¯º¯Êý */
+/* Ö¸ï¿½ï¿½ E49x ï¿½×²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 #elif defined(EBYTE_E49_400M20S)||defined(EBYTE_E49_900M20S)
 const Ebyte_RF_t Ebyte_RF =
 {
@@ -139,7 +139,7 @@ const Ebyte_RF_t Ebyte_RF =
   E19x_GetDriverVersion
 };
 #else
-/* ebyte_conf.h ºêÅäÖÃÑ¡ÔñµÄ²úÆ·ÐÍºÅ²»ÕýÈ· */
+/* ebyte_conf.h ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½Ä²ï¿½Æ·ï¿½ÍºÅ²ï¿½ï¿½ï¿½È· */
 #error No product selected !
 #endif
 
