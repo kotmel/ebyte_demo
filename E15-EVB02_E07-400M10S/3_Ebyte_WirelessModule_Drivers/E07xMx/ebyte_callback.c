@@ -1,28 +1,28 @@
 /**
-  **********************************************************************************
-  * @file      ebyte_callback.h
-  * @brief     EBYTE驱动库的收发完成回调函数 由客户实现自己的逻辑代码 
-  * @details   详情请参见 https://www.ebyte.com/       
-  * @author    JiangHeng     
-  * @date      2021-05-26     
-  * @version   1.0.0     
-  **********************************************************************************
-  * @copyright BSD License 
-  *            成都亿佰特电子科技有限公司  
-  *   ______   ____   __     __  _______   ______ 
-  *  |  ____| |  _ \  \ \   / / |__   __| |  ____|
-  *  | |__    | |_) |  \ \_/ /     | |    | |__   
-  *  |  __|   |  _ <    \   /      | |    |  __|  
-  *  | |____  | |_) |    | |       | |    | |____ 
-  *  |______| |____/     |_|       |_|    |______| 
-  *
-  **********************************************************************************
-  */
-#include "ebyte_callback.h"
+***************************************************** *********************************
+* @file ebyte_callback.h
+* @brief EBYTE driver library's send and receive completion callback function is implemented by the customer's own logic code
+* @details See https://www.ebyte.com/ for details
+* @author JiangHeng
+* @date 2021-05-26
+* @version 1.0.0
+***************************************************** *********************************
+* @copyright BSD License
+*            Chengdu Ebyte Electronic Technology Co., Ltd.
+* ______ ____ __ __ _______ ______
+* | ____| | _ \ \ \ / / |__ __| | ____|
+* | |__ | |_) | \ \_/ / | | | |__
+* | __| | _ < \ / | | | __|
+* | |____ | |_) | | | | | | |____
+* |______| |____/ |_| |_| |______|
+*
+***************************************************** *********************************
+ */
+#include  "ebyte_callback.h"
 
-/*= !!!配置目标硬件平台头文件 =======================================*/
-#include "board.h"  //E15-EVB02 评估板
-/*= !!!配置目标硬件变量       =======================================*/
+/*= !!! Configure target hardware platform header file ========================================== = */
+#include  "board.h"  // E15-EVB02 evaluation board
+/*= !!! Configure target hardware variables ============================================= */
 extern void UserTransmitDoneCallback(void);
 extern void UserReceiveDoneCallback( uint8_t *buffer, uint8_t length);
 /*==================================================================*/
@@ -30,56 +30,56 @@ extern void UserReceiveDoneCallback( uint8_t *buffer, uint8_t length);
 
 
 /* !
- * @brief 发送完成回调接口 由客户实现自己的发送完成逻辑
- * 
- * @param state 上层回调提供的状态码 客户请根据示例注释找到对应区域
- *  
+ * @brief The send completion callback interface is implemented by the client to implement its own send completion logic
+ *
+ * @param state The status code provided by the upper layer callback Customers please find the corresponding area according to the sample comments
+ *
  */
 void Ebyte_Port_TransmitCallback( uint16e_t state )
-{       
-    /* 发送: 正常完成 */
+{
+    /* Send: completed normally */
     if( state &= 0x0001 )
     {
-        //To-do 实现自己的逻辑 
-        UserTransmitDoneCallback();
+    //To-do implements its own logic
+    UserTransmitDoneCallback ();
     }
-    /* 发送: 异常超时 */
+    /* Send: exception timeout */
     else if ( state &= 0x0200 )
     {
-        //To-do 实现自己的逻辑 
+    //To-do implements its own logic
     }
-    /* 发送: 未知错误 */
+    /* Send: unknown error */
     else
     {
-        /* 发送状态标识不正确，请检查软硬件  
-           常见问题 1:SPI通信不正确 2:模块供电不足 */
-        while(1);
+        /* The sending status flag is incorrect, please check the software and hardware
+        FAQ 1: Incorrect SPI communication 2: Insufficient power supply of the module */
+        while (1);
     }
 }
 
 /* !
- * @brief 接收完成回调接口 由客户实现自己的发送完成逻辑
- * 
- * @param state 上层回调提供的状态码 客户请根据示例注释找到对应区域
+ * @brief The receiving completion callback interface is implemented by the client to implement its own sending completion logic
+ *
+ * @param state The status code provided by the upper layer callback Customers please find the corresponding area according to the sample comments
  */
 void Ebyte_Port_ReceiveCallback(  uint16e_t state, uint8e_t *buffer, uint8e_t length )
 {
-  
-    /* 接收: 正常 */
-    if( state &= 0x0002 )
+
+    /* Receive: normal */
+    if ( state &= 0x0002 )
     {
         UserReceiveDoneCallback( buffer , length);
     }
-    /* 接收: 异常超时 */
-    else if ( state &= 0x0200 )
+    /* Receive: exception timeout */
+    else  if ( state &= 0x0200 )
     {
-        //To-do 实现自己的逻辑 
+        // To-do implements its own logic
     }
-    /* 接收: 未知错误 */
+    /* Receive: unknown error */
     else
     {
-        /* 发送状态标识不正确，请检查软硬件  
-           常见问题 1:SPI通信不正确 2:模块供电不足 */
+        /* The sending status flag is incorrect, please check the software and hardware
+        FAQ 1: Incorrect SPI communication 2: Insufficient power supply of the module */
         while(1);
     }
 }
