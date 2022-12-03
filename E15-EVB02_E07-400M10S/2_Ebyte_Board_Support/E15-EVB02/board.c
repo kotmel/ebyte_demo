@@ -175,7 +175,7 @@ void Ebyte_BSP_TIMER2_Init( void )
     CLK_PeripheralClockConfig( CLK_Peripheral_TIM2, ENABLE );
     /* ���� */
     //TIM2_TimeBaseInit( TIM2_Prescaler_128, TIM2_CounterMode_Up, 124 );
-    
+
      /* Set the Autoreload value */
     TIM2->ARRH = (uint8_t)(255) ;
     TIM2->ARRL = (uint8_t)(255);
@@ -197,7 +197,7 @@ void Ebyte_BSP_TIMER2_Init( void )
 
     //TIM2_ITConfig( TIM2_IT_Update, ENABLE );
     TIM2->IER |= (uint8_t)TIM2_IT_Update;
-    
+
      /* ʹ�� */
     //TIM2_Cmd( ENABLE );
     TIM2->CR1 |= TIM_CR1_CEN;

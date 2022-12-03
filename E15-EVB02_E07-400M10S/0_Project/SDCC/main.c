@@ -106,7 +106,7 @@ int main( void )
     /* MCU enable global interrupt */
     Ebyte_BSP_GlobalIntEnable();
     
-    
+
     DEBUG( "===== This is an example of wireless transmission ==== \r\n" );
     DEBUG( "Please push button1 or button2 \r\n" );
     DEBUG( "Waiting ........ \r\n" );

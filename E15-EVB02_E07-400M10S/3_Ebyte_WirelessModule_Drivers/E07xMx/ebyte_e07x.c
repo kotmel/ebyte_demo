@@ -811,7 +811,7 @@ uint8e_t E07x_Init( void )
 }
 
 /*!
- * @brief kkk - IRQ handling implementation - use wit caution !
+ * @brief kkk - IRQ handling implementation - use with caution !
  */
 void E07x_TaskForIRQ(void)
 {
