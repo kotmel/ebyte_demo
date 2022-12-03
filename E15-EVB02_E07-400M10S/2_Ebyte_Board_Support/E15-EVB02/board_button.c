@@ -1,13 +1,13 @@
 /**
   **********************************************************************************
   * @file      board_button.c
-  * @brief     通用 按键队列驱动库         
+  * @brief     通General key queue driver library
   * @author    JiangHeng     
   * @date      2021-05-06     
   * @version   1.0.0     
   **********************************************************************************
   * @copyright BSD License 
-  *            成都亿佰特电子科技有限公司  
+  *            Chengdu Ebyte Electronic Technology Co., Ltd.
   *   ______   ____   __     __  _______   ______ 
   *  |  ____| |  _ \  \ \   / / |__   __| |  ____|
   *  | |__    | |_) |  \ \_/ /     | |    | |__   
@@ -21,9 +21,9 @@
 #include "board.h"
 
 /* !
- * @brief 按键队列初始化
+ * @brief key queue initialization
  * 
- * @param fifo 指向按键事件队列结构体的指针
+ * @param fifo pointer to the key event queue structure
  */
 void Ebyte_BTN_FIFO_Init(BSP_BTN_FIFO_t *fifo)
 {
@@ -33,32 +33,32 @@ void Ebyte_BTN_FIFO_Init(BSP_BTN_FIFO_t *fifo)
 }
 
 /* !
- * @brief 按键队列入队 
+ * @brief key queue enqueue
  * 
- * @param  fifo  指向按键事件队列结构体的指针
- * @param  event 按键的事件  主要为各按键的短按/长按
- * @return 0:正常  1:队列溢出
- * @note   入队位置可循环但不会覆盖已入队数据，队满时会导致数据丢失！
+ * @param  fifo pointer to the key event queue structure
+ * @param  event The event of the key is mainly the short press/long press of each key
+ * @return 0: Normal 1: Queue overflow
+ * @note   The enqueue position can be cycled but will not overwrite the enqueue data. When the queue is full, the data will be lost!
  */
 uint8_t Ebyte_BTN_FIFO_Push(BSP_BTN_FIFO_t *fifo, BSP_BTN_EVENT_t event)
 {
-    /* 入队数据包长度预先自增 */
+    /* The length of the queued data packet is pre-incremented */
     fifo->fifoLen++;
 
-    /* 如果入队长度大于了设定长度 */
+    /* If the queue length is greater than the set length */
     if(fifo->fifoLen > BSP_BTN_FIFO_LENGTH)
     {
-        fifo->fifoLen = BSP_BTN_FIFO_LENGTH;//入队长度不再增加
+        fifo->fifoLen = BSP_BTN_FIFO_LENGTH;// Entry length no longer increases
         return 1; 
     }
     
-    /* 正常入队 */
+    /* normal enqueue */
     fifo->buff[fifo->fifoWrite] = event;
     
-    /* 如果入队位置已经到了队尾 */
+    /* If the entry position has reached the end of the queue */
     if(++fifo->fifoWrite >= BSP_BTN_FIFO_LENGTH)
     {
-        fifo->fifoWrite = 0; //那么下一个入队数据将回到队首开始入队
+        fifo->fifoWrite = 0; // then the next enqueue data will return to the head of the queue and start enqueuing
     }
 
     return 0;
@@ -66,30 +66,30 @@ uint8_t Ebyte_BTN_FIFO_Push(BSP_BTN_FIFO_t *fifo, BSP_BTN_EVENT_t event)
 }
 
 /* !
- * @brief 按键队列出队
+ * @brief key queue dequeue
  * 
- * @param fifo  指向按键事件队列结构体的指针
- * @param event 按键的事件  主要为各按键的短按/长按
- * @return 0:正常  1:队列为空
+ * @param fifo pointer to the key event queue structure
+ * @param event The event of the key is mainly the short press/long press of each key
+ * @return 0: Normal 1: The queue is empty
  */
 uint8_t Ebyte_BTN_FIFO_Pop(BSP_BTN_FIFO_t *fifo, BSP_BTN_EVENT_t *event)
 {
-    /* 如果入队长度为0 即空队列 */
+    /* If the queue length is 0, the queue is empty */
     if(fifo->fifoLen == 0)
     {
         return 1;
     }
     
-    /* 入队数据长度自减 */
+/* The length of the data in the queue is reduced */
     fifo->fifoLen--;
 
-    /* 正常出队 */
+    /* Dequeue normally */
     *event =  (BSP_BTN_EVENT_t )(fifo->buff[fifo->fifoRead]);
 
-    /* 如果出队位置已经到了队尾 */
+    /* If the dequeue position has reached the end of the queue */
     if(++fifo->fifoRead >= BSP_BTN_FIFO_LENGTH)
     {
-        fifo->fifoRead = 0;//那么下一次将从队首开始出队
+        fifo->fifoRead = 0;// then the next time the queue will start from the head of the queue
     }
 
     return 0;
