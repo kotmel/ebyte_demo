@@ -177,9 +177,9 @@ INTERRUPT_HANDLER(EXTI0_IRQHandler, 8)
      it is recommended to set a breakpoint on the following instruction.
   */
   if (GPIO_ReadInputDataBit( BSP_GPIO_PORT_E07_GDO0 , BSP_GPIO_PIN_E07_GDO0)) {
-    DEBUG_Port->ODR |= DEBUG_Pin0;
+    GPIO_WriteBit(DEBUG_Port, DEBUG_Pin0, SET);
   } else {
-    DEBUG_Port->ODR &= (uint8_t)(~DEBUG_Pin0);
+    GPIO_WriteBit(DEBUG_Port, DEBUG_Pin0, RESET);
   }
   GPIO_ToggleBits(DEBUG_Port, DEBUG_Pin1);
   Ebyte_RF.TaskForIRQ();
@@ -327,7 +327,7 @@ INTERRUPT_HANDLER(TIM2_UPD_OVF_TRG_BRK_USART2_TX_IRQHandler, 19)
      it is recommended to set a breakpoint on the following instruction.
   */
   GPIO_ToggleBits( BSP_GPIO_PORT_LED_1, BSP_GPIO_PIN_LED_1 );
-   TIM2->SR1 = (uint8_t)(~(uint8_t)TIM2_IT_Update);
+  TIM2_ClearITPendingBit(TIM2_IT_Update);
    
 }
 
@@ -354,17 +354,16 @@ INTERRUPT_HANDLER(@svlreg TIM3_UPD_OVF_TRG_BRK_USART3_TX_IRQHandler, 21)
 INTERRUPT_HANDLER(TIM3_UPD_OVF_TRG_BRK_USART3_TX_IRQHandler, 21)
 #endif
 {
-  /* ������� */
+   /* key detection */
   IT_Timer_ButtonCheck();
   
-  /* ����״̬��� */
+   /* Serial port status detection */
   IT_Timer_UartCheck();
   
-  /* ��ʱ����ʱ�������� */
+  /* timer delay auxiliary calculation */
   Ebyte_BSP_TimerDecrement();
   
-  //TIM3_ClearITPendingBit(TIM3_IT_Update);
-  TIM3->SR1 = (uint8_t)(~(uint8_t)TIM3_IT_Update);
+  TIM3_ClearITPendingBit(TIM3_IT_Update);
 }
 
 /**
@@ -449,20 +448,20 @@ INTERRUPT_HANDLER(USART1_RX_TIM5_CC_IRQHandler, 28)
 #endif
 {
   uint8_t temp;
-  /* ��֡�ж� ״̬�� ������ʱ����ʱ 10ms��δ�յ���һ�ֽ����֡  */
+   /* The first frame judges the state machine to trigger the timer to count for 10ms, then the frame will be broken if the next byte is not received */
   if( !Uart_isInRecvState )
   {
       Uart_isInRecvState =  1;
   }
   Uart_isContinuousRecv = 1;  
 
-  /* ���մ������� 1 Byte */
+  /* Receive serial port data 1 Byte */
   temp = USART_ReceiveData8(USART1) ;
   
-  /* д�뻺����� 1 Byte */
+  /* Write to buffer queue 1 Byte */
   Ebyte_FIFO_Write( &hfifo, &temp, 1 );
 
-  /* ����жϱ�ʶ */
+  /* Clear the interrupt flag */
   USART_ClearITPendingBit( USART1, USART_IT_RXNE );  
 }
 
@@ -480,77 +479,78 @@ INTERRUPT_HANDLER(I2C1_SPI2_IRQHandler, 29)
 }
 
 /* !
- * @brief ��ʱ���ж� ״̬�� �����������
+* @brief timer interrupt state machine auxiliary button detection
  */
 void IT_Timer_ButtonCheck(void)
 {
-    /* �������1������ */
+     /* If button 1 is pressed */
   if( !Ebyte_BSP_ReadButton( BSP_BUTTON_1 ) )
   {
     Button1_TickCounter++;
   }
   else
   {
-    if( Button1_TickCounter > 1000 )  // 1�� ����
+    if( Button1_TickCounter > 1000 ) // 1 second long press
     {
        Ebyte_BTN_FIFO_Push( &BSP_BTN_FIFO, BTN_1_LONG);
     }
-    else if( Button1_TickCounter > 50 ) //50���� �̰�
+    else if( Button1_TickCounter > 50 ) // 50ms short press
     {
        Ebyte_BTN_FIFO_Push( &BSP_BTN_FIFO, BTN_1_SHORT);
     }
-    else {} //50��������  ��Ϊ�Ƕ��� ������
+    else {} // 50 milliseconds or less is considered to be jittering and does not operate
     
     Button1_TickCounter=0;   
   }
   
-  /* �������2������ */
+  /* If button 2 is pressed */
   if( !Ebyte_BSP_ReadButton( BSP_BUTTON_2 ) )
   {
     Button2_TickCounter++;
   }
   else
   {
-    if( Button2_TickCounter > 1000 )  // 1�� ����
+    if( Button2_TickCounter > 1000 )  // 1 second long press
     {
        Ebyte_BTN_FIFO_Push( &BSP_BTN_FIFO, BTN_2_LONG);
     }
-    else if( Button2_TickCounter > 50 ) //50���� �̰�
+    else if( Button2_TickCounter > 50 ) // 50ms short press
     {
        Ebyte_BTN_FIFO_Push( &BSP_BTN_FIFO, BTN_2_SHORT);
     }
-    else {} //50��������  ��Ϊ�Ƕ��� ������
+    else {} // 50 milliseconds or less is considered to be jittering and does not operate
     
     Button2_TickCounter=0;   
   }    
 }
 
 /* !
- * @brief ��ʱ���ж� ״̬�� ����ʱ���֡
+* @brief Timer interrupt state machine auxiliary time frame
  */
 void IT_Timer_UartCheck(void)
 {
-  /* ���ڽ��յ���һ�ֽ���Ϳ�ʼ��ʱ */
+   /* The serial port starts counting when the first byte is received */
   if( Uart_isInRecvState )
   {
      Uart_TickCounter++;
   
-     /* ����10msû�н��յ��ڶ��ֽ� ����Ϊ��֡ */
+     /* If the second byte is not received for more than 10ms, the frame is considered broken */
      if( Uart_TickCounter > 10 )
      {
-        /* ֪ͨ���������յ�һ֡ */
+        /* Notify the main function to receive a frame */
         Uart_isRecvReady ++;
-        /* ֹͣ��ʱ */
+        /* stop timing */
         Uart_isInRecvState = 0;
         Uart_TickCounter = 0;
      }
      
-     /* ��λFIFO��ʱ��� */
+      /* Reset FIFO timeout detection */
      FIFO_TickCounter = 0;
   }
   else
   {
-      /* ����ڴ���û�н�������ʱ ������û�з������֡ 500ms��ʱ������ ����FIFO�е����� */
+        /* If there are unsent frames when the serial port does not receive data, the timeout detection is established
+        after 500ms to clear the data in the FIFO */
       if(  (!Uart_isInRecvState)  &&  Uart_isRecvReady )
       {
           FIFO_TickCounter++;
@@ -563,7 +563,7 @@ void IT_Timer_UartCheck(void)
       }
   }
   
-  /* ����ÿ���յ�1���ֽھ����¼��� */
+  /* The serial port recounts every time it receives 1 byte */
   if( Uart_isInRecvState && Uart_isContinuousRecv )
   {
     Uart_TickCounter = 0;

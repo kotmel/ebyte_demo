@@ -35,11 +35,9 @@ volatile uint32_t Ebyte_TimerDelayCounter = 0;
 void Ebyte_BSP_HSI_Init( void )
 {
 /* Internal 16M HSI clock */
-    //CLK_SYSCLKSourceConfig( CLK_SYSCLKSource_HSI );
-     CLK->SWR = (uint8_t)CLK_SYSCLKSource_HSI;
+    CLK_SYSCLKSourceConfig( CLK_SYSCLKSource_HSI );
     /* 1 frequency division 16M/1 */
-    //CLK_SYSCLKDivConfig( CLK_SYSCLKDiv_1 );
-    CLK->CKDIVR = (uint8_t)(CLK_SYSCLKDiv_1);
+    CLK_SYSCLKDivConfig( CLK_SYSCLKDiv_1 );
 }
 
 /* !
@@ -85,8 +83,8 @@ void Ebyte_BSP_UART_Init( void )
     /* Port remapping */
     SYSCFG_REMAPPinConfig( REMAP_Pin_USART1TxRxPortA, ENABLE );
     /* Basic parameter configuration E15-EVB02 default baud rate 9600 8N1 */
-    USART_Init( BSP_USER_UART, BSP_USER_UART_BAUDRATE, USART_WordLength_8b, USART_StopBits_1, BSP_USER_UART_PARITY, ( USART_Mode_TypeDef )( USART_Mode_Rx | USART_Mode_Tx ) );  //�������պͷ���
-    /* Turn on receive interrupt */ ;
+    USART_Init( BSP_USER_UART, BSP_USER_UART_BAUDRATE, USART_WordLength_8b, USART_StopBits_1, BSP_USER_UART_PARITY, ( USART_Mode_TypeDef )( USART_Mode_Rx | USART_Mode_Tx ) );  // Allow receiving and sending
+    /* Turn on receive interrupt */
     USART_ITConfig( BSP_USER_UART, USART_IT_RXNE, ENABLE );
     /* Serial port enable */
     USART_Cmd( BSP_USER_UART, ENABLE );
@@ -100,7 +98,7 @@ void Ebyte_BSP_SPI_Init( void )
     /* clock */
     CLK_PeripheralClockConfig( CLK_Peripheral_SPI1, ENABLE );
     /* GPIO */
-    GPIO_Init( BSP_GPIO_PORT_SPI_NSS,  BSP_GPIO_PIN_SPI_NSS,  GPIO_Mode_Out_PP_High_Fast ); //Ƭѡ CS
+    GPIO_Init( BSP_GPIO_PORT_SPI_NSS,  BSP_GPIO_PIN_SPI_NSS,  GPIO_Mode_Out_PP_High_Fast ); // chip select CS
     GPIO_ExternalPullUpConfig( BSP_GPIO_PORT_SPI_SCK, BSP_GPIO_PIN_SPI_MOSI | BSP_GPIO_PIN_SPI_MISO | BSP_GPIO_PIN_SPI_SCK, ENABLE ); // MOSI MISO SCK
     /* Parameter configuration */
     SPI_Init( BSP_RF_SPI,
@@ -121,14 +119,25 @@ void Ebyte_BSP_SPI_Init( void )
 *
 * @param data send data
 * @return receive data
-* @note SPI_SendData()/SPI_ReceiveData() in the stm8l SPI library function cannot be used directly
+* @note SPI_SendData()/SPI_ReceiveData() in the stm8l must be guarded by status check
 */
 uint8_t Ebyte_BSP_SpiTransAndRecv( uint8_t data )
 {
+#if 0
+    SPI_SendData(BSP_RF_SPI, data);
+    while( SPI_GetFlagStatus(BSP_RF_SPI, SPI_FLAG_TXE) == RESET )
+     ;
+
+    while( SPI_GetFlagStatus(BSP_RF_SPI, SPI_FLAG_RXNE) == RESET )
+     ;
+
+    return SPI_ReceiveData(BSP_RF_SPI);
+#else
     BSP_RF_SPI->DR = data;
     while( ( BSP_RF_SPI->SR & SPI_FLAG_TXE ) == RESET );
     while( ( BSP_RF_SPI->SR & SPI_FLAG_RXNE ) == RESET );
     return BSP_RF_SPI->DR;
+    #endif
 }
 /* !
 * @brief timer initialization
@@ -142,65 +151,27 @@ void Ebyte_BSP_TIMER_Init( void )
     /* clock */
     CLK_PeripheralClockConfig( CLK_Peripheral_TIM3, ENABLE );
     /* parameter */
-    //TIM3_TimeBaseInit( TIM3_Prescaler_128, TIM3_CounterMode_Up, 124 );
-    /* Set the Autoreload value */
-    TIM3->ARRH = (uint8_t)(124 >> 8) ;
-    TIM3->ARRL = (uint8_t)(124);
-
-    /* Set the Prescaler value */
-    TIM3->PSCR = (uint8_t)(TIM3_Prescaler_128);
-
-    /* Select the Counter Mode */
-    TIM3->CR1 &= (uint8_t)((uint8_t)(~TIM_CR1_CMS)) & ((uint8_t)(~TIM_CR1_DIR));
-    TIM3->CR1 |= (uint8_t)(TIM3_CounterMode_Up);
-
-    /* Generate an update event to reload the Prescaler value immediately */
-    TIM3->EGR = TIM3_EventSource_Update;
+    TIM3_TimeBaseInit( TIM3_Prescaler_128, TIM3_CounterMode_Up, 124 );
     /* enable interrupt */
-    //TIM3_ClearFlag( TIM3_FLAG_Update );
-    TIM3->SR1 = (uint8_t)(~(uint8_t)(TIM3_FLAG_Update));
-    TIM3->SR2 = (uint8_t)(~(uint8_t)((uint16_t)TIM3_FLAG_Update >> 8));
-    //TIM3_ITConfig( TIM3_IT_Update, ENABLE );
-    TIM3->IER |= (uint8_t)TIM3_IT_Update;
+    TIM3_ClearFlag( TIM3_FLAG_Update );
+    TIM3_ITConfig( TIM3_IT_Update, ENABLE );
     /* enable */
-    //TIM3_Cmd( ENABLE );
-    TIM3->CR1 |= TIM_CR1_CEN;
+    TIM3_Cmd( ENABLE );
 }
 
 // 16 MHz / 128 = 125 000 Hz
 // 125000 / 65535 = 1.907
 void Ebyte_BSP_TIMER2_Init( void )
 {
-    /* ʱ�� */
+    /* clock */
     CLK_PeripheralClockConfig( CLK_Peripheral_TIM2, ENABLE );
-    /* ���� */
-    //TIM2_TimeBaseInit( TIM2_Prescaler_128, TIM2_CounterMode_Up, 124 );
-
-     /* Set the Autoreload value */
-    TIM2->ARRH = (uint8_t)(255) ;
-    TIM2->ARRL = (uint8_t)(255);
-
-    /* Set the Prescaler value */
-    TIM2->PSCR = (uint8_t)(TIM2_Prescaler_128);
-
-    /* Select the Counter Mode */
-    TIM2->CR1 &= (uint8_t)((uint8_t)(~TIM_CR1_CMS)) & ((uint8_t)(~TIM_CR1_DIR));
-    TIM2->CR1 |= (uint8_t)(TIM2_CounterMode_Up);
-
-    /* Generate an update event to reload the Prescaler value immediately */
-    TIM2->EGR = TIM2_EventSource_Update;
-
-    /* �����ж� */
-    //TIM2_ClearFlag( TIM2_FLAG_Update );
-    TIM2->SR1 = (uint8_t)(~(uint8_t)(TIM2_FLAG_Update));
-    TIM2->SR2 = (uint8_t)(~(uint8_t)((uint16_t)TIM2_FLAG_Update >> 8));
-
-    //TIM2_ITConfig( TIM2_IT_Update, ENABLE );
-    TIM2->IER |= (uint8_t)TIM2_IT_Update;
-
-     /* ʹ�� */
-    //TIM2_Cmd( ENABLE );
-    TIM2->CR1 |= TIM_CR1_CEN;
+    /* parameter */
+    TIM2_TimeBaseInit( TIM2_Prescaler_128, TIM2_CounterMode_Up, 65535 );
+    /* enable interrupt */
+    TIM2_ClearFlag( TIM2_FLAG_Update );
+    TIM2_ITConfig( TIM2_IT_Update, ENABLE );
+     /* enable */
+    TIM2_Cmd( ENABLE );
 }
 
 /*!
