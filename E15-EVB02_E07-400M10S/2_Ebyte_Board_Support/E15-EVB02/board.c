@@ -167,9 +167,12 @@ void Ebyte_BSP_TIMER2_Init( void )
     CLK_PeripheralClockConfig( CLK_Peripheral_TIM2, ENABLE );
     /* parameter */
     TIM2_TimeBaseInit( TIM2_Prescaler_128, TIM2_CounterMode_Up, 65535 );
+    TIM2_OC1Init(TIM2_OCMode_PWM1, TIM2_OutputState_Disable, 32768, TIM2_OCPolarity_High, TIM2_OCIdleState_Reset);
     /* enable interrupt */
     TIM2_ClearFlag( TIM2_FLAG_Update );
     TIM2_ITConfig( TIM2_IT_Update, ENABLE );
+    TIM2_ClearFlag( TIM2_FLAG_CC1 );
+    TIM2_ITConfig( TIM2_FLAG_CC1, ENABLE );
      /* enable */
     TIM2_Cmd( ENABLE );
 }

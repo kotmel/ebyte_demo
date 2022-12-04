@@ -328,10 +328,10 @@ static void E07x_SetStby(void)
  */
 static void E07x_SetSleep(void)
 {
-    /* ָ��:0x39 ��������ģʽ */
+    /* Command: 0x39 enter sleep mode */
     E07x_SendCommand(0x39);
     
-    /* Command: 0x39 enter sleep mode */
+    /* Status record */
     E07x_Status = GO_SLEEP;
 }
 
@@ -815,20 +815,12 @@ uint8e_t E07x_Init( void )
  */
 void E07x_TaskForIRQ(void)
 {
-    //received = 1;
-    //irq_counter++;
 
-    uint8e_t recvSize;
-    recvSize = 0;
-    E07x_GetFIFO(&recvSize , 1);
-
-    if( recvSize != 0 )
-    {
-        E07x_GetFIFO( E07x_RxBuffer, recvSize );
-        Ebyte_Port_ReceiveCallback( 0x0002 , E07x_RxBuffer , recvSize );
-    } else {
-        E07x_GoReceive();
-    }
+    received = 1;
+    irq_counter++;
+#if HANDLE_RECEIVE_IN_IRQ
+    E07x_TaskForPoll();
+#endif
 }
 
 /* !
@@ -891,23 +883,24 @@ uint8e_t E07x_GoTransmit( uint8e_t *data, uint8e_t size )
  * @brief start listening data
  *
  * @return 0
- */uint8e_t E07x_GoReceive( void )
+ */
+ uint8e_t E07x_GoReceive( void )
 {
   
     /* Mode switching: standby */
     E07x_SetStby();
     
-    /* ����������ݶ��� */
+    /* Clear the receive data queue */
     E07x_ClearFIFO( FIFO_READ );  
   
-    /* Clear the receive data queue */
+    /* Set pin GPIO0 to map to interrupt */
 //    E07x_SetGPIO(0 ,IRQ_RX_CRC_OK );
      E07x_SetGPIO(0 ,IRQ_RX_SYNC_RECV );
   
     /* Send command: 0x34 module enters receiving mode */
     E07x_SendCommand( 0x34 );  
     
-    /* ״̬��¼ *//* Status record */
+    /* Status record */
     E07x_Status = GO_WAIT_RECEIVE;
     // kkk enable receive IRQ
     BSP_GPIO_PORT_E07_GDO0->CR2 |= (uint8_t)(BSP_GPIO_PIN_E07_GDO0);
@@ -992,7 +985,7 @@ uint8e_t E07x_TaskForPoll(void)
             E07x_GetFIFO( E07x_RxBuffer, recvSize );
             // callback user function
             Ebyte_Port_ReceiveCallback( 0x0002 , E07x_RxBuffer , recvSize );
-            mprintf("irq %d\n", irq_counter)          ;
+            mprintf("irq %d\n", irq_counter);
             irq_counter = 0;
         }
         else
