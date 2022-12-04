@@ -1,23 +1,23 @@
-/* *
-***************************************************** *********************************
-* @file ebyte_callback.h
-* @brief EBYTE driver library's send and receive completion callback function is implemented by the customer's own logic code
-* @details See https://www.ebyte.com/ for details
-* @author JiangHeng
-* @date 2021-05-26
-* @version 1.0.0
-***************************************************** *********************************
-* @copyright BSD License
-*            Chengdu Ebyte Electronic Technology Co., Ltd.
-* ______ ____ __ __ _______ ______
-* | ____| | _ \ \ \ / / |__ __| | ____|
-* | |__ | |_) | \ \_/ / | | | |__
-* | __| | _ < \ / | | | __|
-* | |____ | |_) | | | | | | |____
-* |______| |____/ |_| |_| |______|
-*
-***************************************************** *********************************
- */
+/**
+  **********************************************************************************
+  * @file      ebyte_callback.h
+  * @brief     EBYTE driver library's send and receive completion callback function is implemented by the customer's own logic code
+  * @details   See https://www.ebyte.com/ for details
+  * @author    JiangHeng
+  * @date      2021-05-26
+  * @version   1.0.0
+  **********************************************************************************
+  * @copyright BSD License
+  *            Chengdu Ebyte Electronic Technology Co., Ltd.
+  *   ______   ____   __     __  _______   ______
+  *  |  ____| |  _ \  \ \   / / |__   __| |  ____|
+  *  | |__    | |_) |  \ \_/ /     | |    | |__
+  *  |  __|   |  _ <    \   /      | |    |  __|
+  *  | |____  | |_) |    | |       | |    | |____
+  *  |______| |____/     |_|       |_|    |______|
+  *
+  **************************************************************************************
+  */
 #include  "ebyte_callback.h"
 
 /*= !!! Configure target hardware platform header file ========================================== = */
@@ -40,8 +40,8 @@ void Ebyte_Port_TransmitCallback( uint16e_t state )
     /* Send: completed normally */
     if( state &= 0x0001 )
     {
-    //To-do implements its own logic
-    UserTransmitDoneCallback ();
+        //To-do implements its own logic
+        UserTransmitDoneCallback ();
     }
     /* Send: exception timeout */
     else if ( state &= 0x0200 )

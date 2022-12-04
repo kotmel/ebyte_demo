@@ -1045,3 +1045,90 @@ void TIM2_ClearITPendingBit(TIM2_IT_TypeDef TIM2_IT)
   /* Clear the IT pending Bit */
   TIM2->SR1 = (uint8_t)(~(uint8_t)TIM2_IT);
 }
+
+
+/**
+  * @brief  Initializes the TIM2 Channel1 according to the specified parameters.
+  * @param  TIM2_OCMode: Output Compare Mode
+  *          This parameter can be one of the following values:
+  *            @arg TIM2_OCMode_Timing: Timing (Frozen) Mode
+  *            @arg TIM2_OCMode_Active: Active Mode
+  *            @arg TIM2_OCMode_Inactive: Inactive Mode
+  *            @arg TIM2_OCMode_Toggle: Toggle Mode
+  *            @arg TIM2_OCMode_PWM1: PWM Mode 1
+  *            @arg TIM2_OCMode_PWM2: PWM Mode 2
+  * @param  TIM2_OutputState: Output state
+  *          This parameter can be one of the following values:
+  *            @arg TIM2_OutputState_Disable: Output compare State disabled (channel output disabled)
+  *            @arg TIM2_OutputState_Enable: Output compare State enabled (channel output enabled)
+  * @param  TIM2_Pulse: This parameter must be a value between 0x0000 and 0xFFFF.
+  * @param  TIM2_OCPolarity: Polarity
+  *          This parameter can be one of the following values:
+  *            @arg TIM2_OCPolarity_High: Output compare polarity  = High
+  *            @arg TIM2_OCPolarity_Low: Output compare polarity  = Low
+  * @param  TIM2_OCIdleState: Output Compare Idle State
+  *          This parameter can be one of the following values:
+  *            @arg TIM2_OCIdleState_Reset: Output Compare Idle state  = Reset
+  *            @arg TIM2_OCIdleState_Set: Output Compare Idle state  = Set
+  * @retval None
+  */
+void TIM2_OC1Init(TIM2_OCMode_TypeDef TIM2_OCMode,
+                  TIM2_OutputState_TypeDef TIM2_OutputState,
+                  uint16_t TIM2_Pulse,
+                  TIM2_OCPolarity_TypeDef TIM2_OCPolarity,
+                  TIM2_OCIdleState_TypeDef TIM2_OCIdleState)
+{
+  uint8_t tmpccmr1 = 0;
+
+  /* Check the parameters */
+  assert_param(IS_TIM2_OC_MODE(TIM2_OCMode));
+  assert_param(IS_TIM2_OUTPUT_STATE(TIM2_OutputState));
+  assert_param(IS_TIM2_OC_POLARITY(TIM2_OCPolarity));
+  assert_param(IS_TIM2_OCIDLE_STATE(TIM2_OCIdleState));
+
+  tmpccmr1 = TIM2->CCMR1;
+
+  /* Disable the Channel 1: Reset the CCE Bit */
+  TIM2->CCER1 &= (uint8_t)(~TIM_CCER1_CC1E);
+  /* Reset the Output Compare Bits */
+  tmpccmr1 &= (uint8_t)(~TIM_CCMR_OCM);
+
+  /* Set the Output Compare Mode */
+  tmpccmr1 |= (uint8_t)TIM2_OCMode;
+
+  TIM2->CCMR1 = tmpccmr1;
+
+  /* Set the Output State */
+  if (TIM2_OutputState == TIM2_OutputState_Enable)
+  {
+    TIM2->CCER1 |= TIM_CCER1_CC1E;
+  }
+  else
+  {
+    TIM2->CCER1 &= (uint8_t)(~TIM_CCER1_CC1E);
+  }
+
+  /* Set the Output Polarity */
+  if (TIM2_OCPolarity == TIM2_OCPolarity_Low)
+  {
+    TIM2->CCER1 |= TIM_CCER1_CC1P;
+  }
+  else
+  {
+    TIM2->CCER1 &= (uint8_t)(~TIM_CCER1_CC1P);
+  }
+
+  /* Set the Output Idle state */
+  if (TIM2_OCIdleState == TIM2_OCIdleState_Set)
+  {
+    TIM2->OISR |= TIM_OISR_OIS1;
+  }
+  else
+  {
+    TIM2->OISR &= (uint8_t)(~TIM_OISR_OIS1);
+  }
+
+  /* Set the Pulse value */
+  TIM2->CCR1H = (uint8_t)(TIM2_Pulse >> 8);
+  TIM2->CCR1L = (uint8_t)(TIM2_Pulse);
+}

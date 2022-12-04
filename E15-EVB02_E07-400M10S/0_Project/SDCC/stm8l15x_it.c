@@ -323,9 +323,7 @@ INTERRUPT_HANDLER(ADC1_COMP_IRQHandler, 18)
   */
 INTERRUPT_HANDLER(TIM2_UPD_OVF_TRG_BRK_USART2_TX_IRQHandler, 19)
 {
-  /* In order to detect unexpected events during development,
-     it is recommended to set a breakpoint on the following instruction.
-  */
+  // autoreload register - full pulse period
   GPIO_ToggleBits( BSP_GPIO_PORT_LED_1, BSP_GPIO_PIN_LED_1 );
   TIM2_ClearITPendingBit(TIM2_IT_Update);
    
@@ -338,9 +336,9 @@ INTERRUPT_HANDLER(TIM2_UPD_OVF_TRG_BRK_USART2_TX_IRQHandler, 19)
   */
 INTERRUPT_HANDLER(TIM2_CC_USART2_RX_IRQHandler, 20)
 {
-  /* In order to detect unexpected events during development,
-     it is recommended to set a breakpoint on the following instruction.
-  */
+   // capture/compare reg - half pulse
+   GPIO_ToggleBits( BSP_GPIO_PORT_LED_1, BSP_GPIO_PIN_LED_1 );
+   TIM2_ClearITPendingBit(TIM2_IT_CC1);
 }
 
 /**

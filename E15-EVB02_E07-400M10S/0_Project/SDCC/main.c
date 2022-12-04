@@ -118,8 +118,12 @@ int main( void )
         Task_Button();
         /* Task: Detect serial port data and send it wireless, please customize as needed */
         Task_Transmit();
+        //wfi();
         /* Task: EBYTE driver library must periodically execute the task and the customer does not need to modify it */
-        // kkk handled in IRQ Ebyte_RF.TaskForPoll();
+        // kkk can be handled in IRQ
+#if !(HANDLE_RECEIVE_IN_IRQ)
+        Ebyte_RF.TaskForPoll();
+#endif
     }
 }
 /* !
